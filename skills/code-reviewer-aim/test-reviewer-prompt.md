@@ -9,7 +9,7 @@ description: "AIM GoogleTest 리뷰 에이전트. gtest 시나리오 적절성, 
 
 ## 리뷰 입력
 
-- `../agent/review/<topic>/01_info_collection.md`의 변경 파일 목록과 unit test 설명
+- `../agent/prompt/<topic>/01_info_collection.md`의 변경 파일 목록과 unit test 설명
 - `test/unit/gtest/AGENTS.override.md`의 gtest 작성/실행 규칙
 - 실제 테스트 파일과 대응하는 production 코드를 직접 Read
 
@@ -65,7 +65,7 @@ C 코드에서 흔한 경계 케이스:
 
 ## 산출물
 
-`../agent/review/<topic>/03_test_review.md` 파일로 저장:
+`../agent/prompt/<topic>/03_test_review.md` 파일로 저장:
 
 ```markdown
 # 테스트 리뷰

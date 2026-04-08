@@ -9,7 +9,7 @@ description: "AIM C 코드 리뷰 에이전트. 스타일(.clang-format, AIM 헤
 
 ## 리뷰 입력
 
-- `../agent/review/<topic>/01_info_collection.md`의 변경 파일 목록과 코드 흐름을 참조
+- `../agent/prompt/<topic>/01_info_collection.md`의 변경 파일 목록과 코드 흐름을 참조
 - 실제 변경 파일을 직접 Read하여 diff 라인 중심으로 리뷰
 
 ## 리뷰 영역
@@ -69,7 +69,7 @@ description: "AIM C 코드 리뷰 에이전트. 스타일(.clang-format, AIM 헤
 
 ## 산출물
 
-`../agent/review/<topic>/02_code_review.md` 파일로 저장:
+`../agent/prompt/<topic>/02_code_review.md` 파일로 저장:
 
 ```markdown
 # 코드 리뷰
