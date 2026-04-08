@@ -1,1 +1,0 @@
-feat: code-reviewer-aim 스킬 초기 백업 (SKILL.md + prompt 5개 + 커버리지 스크립트)
