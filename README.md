@@ -105,10 +105,13 @@ flowchart TD
 
     TDD1 -->|전체 완료| K[finishing-a-development-branch-aim]
     TDD2 -->|전체 완료| K
-    K -->|셀프 리뷰| L[requesting-code-review-aim]
+    K --> MR[push + MR 생성]
+    MR -->|셀프 리뷰| L[requesting-code-review-aim]
     L --> M[code-reviewer-aim Phase A~E]
     M -->|피드백| R[receiving-code-review-aim]
-    K -->|MR merged| N[completing-patch-aim]
+    R --> MR2[MR 리뷰/승인]
+    MR -->|리뷰 불필요| MR2
+    MR2 -->|merged| N[completing-patch-aim]
 
     A -->|"정상/설정오류"| O[IMS 답변 초안]
     A -->|"미지원"| Q[Jira feature request]
