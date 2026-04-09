@@ -78,16 +78,22 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 flowchart TD
     A[issue-analysis-aim] -->|"버그/기능 필요"| B[brainstorming-aim]
     B --> C[writing-plans-aim]
-    C --> D{실행 방식}
+    C --> D{실행 방식 택1}
     D -->|순차| E[executing-plans-aim]
     D -->|서브에이전트| F[subagent-driven-development-aim]
-    E --> G[test-driven-development-aim]
-    F --> G
-    F --> H[dispatching-parallel-agents-aim]
-    G -->|실패| I[systematic-debugging-aim]
-    I --> G
-    G -->|완료| J[verification-before-completion-aim]
-    J --> K[finishing-a-development-branch-aim]
+
+    E --> TASKS
+    F --> TASKS
+
+    subgraph TASKS ["각 태스크 내부"]
+        direction TB
+        G[test-driven-development-aim] -->|실패| I[systematic-debugging-aim]
+        I --> G
+        G -->|완료| J[verification-before-completion-aim]
+        H[dispatching-parallel-agents-aim] -.->|독립 태스크면| G
+    end
+
+    TASKS -->|전체 완료| K[finishing-a-development-branch-aim]
     K -->|셀프 리뷰| L[requesting-code-review-aim]
     L --> M[code-reviewer-aim Phase A~E]
     M -->|피드백| R[receiving-code-review-aim]
@@ -99,6 +105,7 @@ flowchart TD
     style A fill:#e1f5fe
     style N fill:#fff3e0
     style M fill:#f3e5f5
+    style TASKS fill:#f5f5f5,stroke:#999,stroke-dasharray: 5 5
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
