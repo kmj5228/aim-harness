@@ -76,46 +76,46 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 
 ```mermaid
 flowchart TD
-    A["issue-analysis-aim\n(이슈 분석/판정/XSP 사양 분석)"] -->|"버그/기능 필요"| B["brainstorming-aim (설계/XSP 사양 분석)"]
+    A["issue-analysis-aim\n(이슈 분석/판정/XSP 사양 분석)"] -->|"버그/기능 필요"| B["brainstorming-aim\n(설계/XSP 사양 분석)"]
     START[ ] -->|직접 시작| B
-    B --> C["writing-plans-aim (태스크 분해)"]
+    B --> C["writing-plans-aim\n(태스크 분해)"]
     C --> D{실행 방식 택1\n사용자 선택}
 
-    D -->|"순차 (태스크 1~2개)"| E["executing-plans-aim (순차 실행)"]
+    D -->|"순차 (태스크 1~2개)"| E["executing-plans-aim\n(순차 실행)"]
     E --> TDD1
 
-    D -->|"서브에이전트 (권장)"| F["subagent-driven-development-aim (서브에이전트 실행)"]
+    D -->|"서브에이전트 (권장)"| F["subagent-driven-development-aim\n(서브에이전트 실행)"]
     F --> H{독립 태스크?}
-    H -->|"Yes"| P1["dispatching-parallel-agents-aim (병렬 디스패치)"]
+    H -->|"Yes"| P1["dispatching-parallel-agents-aim\n(병렬 디스패치)"]
     H -->|"No"| TDD2
     P1 --> TDD2
 
     subgraph TDD1 ["각 태스크 (순차)"]
         direction TB
-        G1["test-driven-development-aim (TDD)"] -->|실패| I1["systematic-debugging-aim (디버깅)"]
+        G1["test-driven-development-aim\n(TDD)"] -->|실패| I1["systematic-debugging-aim\n(디버깅)"]
         I1 --> G1
-        G1 -->|완료| J1["verification-before-completion-aim (검증)"]
+        G1 -->|완료| J1["verification-before-completion-aim\n(검증)"]
     end
 
     subgraph TDD2 ["각 태스크 (서브에이전트)"]
         direction TB
-        G2["test-driven-development-aim (TDD)"] -->|실패| I2["systematic-debugging-aim (디버깅)"]
+        G2["test-driven-development-aim\n(TDD)"] -->|실패| I2["systematic-debugging-aim\n(디버깅)"]
         I2 --> G2
-        G2 -->|완료| J2["verification-before-completion-aim (검증)"]
+        G2 -->|완료| J2["verification-before-completion-aim\n(검증)"]
     end
 
     TDD1 -->|전체 완료| K["finishing-a-development-branch-aim\n(push + MR 생성)"]
     TDD2 -->|전체 완료| K
-    K -->|셀프 리뷰| L["requesting-code-review-aim (셀프 리뷰 요청)"]
-    L --> M["code-reviewer-aim (코드 리뷰, Phase A~E)"]
+    K -->|셀프 리뷰| L["requesting-code-review-aim\n(셀프 리뷰 요청)"]
+    L --> M["code-reviewer-aim\n(코드 리뷰, Phase A~E)"]
     K -->|셀프 리뷰 건너뜀| MR[MR 리뷰/승인]
-    M --> RCV["receiving-code-review-aim (리뷰 피드백 처리)"]
+    M --> RCV["receiving-code-review-aim\n(리뷰 피드백 처리)"]
     RCV --> MR
     MR -->|피드백 있음| RCV
-    MR -->|approved & merged| N["completing-patch-aim (패치 검증서)"]
+    MR -->|approved & merged| N["completing-patch-aim\n(패치 검증서)"]
 
-    A -->|"정상/설정오류"| O["writing-documents-aim (IMS 답변 등록)"]
-    A -->|"미지원"| Q["writing-documents-aim (Jira feature request)"]
+    A -->|"정상/설정오류"| O["writing-documents-aim\n(IMS 답변 등록)"]
+    A -->|"미지원"| Q["writing-documents-aim\n(Jira feature request)"]
 
     style START fill:transparent,stroke:transparent
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
