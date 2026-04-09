@@ -198,6 +198,9 @@ synthesizer 완료 후 **오케스트레이터가** `<topic>_review.plan.md`의 
 
 ---
 
+
+GitLab MR 코멘트의 톤/구조/심각도 표시 규칙은 **writing-documents-aim**의 gitlab-guide.md "MR 코멘트" 섹션을 참조한다.
+
 ### Phase F: GitLab 등록 (오케스트레이터 직접)
 
 #### Step 1: 누락 검증

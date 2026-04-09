@@ -116,6 +116,13 @@ Draft with:
 - Use case from customer
 - Spec reference showing current scope
 
+
+## Cross-Reference
+
+- IMS 응답/가이드 초안 작성 시: **writing-documents-aim**의 ims-guide.md 참조
+- Jira feature request 초안 작성 시: **writing-documents-aim**의 jira-guide.md 참조
+- analysis_report.md 구조: **writing-documents-aim**의 markdown-guide.md "분석 보고서" 참조
+
 ## Output
 
 Save to `../agent/prompt/<topic>/analysis_report.md`:

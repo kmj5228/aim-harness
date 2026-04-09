@@ -93,6 +93,9 @@ curl -s --request POST \
 
 Token: see `../agent/info/access.md`
 
+
+MR description 작성 규칙 상세는 **writing-documents-aim**의 gitlab-guide.md를 참조한다.
+
 MR description follows `.gitlab/merge_request_templates/default.md`:
 1. `## 내용` — 요구사항, 왜 변경하는지, 왜 이렇게 변경하는지
 2. `## 수정 사항` — 변경 파일별 요약 (파일 경로 + 변경 내용)
