@@ -79,33 +79,45 @@ flowchart TD
     A[issue-analysis-aim] -->|"버그/기능 필요"| B[brainstorming-aim]
     B --> C[writing-plans-aim]
     C --> D{실행 방식 택1\n사용자 선택}
+
     D -->|"순차 (태스크 1~2개)"| E[executing-plans-aim]
+    E --> TDD1
+
     D -->|"서브에이전트 (권장)"| F[subagent-driven-development-aim]
+    F --> H{독립 태스크?}
+    H -->|"Yes"| P1[dispatching-parallel-agents-aim\n병렬 디스패치]
+    H -->|"No"| TDD2
+    P1 --> TDD2
 
-    E --> TASKS
-    F --> TASKS
-
-    subgraph TASKS ["각 태스크 내부"]
+    subgraph TDD1 ["각 태스크 (순차)"]
         direction TB
-        G[test-driven-development-aim] -->|실패| I[systematic-debugging-aim]
-        I --> G
-        G -->|완료| J[verification-before-completion-aim]
-        H[dispatching-parallel-agents-aim] -.->|독립 태스크면| G
+        G1[test-driven-development-aim] -->|실패| I1[systematic-debugging-aim]
+        I1 --> G1
+        G1 -->|완료| J1[verification-before-completion-aim]
     end
 
-    TASKS -->|전체 완료| K[finishing-a-development-branch-aim]
+    subgraph TDD2 ["각 태스크 (서브에이전트)"]
+        direction TB
+        G2[test-driven-development-aim] -->|실패| I2[systematic-debugging-aim]
+        I2 --> G2
+        G2 -->|완료| J2[verification-before-completion-aim]
+    end
+
+    TDD1 -->|전체 완료| K[finishing-a-development-branch-aim]
+    TDD2 -->|전체 완료| K
     K -->|셀프 리뷰| L[requesting-code-review-aim]
     L --> M[code-reviewer-aim Phase A~E]
     M -->|피드백| R[receiving-code-review-aim]
     K -->|MR merged| N[completing-patch-aim]
 
     A -->|"정상/설정오류"| O[IMS 답변 초안]
-    A -->|"미지원"| P[Jira feature request]
+    A -->|"미지원"| Q[Jira feature request]
 
     style A fill:#bbdefb,color:#000
     style N fill:#ffe0b2,color:#000
     style M fill:#e1bee7,color:#000
-    style TASKS fill:transparent,stroke:#888,stroke-dasharray: 5 5
+    style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
+    style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
