@@ -130,10 +130,9 @@ flowchart TD
     style O fill:#ffe0b2,color:#000
     style Q fill:#ffe0b2,color:#000
 
-    %% 분기 (노랑)
+    %% 분기 (노랑) — 에이전트/사용자 결정
     style D fill:#fff9c4,color:#000
     style H fill:#fff9c4,color:#000
-    style MR fill:#fff9c4,color:#000
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
