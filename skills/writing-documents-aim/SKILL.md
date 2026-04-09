@@ -19,6 +19,24 @@ description: Use when writing any document for external audience — Jira ticket
 문서를 발송/게시/등록하기 전에 반드시 사용자에게 초안을 보여주고 승인을 받는다. 승인 없이 send, post, publish, submit 하지 않는다.
 </HARD-GATE>
 
+**동사 분리 (HARD-GATE보다 강력):**
+
+"작성"과 "저장"은 **완전히 다른 동작**이다. 절대 합쳐서 수행하지 않는다.
+
+| 사용자 동사 | 의미 | 허용 동작 |
+|-----------|------|----------|
+| "작성해", "써줘", "입력해" | 에디터에 입력만 | 내용 입력 후 **반드시 멈추고** 사용자에게 보여준다. 저장 함수 호출 금지. |
+| "저장해", "save", "submit" | 저장 실행 | 저장 함수(fileUpload, doRndSave 등) 호출 허용 |
+| "등록해", "보내줘", "발송해" | 게시/발송 실행 | API 호출 허용 |
+
+**턴 분리:** 저장 함수(fileUpload, doRndSave, API POST 등)는 **내용 입력과 같은 턴에서 호출 금지**. 반드시 사용자 메시지를 거친 후에만 호출한다.
+
+```
+Turn 1: 에디터에 내용 입력 → "입력 완료. 확인해 주십시오." (여기서 멈춤)
+Turn 2: 사용자: "저장해" / "save" / "submit"
+Turn 3: 저장 함수 호출
+```
+
 ## When to Use
 
 - Jira 작성 (description, 댓글, 상태/핸들러 변경)
@@ -102,6 +120,7 @@ description: Use when writing any document for external audience — Jira ticket
 | "빨리 해달라고 했으니 검토 생략" | 압박은 승인 게이트를 건너뛸 이유가 안 됨 |
 | "한 줄이니까 인사/구조 생략해도 되지" | 짧아도 가이드를 따른다. IMS 댓글도 인사 포함, 메일도 구조 유지 |
 | "사용자가 한 줄만 하라고 했으니 두괄식/다이어그램 불필요" | 사용자 지시가 가이드와 충돌하면 가이드를 따르되, 사용자에게 알린다 |
+| **"작성해줘 = 등록해도 된다는 뜻"** | **"작성"은 입력만. "저장/save/submit"이 아니면 저장 함수 호출 금지. 동사 분리 표 참조** |
 
 ## Common Mistakes
 
@@ -136,4 +155,6 @@ description: Use when writing any document for external audience — Jira ticket
 - 인사가 "안녕하십니까"가 아닌 다른 표현
 - 사용자 승인 없이 발송/게시/등록
 - "이미 보냈습니다" — 되돌릴 수 없는 상황
+- **"작성해줘"를 듣고 저장까지 수행** — "작성"은 입력만, 저장은 별도 동사 필요
+- **입력과 저장을 같은 턴에서 수행** — 반드시 사용자 메시지를 거친 후 저장
 - 발신자/수신자를 임의로 설정
