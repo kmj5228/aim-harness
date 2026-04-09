@@ -82,18 +82,18 @@ flowchart TD
     D -->|"순차 (태스크 1~2개)"| E[executing-plans-aim]
     D -->|"서브에이전트 (권장)"| F[subagent-driven-development-aim]
 
-    E --> TASKS
-    F --> TASKS
+    E --> EXEC
+    F --> EXEC
 
-    subgraph TASKS ["각 태스크 내부"]
+    subgraph EXEC ["태스크 실행"]
         direction TB
+        H[dispatching-parallel-agents-aim] -.->|"독립 태스크 병렬화"| G
         G[test-driven-development-aim] -->|실패| I[systematic-debugging-aim]
         I --> G
         G -->|완료| J[verification-before-completion-aim]
-        H[dispatching-parallel-agents-aim] -.->|독립 태스크면| G
     end
 
-    TASKS -->|전체 완료| K[finishing-a-development-branch-aim]
+    EXEC -->|전체 완료| K[finishing-a-development-branch-aim]
     K -->|셀프 리뷰| L[requesting-code-review-aim]
     L --> M[code-reviewer-aim Phase A~E]
     M -->|피드백| R[receiving-code-review-aim]
