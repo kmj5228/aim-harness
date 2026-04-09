@@ -78,9 +78,9 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 flowchart TD
     A[issue-analysis-aim] -->|"버그/기능 필요"| B[brainstorming-aim]
     B --> C[writing-plans-aim]
-    C --> D{실행 방식 택1}
-    D -->|순차| E[executing-plans-aim]
-    D -->|서브에이전트| F[subagent-driven-development-aim]
+    C --> D{실행 방식 택1\n사용자 선택}
+    D -->|"순차 (태스크 1~2개)"| E[executing-plans-aim]
+    D -->|"서브에이전트 (권장)"| F[subagent-driven-development-aim]
 
     E --> TASKS
     F --> TASKS
