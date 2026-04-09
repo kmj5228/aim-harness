@@ -111,7 +111,9 @@ flowchart TD
     M -->|피드백| R[receiving-code-review-aim]
     R --> MR2[MR 리뷰/승인]
     MR -->|리뷰 불필요| MR2
-    MR2 -->|merged| N[completing-patch-aim]
+    MR2 -->|피드백 있음| R2[receiving-code-review-aim]
+    R2 -->|수정 후| MR2
+    MR2 -->|approved & merged| N[completing-patch-aim]
 
     A -->|"정상/설정오류"| O[IMS 답변 초안]
     A -->|"미지원"| Q[Jira feature request]
