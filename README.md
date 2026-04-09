@@ -118,9 +118,6 @@ flowchart TD
     A -->|"정상/설정오류"| O[IMS 답변 초안]
     A -->|"미지원"| Q[Jira feature request]
 
-    style A fill:#bbdefb,color:#000
-    style N fill:#ffe0b2,color:#000
-    style M fill:#e1bee7,color:#000
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
     style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
 ```
