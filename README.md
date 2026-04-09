@@ -76,7 +76,8 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 
 ```mermaid
 flowchart TD
-    A[issue-analysis-aim] -->|"버그/기능 필요"| B[brainstorming-aim]
+    A[issue-analysis-aim\noptional] -->|"버그/기능 필요"| B[brainstorming-aim]
+    START[ ] -->|직접 시작| B
     B --> C[writing-plans-aim]
     C --> D{실행 방식 택1\n사용자 선택}
 
@@ -103,21 +104,20 @@ flowchart TD
         G2 -->|완료| J2[verification-before-completion-aim]
     end
 
-    TDD1 -->|전체 완료| K[finishing-a-development-branch-aim]
+    TDD1 -->|전체 완료| K["finishing-a-development-branch-aim\n(push + MR 생성)"]
     TDD2 -->|전체 완료| K
-    K --> MR[push + MR 생성]
-    MR -->|셀프 리뷰| L[requesting-code-review-aim]
+    K -->|셀프 리뷰| L[requesting-code-review-aim]
     L --> M[code-reviewer-aim Phase A~E]
-    M -->|피드백| R[receiving-code-review-aim]
-    R --> MR2[MR 리뷰/승인]
-    MR -->|리뷰 불필요| MR2
-    MR2 -->|피드백 있음| R2[receiving-code-review-aim]
-    R2 -->|수정 후| MR2
-    MR2 -->|approved & merged| N[completing-patch-aim]
+    K -->|셀프 리뷰 건너뜀| MR[MR 리뷰/승인]
+    M --> RCV[receiving-code-review-aim]
+    RCV --> MR
+    MR -->|피드백 있음| RCV
+    MR -->|approved & merged| N[completing-patch-aim]
 
     A -->|"정상/설정오류"| O[IMS 답변 초안]
     A -->|"미지원"| Q[Jira feature request]
 
+    style START fill:transparent,stroke:transparent
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
     style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
 ```
