@@ -76,7 +76,7 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 
 ```mermaid
 flowchart TD
-    A["issue-analysis-aim (이슈 분석/판정, optional)"] -->|"버그/기능 필요"| B["brainstorming-aim (설계)"]
+    A["issue-analysis-aim (이슈 분석/판정/XSP 사양 분석, optional)"] -->|"버그/기능 필요"| B["brainstorming-aim (설계/XSP 사양 분석)"]
     START[ ] -->|직접 시작| B
     B --> C["writing-plans-aim (태스크 분해)"]
     C --> D{실행 방식 택1\n사용자 선택}
