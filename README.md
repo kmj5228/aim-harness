@@ -120,6 +120,20 @@ flowchart TD
     style START fill:transparent,stroke:transparent
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
     style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
+
+    %% 시작 (파랑)
+    style A fill:#bbdefb,color:#000
+    style B fill:#bbdefb,color:#000
+
+    %% 끝 (주황)
+    style N fill:#ffe0b2,color:#000
+    style O fill:#ffe0b2,color:#000
+    style Q fill:#ffe0b2,color:#000
+
+    %% 분기 (노랑)
+    style D fill:#fff9c4,color:#000
+    style H fill:#fff9c4,color:#000
+    style MR fill:#fff9c4,color:#000
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
