@@ -76,7 +76,7 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 
 ```mermaid
 flowchart TD
-    A[issue-analysis-aim\noptional] -->|"버그/기능 필요"| B[brainstorming-aim]
+    A["issue-analysis-aim (optional)"] -->|"버그/기능 필요"| B[brainstorming-aim]
     START[ ] -->|직접 시작| B
     B --> C[writing-plans-aim]
     C --> D{실행 방식 택1\n사용자 선택}
@@ -86,7 +86,7 @@ flowchart TD
 
     D -->|"서브에이전트 (권장)"| F[subagent-driven-development-aim]
     F --> H{독립 태스크?}
-    H -->|"Yes"| P1[dispatching-parallel-agents-aim\n병렬 디스패치]
+    H -->|"Yes"| P1["dispatching-parallel-agents-aim (병렬 디스패치)"]
     H -->|"No"| TDD2
     P1 --> TDD2
 
@@ -114,8 +114,8 @@ flowchart TD
     MR -->|피드백 있음| RCV
     MR -->|approved & merged| N[completing-patch-aim]
 
-    A -->|"정상/설정오류"| O[IMS 답변 초안]
-    A -->|"미지원"| Q[Jira feature request]
+    A -->|"정상/설정오류"| O["writing-documents-aim (IMS 답변 등록)"]
+    A -->|"미지원"| Q["writing-documents-aim (Jira feature request)"]
 
     style START fill:transparent,stroke:transparent
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
