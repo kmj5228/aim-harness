@@ -112,7 +112,7 @@ flowchart TD
     M --> RCV["receiving-code-review-aim\n(리뷰 피드백 처리)"]
     RCV --> MR
     MR -->|피드백 있음| RCV
-    MR -->|approved & merged| N["completing-patch-aim\n(패치 검증서)"]
+    MR -->|approved & merged| N["completing-patch-aim\n(패치 검증서 등록)"]
 
     A -->|"정상/설정오류"| O["writing-documents-aim\n(IMS 답변 등록)"]
     A -->|"미지원"| Q["writing-documents-aim\n(Jira feature request)"]
