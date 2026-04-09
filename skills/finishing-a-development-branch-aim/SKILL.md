@@ -48,7 +48,7 @@ dx bash -c "cd /root/ofsrc/aim && ./script/measure_diff_cov.sh"
    dx git log --oneline rb_73..HEAD
    ```
    
-   If needed, squash/reword commits. Commit message format: `<type>: <Korean description>`
+   If needed, squash/reword commits. Commit message format: `<type> <Korean description>`
 
 4. **Verify copyright headers** on new files (push hook will check)
 

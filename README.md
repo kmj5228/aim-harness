@@ -118,7 +118,9 @@ aim-harness/
 └── skills/
     ├── using-aim-harness/                 # 메타: 스킬 사용 규칙
     ├── brainstorming-aim/                 # 설계
+    │   └── spec-document-reviewer-prompt.md
     ├── writing-plans-aim/                 # 태스크 분해
+    │   └── plan-document-reviewer-prompt.md
     ├── executing-plans-aim/               # 순차 실행
     ├── subagent-driven-development-aim/   # 서브에이전트 실행
     │   ├── implementer-prompt.md
@@ -126,7 +128,12 @@ aim-harness/
     │   └── code-quality-reviewer-prompt.md
     ├── dispatching-parallel-agents-aim/   # 병렬 처리
     ├── test-driven-development-aim/       # TDD
+    │   └── testing-anti-patterns.md
     ├── systematic-debugging-aim/          # 디버깅
+    │   ├── condition-based-waiting.md
+    │   ├── defense-in-depth.md
+    │   ├── root-cause-tracing.md
+    │   └── find-polluter.sh
     ├── verification-before-completion-aim/ # 검증
     ├── using-feature-branches-aim/        # 브랜치 관리
     ├── finishing-a-development-branch-aim/ # MR 생성

@@ -142,7 +142,7 @@ All work follows these rules (details in AGENTS.md/CLAUDE.md):
 
 - **Shell**: All commands via `dx` (dev_exec.sh)
 - **Git**: Feature branch only, never `rb_73`. Branch: `<keyword>_<IMS>_<Jira>`
-- **Commit**: `<type>: <Korean description>`. No `git add .`
+- **Commit**: `<type> <Korean description>`. No `git add .`
 - **Test**: `dx make gtest`, coverage 80% (`measure_diff_cov.sh`)
 - **Build**: `dx make`
 - **Artifacts**: `../agent/prompt/<topic>/` with prefixes (`review_`, `design_`, `plan_`, `exec_`, `debug_`, `verify_`, `finish_`, `analysis_`)
