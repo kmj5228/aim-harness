@@ -118,8 +118,38 @@ flowchart TD
     A -->|"미지원"| Q["writing-documents-aim\n(Jira feature request)"]
 
     style START fill:transparent,stroke:transparent
+
+    %% 분석/설계 (파랑)
+    style A fill:#bbdefb,color:#000
+    style B fill:#bbdefb,color:#000
+    style C fill:#bbdefb,color:#000
+
+    %% 실행 (초록)
+    style E fill:#c8e6c9,color:#000
+    style F fill:#c8e6c9,color:#000
+    style P1 fill:#c8e6c9,color:#000
+    style G1 fill:#c8e6c9,color:#000
+    style I1 fill:#c8e6c9,color:#000
+    style J1 fill:#c8e6c9,color:#000
+    style G2 fill:#c8e6c9,color:#000
+    style I2 fill:#c8e6c9,color:#000
+    style J2 fill:#c8e6c9,color:#000
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
     style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
+
+    %% 완료/배포 (주황)
+    style K fill:#ffe0b2,color:#000
+    style MR fill:#ffe0b2,color:#000
+    style N fill:#ffe0b2,color:#000
+
+    %% 리뷰 (보라)
+    style L fill:#e1bee7,color:#000
+    style M fill:#e1bee7,color:#000
+    style RCV fill:#e1bee7,color:#000
+
+    %% 문서 (회색)
+    style O fill:#e0e0e0,color:#000
+    style Q fill:#e0e0e0,color:#000
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
