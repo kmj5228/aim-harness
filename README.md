@@ -102,10 +102,10 @@ flowchart TD
     A -->|"정상/설정오류"| O[IMS 답변 초안]
     A -->|"미지원"| P[Jira feature request]
 
-    style A fill:#e1f5fe
-    style N fill:#fff3e0
-    style M fill:#f3e5f5
-    style TASKS fill:#f5f5f5,stroke:#999,stroke-dasharray: 5 5
+    style A fill:#bbdefb,color:#000
+    style N fill:#ffe0b2,color:#000
+    style M fill:#e1bee7,color:#000
+    style TASKS fill:#e8e8e8,stroke:#bbb,stroke-dasharray: 5 5,color:#000
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
