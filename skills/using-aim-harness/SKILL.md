@@ -77,6 +77,7 @@ digraph skill_flow {
 | Self-review my code before MR | **requesting-code-review-aim** |
 | Received review feedback | **receiving-code-review-aim** |
 | Review someone else's MR | **code-reviewer-aim** |
+| Writing documents (Jira, Confluence, IMS, GitLab, mail, md) | **writing-documents-aim** |
 | Creating or editing a skill | **writing-skills-aim** |
 
 ## Workflow Chain

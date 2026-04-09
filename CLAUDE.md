@@ -28,6 +28,7 @@
 | 내 코드 셀프 리뷰 | requesting-code-review-aim |
 | 리뷰 피드백 수신 | receiving-code-review-aim |
 | 타인 MR 리뷰 | code-reviewer-aim |
+| 문서 작성 (Jira/Confluence/IMS/GitLab/메일/md) | writing-documents-aim |
 | 스킬 작성/수정 | writing-skills-aim |
 
 ## 워크플로우 체인
