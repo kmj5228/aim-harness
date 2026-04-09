@@ -105,7 +105,7 @@ flowchart TD
     style A fill:#bbdefb,color:#000
     style N fill:#ffe0b2,color:#000
     style M fill:#e1bee7,color:#000
-    style TASKS fill:#e8e8e8,stroke:#bbb,stroke-dasharray: 5 5,color:#000
+    style TASKS fill:transparent,stroke:#888,stroke-dasharray: 5 5
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
