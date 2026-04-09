@@ -89,7 +89,8 @@ flowchart TD
     G -->|완료| J[verification-before-completion-aim]
     J --> K[finishing-a-development-branch-aim]
     K -->|셀프 리뷰| L[requesting-code-review-aim]
-    L --> M[code-reviewer-aim]
+    L --> M[code-reviewer-aim Phase A~E]
+    M -->|피드백| R[receiving-code-review-aim]
     K -->|MR merged| N[completing-patch-aim]
 
     A -->|"정상/설정오류"| O[IMS 답변 초안]
@@ -99,6 +100,12 @@ flowchart TD
     style N fill:#fff3e0
     style M fill:#f3e5f5
 ```
+
+**독립 스킬** (체인 외, 직접 호출):
+- **code-reviewer-aim** — 타인 MR 리뷰 (Phase A~I, 에이전트 팀)
+- **using-feature-branches-aim** — feature branch 생성/관리
+- **writing-documents-aim** — 문서 작성 (각 스킬에서 문서 작성 시 cross-reference)
+- **writing-skills-aim** — 스킬 작성/수정
 
 ## 디렉토리 구조
 
