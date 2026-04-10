@@ -5,30 +5,53 @@
 ### 구조
 
 ```
-# Problem
-- 문제 상황 기술
+h1. Problem
+* 문제 상황 기술
 
-# Goal
-- 달성 목표
+h1. Goal
+* 달성 목표
 
-# Analysis
-- 분석 결과 (원인, 영향 범위)
+h1. Analysis
+* 분석 결과 (원인, 영향 범위)
 
-# Design
-- 설계 방향, 접근 방식
+h1. Design
+* 설계 방향, 접근 방식
 
-# Development
-- 개발 내역, 변경 사항
+h1. Development
+* 개발 내역, 변경 사항
 
-# Test
-- 테스트 결과, 검증 항목
+h1. Test
+* 테스트 결과, 검증 항목
 
-# Document
-- 관련 문서 링크
+h1. Document
+* 관련 문서 링크
 
-# Reference
-- IMS, Confluence, 기타 참조
+h1. Reference
+* IMS, Confluence, 기타 참조
 ```
+
+### Jira Wiki Markup (API 작성 시 필수)
+
+Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown 문법을 그대로 보내면 렌더링이 깨진다.
+
+| 용도 | markdown (사용 금지) | Jira wiki markup (사용) |
+|------|---------------------|----------------------|
+| heading 1 | `# Problem` | `h1. Problem` |
+| heading 2 | `## Design` | `h2. Design` |
+| bold | `**bold**` | `*bold*` |
+| bullet list | `- item` | `* item` |
+| numbered list | `1. item` | `# item` |
+| table header | `\|header\|` | `\|\|header\|\|` |
+| table cell | `\|cell\|` | `\|cell\|` |
+| image (첨부) | `![alt](url)` | `!filename.png\|thumbnail!` |
+| code block | ` ```code``` ` | `{code}code{code}` |
+| link | `[text](url)` | `[text\|url]` |
+
+### 다이어그램
+
+- Jira는 mermaid를 **기본 지원하지 않음**
+- 다이어그램은 **이미지로 첨부**: mermaid.live에서 렌더링 → PNG 다운로드 → Jira 첨부
+- description에서 참조: `!filename.png|thumbnail!`
 
 ### 기 작성 내용 규칙
 
@@ -42,7 +65,7 @@
 - **독자**: 개발자
 - **추상화**: 핵심 코드 삽입까지 허용 (함수명, 코드 블록 OK)
 - **톤**: description은 간결체/명사형 허용, 댓글은 격식체
-- **설계/개발 깊이**: 큰 그림(접근 방식, 영향 모듈, 변경 방향) 필수 작성. 흐름도(flow diagram, mermaid 등)를 포함하면 이해도 향상. 필요 시 세부 내용까지 기술
+- **설계/개발 깊이**: 큰 그림(접근 방식, 영향 모듈, 변경 방향) 필수 작성. 흐름도는 이미지 첨부로 포함. 필요 시 세부 내용까지 기술
 - **분량 초과 시**: 방대한 내용은 Confluence 페이지에 작성하고, Jira에서 링크
 
 ## 댓글 작성
