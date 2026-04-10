@@ -50,10 +50,13 @@ Extract: symptom description, customer environment, error messages, reproduction
 
 ### Jira Ticket
 
+**Jira는 REST API로 접근한다. Chrome 브라우저 자동화를 사용하지 않는다.** (IMS만 Chrome 사용)
+
 ```bash
-# Mac curl (not dx) — Jira API
-curl -s -H "Authorization: Bearer $JIRA_TOKEN" \
-  "https://jira.example.com/rest/api/2/issue/<JIRA_KEY>" | jq '.fields.summary, .fields.description'
+# Mac curl (not dx) — Jira REST API
+# 인증 정보: ../agent/info/access.md 참조
+curl -s -u "<EMAIL>:<API_TOKEN>" \
+  "https://tmaxsoft.atlassian.net/rest/api/2/issue/<JIRA_KEY>" | jq '.fields.summary, .fields.description'
 ```
 
 ### XSP Specification
