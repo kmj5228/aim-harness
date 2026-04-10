@@ -29,7 +29,7 @@ Complete in order:
 1. **Gather context** — IMS issue, Jira ticket, related MRs
 2. **Understand the symptom** — exact error, reproduction steps, environment
 3. **Analyze code** — trace the execution path, find the root cause
-4. **Reference spec** — check XSP specification via NotebookLM if behavior is ambiguous
+4. **Reference spec** — check XSP specification via NotebookLM (사용자가 명시적으로 불필요하다고 하지 않는 한 필수)
 5. **Determine verdict** — classify into one of 4 categories
 6. **Take verdict-specific action** — see Verdict Actions below
 7. **Write analysis report** — save to `../agent/prompt/<topic>/analysis_report.md`
@@ -58,7 +58,7 @@ curl -s -H "Authorization: Bearer $JIRA_TOKEN" \
 
 ### XSP Specification
 
-When behavior ambiguity exists, reference XSP spec via NotebookLM.
+XSP 스펙을 **항상** 참조한다. 모호하지 않더라도 확인한다. 사용자가 처음에 "스펙 확인 불필요"라고 명시한 경우에만 생략 가능.
 
 - Notebook ID: `xsp-specification`
 - **반드시 "XSP 스펙을 참조합니다"라고 사용자에게 알린 후 참조**
@@ -157,7 +157,7 @@ Save to `../agent/prompt/<topic>/analysis_report.md`:
 
 - Starting to code before analysis is complete
 - Assuming "bug" without tracing the code
-- Skipping spec reference when behavior is ambiguous
+- Skipping spec reference ("모호하지 않으니 불필요" — 합리화. 사용자가 생략하라고 하지 않았으면 필수)
 - Writing an IMS response without understanding the root cause
 - Jumping to brainstorming-aim without analysis_report.md
 
@@ -176,4 +176,4 @@ Save to `../agent/prompt/<topic>/analysis_report.md`:
 ### Skipping spec check
 
 - **Problem:** "Bug" verdict when behavior actually matches spec
-- **Fix:** Reference XSP spec via NotebookLM when behavior is ambiguous
+- **Fix:** XSP 스펙을 항상 참조. "모호하지 않으니 불필요" 는 합리화
