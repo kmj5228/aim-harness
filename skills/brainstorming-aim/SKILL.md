@@ -22,7 +22,7 @@ Every project goes through this process. A single-function utility, a config cha
 Complete in order:
 
 1. **Check for analysis_report.md** — if issue-analysis-aim already ran, skip to step 3 using its findings
-2. **Explore project context** — check files, IMS/Jira, recent commits, NotebookLM XSP spec if relevant
+2. **Explore project context** — check files, IMS/Jira, recent commits, NotebookLM XSP spec (사용자가 불필요하다고 하지 않는 한 필수)
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Identify affected modules** — which AIM modules (lib/svr/tool/util) are impacted
 5. **Propose 2-3 approaches** — with trade-offs and your recommendation
@@ -75,7 +75,7 @@ digraph brainstorming {
 - Check for `../agent/prompt/<topic>/analysis_report.md` — if issue-analysis-aim already ran, use its findings (symptom, root cause, verdict) instead of re-gathering
 - Explore current AIM project state (affected source files, headers, recent commits)
 - If IMS/Jira context needed, gather via Chrome automation (IMS) or Mac curl (Jira)
-- Reference XSP spec via NotebookLM if behavior ambiguity exists (notebook: `xsp-specification`, **반드시 사용자에게 "XSP 스펙을 참조합니다" 알린 후 참조**)
+- Reference XSP spec via NotebookLM (사용자가 불필요하다고 하지 않는 한 필수). notebook: `xsp-specification`, **반드시 사용자에게 "XSP 스펙을 참조합니다" 알린 후 참조**. 실패 시 `mcp__notebooklm__re_auth` 또는 `notebooklm.auth-repair`로 재인증 후 재시도. 실패를 이유로 건너뛰지 않는다.
 - Ask questions one at a time; prefer multiple choice when possible
 - Focus on: purpose, constraints, success criteria, affected interfaces
 
