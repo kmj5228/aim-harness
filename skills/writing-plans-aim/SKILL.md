@@ -123,6 +123,7 @@ Every step must contain actual content. These are **plan failures**:
 - Complete code in every step
 - Exact commands: `dx make gtest`, `dx make`, `dx git ...`
 - DRY, YAGNI, TDD, frequent commits
+- **구현과 테스트를 별도 Task로 분리 금지** — 각 Task 내에서 RED(테스트 실패) → GREEN(구현) → REFACTOR. "Task N: 구현, Task M: 테스트"는 TDD 위반
 - Korean commit messages via file (-F) to avoid encoding issues
 
 ## Self-Review

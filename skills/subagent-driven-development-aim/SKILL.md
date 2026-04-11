@@ -102,6 +102,7 @@ After all tasks:
 **Required:**
 - **using-feature-branches-aim** — branch before starting
 - **test-driven-development-aim** — subagents follow TDD
+- **Plan TDD 위반 검사**: 실행 전에 plan을 검토하여 구현과 테스트가 별도 Task로 분리되어 있으면 사용자에게 경고하고 plan 수정을 제안한다. 구현/테스트 분리 plan을 그대로 실행하지 않는다.
 - **finishing-a-development-branch-aim** — after all tasks
 
 **Alternative:**

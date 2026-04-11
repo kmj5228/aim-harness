@@ -87,6 +87,7 @@ After all tasks complete:
 ## Remember
 - Review plan critically first
 - Follow plan steps exactly (TDD: RED → GREEN → REFACTOR)
+- **Plan TDD 위반 검사**: 실행 전에 plan을 검토하여 구현과 테스트가 별도 Task로 분리되어 있으면 사용자에게 경고하고 plan 수정을 제안한다. 구현/테스트 분리 plan을 그대로 실행하지 않는다.
 - Don't skip phase gates (`dx make gtest` + `dx make`)
 - Stop when blocked, don't guess
 - Never commit to `rb_73`
