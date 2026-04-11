@@ -53,7 +53,7 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 
 | 스킬 | 역할 |
 |------|------|
-| **code-reviewer-aim** | 타인 MR 리뷰. 에이전트 팀 5명, Phase A~I |
+| **code-reviewer-aim** | 타인 MR 리뷰. 에이전트 5명 + 오케스트레이터, Phase A~I |
 | **requesting-code-review-aim** | 내 코드 셀프 리뷰 (code-reviewer-aim --auto) |
 | **receiving-code-review-aim** | 리뷰 피드백 수신 후 처리 |
 
@@ -85,10 +85,7 @@ flowchart TD
     E --> TDD1
 
     D -->|"서브에이전트 (권장)"| F["subagent-driven-development-aim\n(서브에이전트 실행)"]
-    F --> H{독립 태스크?}
-    H -->|"Yes"| P1["dispatching-parallel-agents-aim\n(병렬 디스패치)"]
-    H -->|"No"| TDD2
-    P1 --> TDD2
+    F --> TDD2
 
     subgraph TDD1 ["각 태스크 (순차)"]
         direction TB
@@ -107,7 +104,7 @@ flowchart TD
     TDD1 -->|전체 완료| K["finishing-a-development-branch-aim\n(push + MR 생성)"]
     TDD2 -->|전체 완료| K
     K -->|셀프 리뷰| L["requesting-code-review-aim\n(셀프 리뷰 요청)"]
-    L --> M["code-reviewer-aim\n(코드 리뷰, Phase A~E)"]
+    L --> M["code-reviewer-aim\n(셀프 리뷰, Phase A~E --auto)"]
     K -->|셀프 리뷰 건너뜀| MR[MR 리뷰/승인]
     M --> RCV["receiving-code-review-aim\n(리뷰 피드백 처리)"]
     RCV --> MR
@@ -132,11 +129,11 @@ flowchart TD
 
     %% 분기 (노랑) — 에이전트/사용자 결정
     style D fill:#fff9c4,color:#000
-    style H fill:#fff9c4,color:#000
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
-- **code-reviewer-aim** — 타인 MR 리뷰 (Phase A~I, 에이전트 팀)
+- **code-reviewer-aim** — 타인 MR 리뷰 (Phase A~I, 에이전트 5명 + 오케스트레이터)
+- **dispatching-parallel-agents-aim** — 독립 문제 병렬 디버깅/조사 (구현 병렬화 아님)
 - **using-feature-branches-aim** — feature branch 생성/관리
 - **writing-documents-aim** — 문서 작성 (각 스킬에서 문서 작성 시 cross-reference)
 - **writing-skills-aim** — 스킬 작성/수정

@@ -113,3 +113,14 @@ After agents return:
 3. **Full test suite:** `dx make gtest`
 4. **Full build:** `dx make`
 5. **Spot check** — agents can make systematic errors
+
+## Integration
+
+**Alternative to:** subagent-driven-development-aim (독립 문제 병렬 처리 시)
+
+**Use case:** 디버깅/조사 병렬 처리. 구현 태스크 병렬 디스패치가 아님.
+
+**Pairs with:**
+- **test-driven-development-aim** — 각 에이전트 내에서 TDD
+- **systematic-debugging-aim** — 독립 실패 병렬 조사
+- **verification-before-completion-aim** — 에이전트 완료 후 통합 검증

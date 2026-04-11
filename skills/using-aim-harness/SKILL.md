@@ -66,7 +66,8 @@ digraph skill_flow {
 | New feature, fix, refactoring — design phase | **brainstorming-aim** |
 | Spec exists, need task decomposition | **writing-plans-aim** |
 | Plan exists, executing tasks sequentially | **executing-plans-aim** |
-| Independent tasks, parallel dispatch | **subagent-driven-development-aim** |
+| Plan exists, executing with fresh subagents per task | **subagent-driven-development-aim** |
+| Multiple independent problems, parallel dispatch | **dispatching-parallel-agents-aim** |
 | Multiple independent subagents at once | **dispatching-parallel-agents-aim** |
 | Implementing any function or fixing any bug | **test-driven-development-aim** |
 | Test fails, runtime error, bug investigation | **systematic-debugging-aim** |
@@ -97,8 +98,10 @@ issue-analysis-aim (optional entry)
                           └─→ [MR merged] → completing-patch-aim (패치 검증서)
 
 Independent:
+  issue-analysis-aim — issue analysis (chain entry or direct invoke)
   code-reviewer-aim — review others' MR (direct invoke)
   using-feature-branches-aim — branch management
+  writing-documents-aim — document writing (cross-referenced by other skills)
   writing-skills-aim — skill authoring
 ```
 

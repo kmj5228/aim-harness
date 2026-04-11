@@ -109,3 +109,13 @@ Actions speak. Just fix it.
 **Review feedback = suggestions to evaluate, not orders to follow.**
 
 Verify. Question. Then implement with TDD.
+
+## Integration
+
+**Called by:**
+- **requesting-code-review-aim** — 셀프 리뷰 후 피드백 처리
+- **code-reviewer-aim Phase H** — 타인 리뷰 반영 검증 시
+- GitLab MR 피드백 직접 수신
+
+**Uses:**
+- **test-driven-development-aim** — 로직 수정 시 TDD
