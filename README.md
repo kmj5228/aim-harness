@@ -96,9 +96,15 @@ flowchart TD
 
     subgraph TDD2 ["각 태스크 (서브에이전트)"]
         direction TB
-        G2["test-driven-development-aim\n(TDD)"] -->|실패| I2["systematic-debugging-aim\n(디버깅)"]
+        IMP["implementer 스폰"]
+        IMP --> G2["test-driven-development-aim\n(TDD)"]
+        G2 -->|실패| I2["systematic-debugging-aim\n(디버깅)"]
         I2 --> G2
         G2 -->|완료| J2["verification-before-completion-aim\n(검증)"]
+        J2 --> SR2["spec-reviewer 스폰"]
+        SR2 -->|PASS| CR2["code-quality-reviewer 스폰"]
+        SR2 -.->|FAIL| IMP
+        CR2 -.->|FAIL| IMP
     end
 
     TDD1 -->|전체 완료| K["finishing-a-development-branch-aim\n(push + MR 생성)"]
