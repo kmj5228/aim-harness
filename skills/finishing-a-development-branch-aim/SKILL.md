@@ -164,6 +164,9 @@ Invoke requesting-code-review-aim → code-reviewer-aim Phase A~E with `--auto`.
 - **subagent-driven-development-aim** — after all tasks complete
 - **executing-plans-aim** — after all tasks complete
 
+**Feeds into:**
+- **completing-patch-aim** — MR merge 후 IMS 패치 검증서 작성
+
 **Pairs with:**
 - **verification-before-completion-aim** — verify before finishing
 - **requesting-code-review-aim** — optional self-review (Option 4)

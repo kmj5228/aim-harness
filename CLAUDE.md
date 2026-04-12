@@ -34,12 +34,12 @@
 ## 워크플로우 체인
 
 ```
-issue-analysis-aim → brainstorming-aim → writing-plans-aim
+issue-analysis-aim (optional entry) → brainstorming-aim → writing-plans-aim
   → executing-plans-aim / subagent-driven-development-aim
     → test-driven-development-aim (각 태스크)
-  dispatching-parallel-agents-aim (독립 문제 병렬 디버깅/조사)
-    → systematic-debugging-aim (실패 시)
-    → verification-before-completion-aim (완료 시)
+      → systematic-debugging-aim (실패 시)
+    → verification-before-completion-aim (태스크 완료 시)
+    → [subagent-driven만: spec-reviewer → code-quality-reviewer, FAIL→implementer 재스폰]
   → finishing-a-development-branch-aim (push/MR)
     → requesting-code-review-aim (셀프 리뷰)
     → receiving-code-review-aim (피드백 수신)
@@ -47,7 +47,7 @@ issue-analysis-aim → brainstorming-aim → writing-plans-aim
 
 독립 스킬 (직접 호출):
   issue-analysis-aim (체인 진입점 겸 독립)
-  code-reviewer-aim (타인 MR 리뷰)
+  code-reviewer-aim (타인 MR 리뷰, Phase A~I)
   dispatching-parallel-agents-aim (독립 문제 병렬 디버깅/조사)
   using-feature-branches-aim (브랜치 관리)
   writing-documents-aim (문서 작성)

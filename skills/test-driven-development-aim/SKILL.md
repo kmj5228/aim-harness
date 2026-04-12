@@ -416,3 +416,11 @@ Otherwise -> not TDD
 ```
 
 No exceptions without user's explicit permission.
+
+## Integration
+
+**Called by:**
+- **executing-plans-aim** — 각 태스크 실행 시
+- **subagent-driven-development-aim** — implementer 서브에이전트 내부
+- **systematic-debugging-aim** Phase 4 — 수정 검증 테스트 작성 시
+- **receiving-code-review-aim** — 리뷰 피드백 기반 로직 수정 시

@@ -18,7 +18,7 @@ Agent tool (general-purpose):
     - 함수 파라미터는 줄바꿈 없이 한 줄로 작성 (ColumnLimit: 0이 기존 줄바꿈을 제거하지 않음)
     - `clang-format -i` on changed files before commit
     - Never commit to `rb_73` — feature branch only
-    - Commit message: `<type>: <Korean description>` via file (-F) for encoding safety
+    - Commit message: `<type> <Korean description>` (콜론 없음) via file (-F) for encoding safety
     - **새 파일 생성 시 copyright 헤더 필수** (push hook이 거부함):
       `.c`/`.h`: `/* Copyright (c) 2026 TmaxSoft Co., Ltd. ... */`
       `.cpp`: `// Copyright (c) 2026 TmaxSoft Co., Ltd. ...`

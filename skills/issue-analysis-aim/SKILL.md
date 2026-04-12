@@ -181,3 +181,11 @@ Save to `../agent/prompt/<topic>/analysis_report.md`:
 
 - **Problem:** "Bug" verdict when behavior actually matches spec
 - **Fix:** XSP 스펙을 항상 참조. "모호하지 않으니 불필요" 는 합리화
+
+## Integration
+
+**Called by:** 직접 호출 (체인 진입점)
+
+**Feeds into (verdict별):**
+- **brainstorming-aim** — Bug/기능 필요 시 (analysis_report.md 전달, 재수집 skip)
+- **writing-documents-aim** — IMS 답변/Jira feature request 초안 작성 시

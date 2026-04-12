@@ -157,3 +157,14 @@ Available in this directory:
 **Related skills:**
 - **test-driven-development-aim** — for creating failing test case (Phase 4)
 - **verification-before-completion-aim** — verify fix before claiming success
+
+## Integration
+
+**Called by:**
+- **executing-plans-aim** — 테스트 실패 시
+- **subagent-driven-development-aim** — implementer 서브에이전트 내부 실패 시
+- **dispatching-parallel-agents-aim** — 독립 문제 조사 시
+
+**Uses:**
+- **test-driven-development-aim** Phase 4 — 수정 검증 테스트 작성
+- **verification-before-completion-aim** — 수정 완료 전 검증

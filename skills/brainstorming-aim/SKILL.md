@@ -168,3 +168,12 @@ Wait for user approval. Only then invoke writing-plans-aim.
 - Re-gathering IMS/Jira info when analysis_report.md exists
 - Proposing only one approach without alternatives
 - Design doc with "TBD" sections
+
+## Integration
+
+**Called by:**
+- **issue-analysis-aim** — Bug/기능 필요 verdict 시 (analysis_report.md 전달)
+- 직접 호출 (사용자 진입점)
+
+**Feeds into:**
+- **writing-plans-aim** — 설계 승인 후 (terminal state)

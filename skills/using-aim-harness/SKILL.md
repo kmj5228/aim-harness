@@ -88,18 +88,24 @@ issue-analysis-aim (optional entry)
   └─→ brainstorming-aim
         └─→ writing-plans-aim
               └─→ executing-plans-aim / subagent-driven-development-aim
-                    ├─→ test-driven-development-aim (each task)
-                    ├─→ dispatching-parallel-agents-aim (parallel tasks)
-                    ├─→ systematic-debugging-aim (on failure)
-                    ├─→ verification-before-completion-aim (task done)
+                    ├─→ [per task]
+                    │     ├─→ test-driven-development-aim (TDD)
+                    │     ├─→ systematic-debugging-aim (on failure)
+                    │     └─→ verification-before-completion-aim (before done)
+                    ├─→ [subagent-driven only: 2-stage review]
+                    │     ├─→ spec-reviewer (spec compliance)
+                    │     │     └─→ FAIL: respawn implementer
+                    │     └─→ code-quality-reviewer (code quality)
+                    │           └─→ FAIL: respawn implementer
                     └─→ finishing-a-development-branch-aim (all done)
                           ├─→ requesting-code-review-aim (self-review)
                           ├─→ receiving-code-review-aim (feedback)
                           └─→ [MR merged] → completing-patch-aim (패치 검증서)
 
-Independent:
+Independent (direct invoke):
   issue-analysis-aim — issue analysis (chain entry or direct invoke)
-  code-reviewer-aim — review others' MR (direct invoke)
+  code-reviewer-aim — review others' MR (Phase A~I)
+  dispatching-parallel-agents-aim — independent problem parallel debugging/investigation
   using-feature-branches-aim — branch management
   writing-documents-aim — document writing (cross-referenced by other skills)
   writing-skills-aim — skill authoring

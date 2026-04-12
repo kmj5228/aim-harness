@@ -181,6 +181,9 @@ window.confirm = origConfirm;
 **Called by:**
 - **finishing-a-development-branch-aim** 이후 (MR merge 후)
 
+**Uses:**
+- **writing-documents-aim** — 공통 문서 작성 규칙 (독자/톤/두괄식)
+
 **Requires:**
 - IMS 로그인 상태 (비밀번호 입력은 사용자가 직접)
 - Chrome 브라우저 자동화 도구 (`mcp__claude-in-chrome__*`)

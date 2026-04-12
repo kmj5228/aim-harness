@@ -151,3 +151,12 @@ After saving the plan:
 
 **Subagent-Driven:** Use subagent-driven-development-aim
 **Inline:** Use executing-plans-aim
+
+## Integration
+
+**Called by:**
+- **brainstorming-aim** — 설계 승인 후
+
+**Feeds into (user selects):**
+- **subagent-driven-development-aim** (recommended) — fresh subagent per task
+- **executing-plans-aim** — inline execution

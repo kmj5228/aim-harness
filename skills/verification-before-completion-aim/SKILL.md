@@ -103,3 +103,12 @@ dx bash -c "cd /root/ofsrc/aim && ./script/measure_diff_cov.sh"
 Run the command. Read the output. THEN claim the result.
 
 This is non-negotiable.
+
+## Integration
+
+**Called by:**
+- **executing-plans-aim** — 태스크 완료 주장 전
+- **subagent-driven-development-aim** — implementer 서브에이전트 내부 완료 전
+- **systematic-debugging-aim** — 수정 완료 전
+- **finishing-a-development-branch-aim** — 브랜치 완료 전 gate
+- **dispatching-parallel-agents-aim** — 에이전트 완료 후 통합 검증

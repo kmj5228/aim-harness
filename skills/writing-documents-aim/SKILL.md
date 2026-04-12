@@ -158,3 +158,13 @@ Turn 3: 저장 함수 호출
 - **"작성해줘"를 듣고 저장까지 수행** — "작성"은 입력만, 저장은 별도 동사 필요
 - **입력과 저장을 같은 턴에서 수행** — 반드시 사용자 메시지를 거친 후 저장
 - 발신자/수신자를 임의로 설정
+
+## Integration
+
+**Called by:**
+- **issue-analysis-aim** — IMS 답변 초안, Jira feature request 작성 시
+- **completing-patch-aim** — 패치 검증서의 공통 작성 규칙 참조
+- **finishing-a-development-branch-aim** — MR description 작성 시 (gitlab-guide.md)
+- **code-reviewer-aim** Phase F — MR 코멘트 작성 시 (gitlab-guide.md)
+
+**Pattern:** 이 스킬은 문서 작성의 hub로, 다른 스킬에서 cross-reference되어 사용된다. 직접 호출도 가능.

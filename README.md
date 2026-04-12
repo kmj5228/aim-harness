@@ -138,6 +138,7 @@ flowchart TD
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
+- **issue-analysis-aim** — 이슈 분석 (체인 진입점 겸 독립)
 - **code-reviewer-aim** — 타인 MR 리뷰 (Phase A~I, 에이전트 5명 + 오케스트레이터)
 - **dispatching-parallel-agents-aim** — 독립 문제 병렬 디버깅/조사 (구현 병렬화 아님)
 - **using-feature-branches-aim** — feature branch 생성/관리
