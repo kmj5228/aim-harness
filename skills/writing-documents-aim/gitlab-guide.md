@@ -57,6 +57,23 @@ IMS#X:<X> X
  #OFV7-XXXX
 ```
 
+**복수 모듈인 경우** — `* module` / `* version` 블록을 모듈 개수만큼 분리하여 반복한다 (한 줄에 쉼표로 나열 금지):
+```
+IMS#352569:<feat> ACS 호환 프로시저 DCPRES 매크로 PF키 AID 정의 기능 개발
+
+    - assign.c ACS 차단 제거 후 DCPRES 엔트리 기반 AID 해석 추가
+    - ...
+
+    * module: libaimais
+    * version: 7.3.0()
+
+    * module: aimdcms
+    * version: 7.3.0()
+
+ #OFV7-6158
+```
+❌ 잘못된 예: `* module: libaimais, aimdcms`
+
 ### MR Title
 
 - 형식: `<type> Korean description` (콜론 없음)
