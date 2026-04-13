@@ -81,34 +81,41 @@ flowchart TD
     B --> C["writing-plans-aim\n(태스크 분해)"]
     C --> D{실행 방식 택1\n사용자 선택}
 
-    D -->|"순차 (태스크 1~2개)"| E["executing-plans-aim\n(순차 실행)"]
+    D -->|"순차 (태스크 1~2개)"| BR1["using-feature-branches-aim\n(Step 0: feature branch)"]
+    BR1 --> E["executing-plans-aim\n(순차 실행)"]
     E --> TDD1
 
-    D -->|"서브에이전트 (권장)"| F["subagent-driven-development-aim\n(서브에이전트 실행)"]
+    D -->|"서브에이전트 (권장)"| BR2["using-feature-branches-aim\n(Step 0: feature branch)"]
+    BR2 --> F["subagent-driven-development-aim\n(서브에이전트 실행)"]
     F --> TDD2
 
     subgraph TDD1 ["각 태스크 (순차)"]
         direction TB
-        G1["test-driven-development-aim\n(TDD)"] -->|실패| I1["systematic-debugging-aim\n(디버깅)"]
-        I1 --> G1
-        G1 -->|완료| J1["verification-before-completion-aim\n(검증)"]
+        G1["test-driven-development-aim\n(TDD)"] -->|완료| J1["verification-before-completion-aim\n(태스크 완료 gate)"]
+        J1 --> CM1["Commit"]
+        G1 -.->|실패| I1["systematic-debugging-aim\n(4단계 디버깅)"]
+        I1 -.-> VD1["verification-before-completion-aim\n(fix 검증 gate)"]
+        VD1 -.->|재개| G1
     end
 
-    subgraph TDD2 ["각 태스크 (서브에이전트)"]
+    subgraph TDD2 ["각 태스크 (서브에이전트)&nbsp;&nbsp;※ 리뷰 FAIL 시 implementer 재스폰"]
         direction TB
-        IMP["implementer 스폰"]
-        IMP --> G2["test-driven-development-aim\n(TDD)"]
-        G2 -->|실패| I2["systematic-debugging-aim\n(디버깅)"]
-        I2 --> G2
-        G2 -->|완료| J2["verification-before-completion-aim\n(검증)"]
-        J2 --> SR2["spec-reviewer 스폰"]
+        IMP["implementer 스폰"] --> G2["test-driven-development-aim\n(TDD)"]
+        G2 -->|완료| J2["verification-before-completion-aim\n(태스크 완료 gate)"]
+        J2 --> CM2["Commit\n(implementer 내부)"]
+        CM2 --> SR2["spec-reviewer 스폰"]
         SR2 -->|PASS| CR2["code-quality-reviewer 스폰"]
-        SR2 -.->|FAIL| IMP
-        CR2 -.->|FAIL| IMP
+        G2 -.->|실패| I2["systematic-debugging-aim\n(4단계 디버깅)"]
+        I2 -.-> VD2["verification-before-completion-aim\n(fix 검증 gate)"]
+        VD2 -.->|재개| G2
+        SR2 -.->|FAIL ↺| RSP2([재스폰])
+        CR2 -.->|FAIL ↺| RSP2
     end
 
-    TDD1 -->|전체 완료| K["finishing-a-development-branch-aim\n(push + MR 생성)"]
-    TDD2 -->|전체 완료| K
+    TDD1 -->|전체 완료| VF["verification-before-completion-aim\n(최종 gate)"]
+    TDD2 -->|전체 완료| VF
+    VF --> COV["Coverage gate\n(measure_diff_cov.sh ≥ 80%)"]
+    COV --> K["finishing-a-development-branch-aim\n(push + MR 생성)"]
     K -->|셀프 리뷰| L["requesting-code-review-aim\n(셀프 리뷰 요청)"]
     L --> M["code-reviewer-aim\n(셀프 리뷰, Phase A~E --auto)"]
     K -->|셀프 리뷰 건너뜀| MR[MR 리뷰/승인]
@@ -120,9 +127,15 @@ flowchart TD
     A -->|"정상/설정오류"| O["writing-documents-aim\n(IMS 답변 등록)"]
     A -->|"미지원"| Q["writing-documents-aim\n(Jira feature request)"]
 
+    WD["writing-documents-aim\n(문서 작성 hub)"]
+    K -.->|"MR description"| WD
+    M -.->|"MR 코멘트"| WD
+    N -.->|"검증서 공통 규칙"| WD
+
     style START fill:transparent,stroke:transparent
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
     style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
+    style WD fill:#e0e0e0,color:#000,stroke-dasharray: 3 3
 
     %% 시작 (파랑)
     style A fill:#bbdefb,color:#000
@@ -135,6 +148,14 @@ flowchart TD
 
     %% 분기 (노랑) — 에이전트/사용자 결정
     style D fill:#fff9c4,color:#000
+
+    %% verification gate (연한 초록)
+    style VD1 fill:#dcedc8,color:#000
+    style VD2 fill:#dcedc8,color:#000
+    style J1 fill:#dcedc8,color:#000
+    style J2 fill:#dcedc8,color:#000
+    style VF fill:#dcedc8,color:#000
+    style COV fill:#dcedc8,color:#000
 ```
 
 **독립 스킬** (체인 외, 직접 호출):
