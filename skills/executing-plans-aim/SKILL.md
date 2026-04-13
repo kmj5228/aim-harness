@@ -33,12 +33,12 @@ If on `rb_73`, STOP. Create feature branch first (see using-feature-branches-aim
 For each task:
 
 1. **Mark as in_progress** (TaskUpdate)
-2. **Follow TDD cycle exactly:**
-   - RED: Write failing gtest → `dx make gtest` (verify fails correctly)
-   - GREEN: Write minimal C code → `dx make gtest` (verify passes)
-   - REFACTOR: Clean up → `dx make gtest` (still green)
-3. **Phase gate:**
-   - `dx make gtest` — all tests pass
+2. **Follow TDD cycle exactly** (빌드 스코프는 test-driven-development-aim 가이드에 따라 해당 모듈 테스트만 실행):
+   - RED: Write failing gtest → 해당 테스트 바이너리만 빌드/실행 (verify fails correctly)
+   - GREEN: Write minimal C code → 해당 모듈 테스트만 빌드/실행 (verify passes)
+   - REFACTOR: Clean up → 해당 모듈 테스트 재실행 (still green)
+3. **Phase gate (태스크 단위):**
+   - 해당 모듈 gtest 통과 — 전체 `dx make gtest` 금지 (최종 gate에서 1회)
    - `dx make` — production build clean
 4. **Commit:**
    ```bash
@@ -53,14 +53,15 @@ For each task:
 
 After all tasks complete:
 
-1. **Verify everything:**
+1. **Verify everything** (전체 회귀는 여기서 1회):
    ```bash
-   dx make gtest    # all tests pass
+   dx tmdown -y     # Text file busy 방지 (필수)
+   dx make gtest    # 전체 회귀 테스트
    dx make          # clean build
    ```
 2. **Check coverage:**
    ```bash
-   dx bash -c "cd /root/ofsrc/aim && ./script/measure_diff_cov.sh"
+   dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh"
    ```
    Must be >= 80% on added code.
 

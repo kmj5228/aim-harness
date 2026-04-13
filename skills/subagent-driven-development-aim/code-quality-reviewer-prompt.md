@@ -35,7 +35,8 @@ Agent tool (general-purpose):
     - No buffer overflows or unsafe string operations?
 
     **AIM Conventions:**
-    - Header organization: include/{MODULE}.h, {MODULE}_inner.h, {SOURCE}.h
+    - Header organization: `include/{MODULE}.h`, `{MODULE}_inner.h`, `{basename}.h` (source-local, 확장자 `.c` 제외)
+    - **신규 생성 파일 네이밍 검증 (필수):** 신규 `.c`/`.h`/`.cpp`가 있으면 해당 디렉터리의 기존 파일 패턴을 `ls <dir>`로 확인. 벗어난 이름(예: `.c.h` 같은 이중 확장자, 주변 파일과 다른 prefix/suffix)이면 **FAIL 처리**. plan이 그렇게 지시했더라도 convention 우선.
     - Static functions promoted correctly for testing?
     - ADT used where appropriate?
     - Copyright header present in new files?

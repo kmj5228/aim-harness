@@ -21,7 +21,8 @@ If the spec covers multiple independent subsystems, suggest breaking into separa
 
 Before defining tasks, map out which files will be created or modified:
 
-- Follow AIM header conventions: `include/{MODULE}.h` (external), `{MODULE}_inner.h` (internal), `{SOURCE}.h` (source-local)
+- Follow AIM header conventions: `include/{MODULE}.h` (external), `{MODULE}_inner.h` (internal), `{basename}.h` (source-local, 확장자 `.c` 제외)
+- **신규 파일 네이밍은 동일 디렉터리의 기존 파일 패턴을 먼저 확인한다** (`ls <target_dir>`). 규칙과 기존 관행이 충돌하면 기존 관행을 우선. 예: `src/server/dcms/`는 `{basename}.h` 형식 (`ld.h`, `msgq.h`) → 신규 `assign.c`의 헤더는 `assign.h` (❌ `assign.c.h`).
 - Each file should have one clear responsibility
 - In existing AIM modules, follow established patterns
 - Note errcode/msgcode files that need updates
@@ -107,6 +108,20 @@ dx git commit -F /tmp/commit_msg.txt
 # commit_msg.txt: "<feat> module new_func 추가\n\n    - 변경사항\n\n #OFV7-XXXX"
 ```
 ````
+
+## Plan Code는 "스케치"다 — Implementer가 실제 코드 기준으로 교정한다
+
+Plan에 적는 함수 시그니처, 에러 상수, 헤더 가드는 **의도를 전달하는 스케치**다. 정확한 값을 brainstorming 단계에서 모두 확인하려면 시간이 폭증한다.
+
+**원칙:**
+- Implementer(subagent 또는 inline executor)는 plan 코드와 실제 소스가 충돌하면 **실제 소스를 기준으로 교정할 의무**가 있다.
+- 교정 대상 예: 함수 시그니처 (`int` vs `uint32_t(*)(...)`), 에러 상수 (`-1` vs `AIMCOM_ERR_NOTFND`), `extern "C"` 가드 누락, `#include` 의존성.
+- Plan 작성자는 의도(어떤 동작을 구현할 것인가)를 명확히 하는 것에 집중한다.
+
+**단, 경로와 스크립트는 정확해야 한다:**
+- 파일 경로, 스크립트 경로, 바이너리 이름은 plan 작성 시 **실제 존재하는지 확인**하고 기재한다.
+- 예: 커버리지 스크립트는 `./script/measure_diff_cov.sh`가 아니라 `.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh`이다.
+- 추측으로 쓰지 말 것. 찾기 어려우면 메모리의 `reference_*`를 확인한다.
 
 ## No Placeholders
 

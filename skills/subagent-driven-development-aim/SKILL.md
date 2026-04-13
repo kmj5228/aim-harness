@@ -45,12 +45,28 @@ For each task:
    - BLOCKED → escalate (more context, capable model, or break down task)
 3. **Spec compliance review** (./spec-reviewer-prompt.md)
    - Verify implementer built what was specified (nothing more, nothing less)
-   - If issues → implementer fixes → re-review
+   - If issues → re-dispatch implementer (fix + **반드시 `dx make gtest` + `dx make` 재실행**) → re-review
 4. **Code quality review** (./code-quality-reviewer-prompt.md)
    - Only after spec compliance passes
    - Check AIM conventions, test quality, maintainability
-   - If issues → implementer fixes → re-review
+   - If issues → re-dispatch implementer (fix + **반드시 `dx make gtest` + `dx make` 재실행**) → re-review
 5. **Mark task complete**
+
+**재스폰 시 프롬프트 필수 항목** (리뷰 이슈 수정 시):
+- 수정해야 할 이슈 목록 (리뷰어 리포트 발췌)
+- "수정 후 반드시 **해당 모듈 테스트 + `dx make`** 재실행하여 검증 gate 통과 확인" (전체 `dx make gtest`는 Step 3 최종 gate에서만 수행)
+- 검증 실패 시 BLOCKED 리포트 → 재리뷰 금지
+
+**빌드 스코프 원칙 (시간 절약):**
+- 태스크 중간(implementer 내부): 해당 모듈 테스트 바이너리만 빌드/실행
+- 전체 `dx make gtest`(전 모듈 회귀)는 Step 3 최종 gate에서 **1회만** 수행
+- 실측: 태스크당 빌드 4회(RED/GREEN/make/전체 gtest)가 누적되면 단일 태스크가 20분 이상 소요됨
+
+**메인 에이전트 직접 수정 금지 (Trivial Fix 예외 있음):**
+- 리뷰 FAIL 시 **원칙적으로 implementer 재스폰**. 메인이 직접 수정하면 re-dispatch 강제 규칙을 우회하게 된다.
+- **Trivial Fix 예외**: 1~2줄 상수/에러코드 교체 같은 순수 기계적 수정은 메인이 처리 가능. 단 수정 후 반드시 `dx make` + 해당 모듈 테스트 재실행.
+- 판단 기준: "수정에 판단이 필요한가?" → YES면 재스폰. "기계적 치환인가?" → OK.
+- 애매하면 재스폰 쪽으로.
 
 ### Step 3: Finish
 
@@ -96,6 +112,8 @@ After all tasks:
 - Ignore subagent questions
 - Start code quality review before spec compliance passes
 - Move to next task with open review issues
+- **리뷰 FAIL → 메인이 직접 수정** (원칙: implementer 재스폰. 예외는 trivial fix 1~2줄 기계적 치환)
+- **태스크 중간에 전체 `dx make gtest` 실행** (해당 모듈 테스트만. 전체는 최종 1회)
 
 ## Integration
 

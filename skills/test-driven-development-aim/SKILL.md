@@ -104,8 +104,14 @@ Vague name, doesn't verify actual retry count
 
 **MANDATORY. Never skip.**
 
+**빌드 스코프 최소화 (시간 절약):** RED 단계에서는 **방금 추가한 테스트 바이너리만** 빌드/실행한다. 전체 `dx make gtest`는 금지 — 불필요한 전체 재컴파일로 빌드 4회가 누적되어 태스크당 20분 이상 낭비된다.
+
 ```bash
-dx make gtest
+# gtest 실행 전 서버 종료 (Text file busy 방지)
+dx tmdown -y
+
+# 방금 추가한 테스트 바이너리만 빌드/실행
+dx bash -c "cd /root/ofsrc/aim/test/unit/gtest/src/<zone>/<module> && make -f Makefile_<target> && ./gtest_<module>_<target>"
 ```
 
 Confirm:
@@ -152,13 +158,17 @@ Don't add features, refactor other code, or "improve" beyond the test.
 
 **MANDATORY.**
 
+**빌드 스코프 최소화:** 태스크 중간에는 **수정한 모듈의 테스트만** 실행한다. 전체 `dx make gtest`(전 모듈 회귀)는 **모든 태스크 완료 후 1회만** 수행 (verification-before-completion-aim에서 처리).
+
 ```bash
-dx make gtest
+# 서버 종료 후 해당 모듈 테스트만 재빌드/실행
+dx tmdown -y
+dx bash -c "cd /root/ofsrc/aim/test/unit/gtest/src/<zone>/<module> && make && ./gtest_<module>_<target>"
 ```
 
 Confirm:
 - Test passes
-- Other tests still pass
+- Modified module's other tests still pass
 - No warnings or errors in output
 
 Then verify production build:
@@ -251,10 +261,15 @@ src/lib/acp/acp_parser.c
 
 커버리지 측정 시 **반드시 `make clean && make gtest`** 실행. `make gtest-run`만 하면 소스 `.o`가 커버리지 플래그 없이 빌드된 캐시가 남아 `.gcda`가 생성되지 않음 (커버리지 0%).
 
+**gtest 실행 전 `dx tmdown -y` 필수** — 실행 중인 서버 바이너리가 `Text file busy`를 유발하여 `cp aimdcms` 등에서 실패한다. 개별 `tmdown -s <server>`는 의존 서버(aimidcm 등)가 많아 불완전하므로 전체 종료를 사용한다.
+
 ```bash
+dx tmdown -y
 dx bash -c "cd /root/ofsrc/aim && make clean && make gtest"
 dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh"
 ```
+
+**미커버 라인 식별:** `gcov`를 직접 `grep`/`awk`로 파싱하지 말 것. gcov 출력이 메타데이터 5줄만 나오는 재현성 있는 현상이 관찰됨. `measure_diff_cov.sh` 출력 + `dx git diff --unified=0 <base>..HEAD` 조합으로 추가 라인을 직접 확인한다.
 
 mock 바이너리가 있는 경우 빌드하지 않고 **실행만** 추가 (빌드하면 gcda 리셋):
 ```bash

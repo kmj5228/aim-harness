@@ -118,7 +118,35 @@ aim_msg_header_t hdr = {
 };
 ```
 
-## Anti-Pattern 5: Static Function Not Promoted
+## Anti-Pattern 5: C struct를 C++ gtest에서 `= {0}`로 초기화
+
+**The violation:**
+```cpp
+// BAD: C++에서 int→enum 암시적 변환 에러
+TEST(DcmsAssign, CachedHit) {
+    dcms_assign_t cached = {0};  // enum 필드 있으면 컴파일 에러
+    cached.state = DCMS_ASSIGN_CACHED;
+    ...
+}
+```
+
+**Why this is wrong:**
+- C에서는 `{0}`이 모든 필드를 0으로 초기화하는 관용구
+- C++에서는 enum 필드에 `int 0`을 대입하는 암시적 변환을 거부 (strict)
+- `dcms_assign_t`처럼 enum 멤버가 있으면 컴파일 에러
+
+**The fix:**
+```cpp
+// GOOD: memset으로 raw zero-fill
+dcms_assign_t cached;
+memset(&cached, 0, sizeof(cached));
+cached.state = DCMS_ASSIGN_CACHED;
+
+// 또는 C++11 value-initialization
+dcms_assign_t cached{};
+```
+
+## Anti-Pattern 6: Static Function Not Promoted
 
 **The violation:**
 ```c
@@ -143,6 +171,7 @@ int _parse_header(const char *buf, aim_header_t *hdr);
 | Test-only functions in production | Use test fixtures or public API |
 | Stub without understanding | Understand dependency chain first, stub minimally |
 | Incomplete test data | Initialize all struct fields matching real data |
+| C struct `= {0}` in C++ gtest | `memset(&v, 0, sizeof(v))` or `= {}` |
 | Static can't be tested | Promote to header per AGENTS.md convention |
 
 ## Red Flags
