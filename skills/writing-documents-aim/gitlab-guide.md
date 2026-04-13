@@ -25,8 +25,18 @@ MR description은 **finishing-a-development-branch-aim** 스킬이 담당한다.
 
 기존:
 - `- [ ] 기존 unit test는 성공했는가?`
-- `== Global Coverage (ALL) ==` 블록 복사
-- `<details><summary>상세보기</summary>`: GoogleTest Summary + Module Summary + Global Coverage 전체 복사
+- `== Global Coverage (ALL) ==` 블록 복사 (SCOPE 표 헤더/구분선/`ALL(src)` 행/`GLOBAL_COVERAGE_RESULT` 라인 모두 포함)
+- `<details><summary>상세보기</summary>` 안에는 `dx make gtest` stdout을 **있는 그대로 verbatim 붙여넣는다**. 요약/필터링/재구성 금지. 반드시 아래 섹션이 **모두** 포함되어야 한다:
+  - `== GoogleTest Summary ==` — `BIN_DIR`, `REPORT_DIR`, `XML_DIR`, `LOG_DIR`, `AIM_ROOT`, `MODULELIST_FILE` 경로 라인 포함 + **`BINARY` 전체 표** (개별 바이너리 수십 행, 0개 테스트 행도 그대로) + `RESULT`/`TOTAL_TESTS`/`TOTAL_FAIL`/`TOTAL_ERROR`/`FAILED_BINARIES` 요약
+  - `== Module Summary (official modules only) ==` — **ModuleList 전체 모듈** (테스트 0개 `N/A` 행도 그대로 유지, 삭제 금지) + `COVERAGE_RESULT` + `MIN_LINE` 라인
+  - `== Unmatched module aliases (need hardcoding) ==` — 이 섹션이 출력되면 통째로 포함 (나중에 모듈 별칭 hardcoding 대상 추적용, 절대 생략 금지)
+  - `== Global Coverage (ALL) ==` — `GLOBAL_COV_FILTER` 경로 포함
+
+**적신호:**
+- `<details>` 안이 `ALL(src)` 한 줄만 있거나, BINARY 표 없이 요약만 있음 → **요약본을 붙여넣은 것**. stdout 원문으로 교체
+- `N/A` 행을 제거하여 "실제 실행된 모듈만" 남긴 경우 → 복원
+- `Unmatched module aliases` 섹션이 출력됐는데 빠진 경우 → 추가
+- `BIN_DIR=` 같은 경로 헤더가 없음 → stdout 맨 윗부분을 자른 것. 다시 전체 복사
 
 **`## MR Check List`** — [양식 링크](https://tmaxsoft.atlassian.net/l/cp/oRSZFaP2)
 
