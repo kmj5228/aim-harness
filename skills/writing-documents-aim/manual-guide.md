@@ -363,19 +363,48 @@ IMS#<num1>, IMS#<num2>, <설명>    # 여러 IMS 묶기도 함
 
 MR description 맨 아래에 HTML 주석으로 삽입. finishing-branch가 쓰고, completing-patch가 읽는다.
 
+**기본 형식 (IMS 단위)**:
 ```html
-<!-- aim-harness:manual-check status=pending-merge checked=2026-04-15 -->
-<!-- aim-harness:manual-check status=done checked=2026-04-15 reason=not-needed -->
+<!-- aim-harness:manual-check ims=347742 status=pending-merge checked=2026-04-15 -->
+<!-- aim-harness:manual-check ims=305201 status=done checked=2026-04-15 reason=not-needed -->
 ```
 
-| 필드 | 값 | 설명 |
-|------|------|------|
-| status | `pending-merge` | 매뉴얼 추가 필요 + merge 후 작성 (completing-patch Step 6에서 실행) |
-| status | `done` | 이 MR에 대한 매뉴얼 판단 종료 (불필요/이미반영/지금작성완료/사용자skip) |
-| checked | ISO date | 판단 수행일 |
-| reason | 선택 | `done` 상태일 때 구체 사유 (`not-needed`, `already-reflected`, `written-now`, `user-skip`) |
+**필드**:
 
-**marker 없음**: 판단 자체 생략된 상태. completing-patch가 진입 시 지금 판단.
+| 필드 | 필수 | 값 | 설명 |
+|------|:---:|------|------|
+| `ims` | 권장 | 번호 | IMS 번호 (주 식별자) |
+| `jira` | 선택 | `OFV7-<num>` | Jira 키 (IMS 없으면 필수, 둘 다 있어도 OK) |
+| `status` | 필수 | `pending-merge` / `done` | 상태 |
+| `checked` | 필수 | ISO date | 판단 수행일 |
+| `reason` | 선택 | `not-needed` / `already-reflected` / `written-now` / `user-skip` | `done` 상태일 때 구체 사유 |
+
+**상태 값**:
+- `pending-merge`: 매뉴얼 추가 필요 + merge 후 작성 (completing-patch Step 6에서 실행)
+- `done`: 이 IMS에 대한 매뉴얼 판단 종료 (불필요/이미반영/지금작성완료/사용자skip)
+
+**복수 IMS가 한 MR에 묶인 경우**:
+각 IMS별로 marker 1개씩 삽입. finishing-branch는 MR에 포함된 모든 IMS를 판단하고 각각 기록. completing-patch는 처리 대상 IMS에 해당하는 marker만 조회.
+
+```html
+<!-- aim-harness:manual-check ims=347742 status=done reason=not-needed -->
+<!-- aim-harness:manual-check ims=305201 status=pending-merge -->
+<!-- aim-harness:manual-check ims=352569 status=done reason=written-now -->
+```
+
+**IMS 없이 Jira만 있는 commit** (aim repo 관례 혼재 — `fa468669 [#OFV7-1596]` 같은 경우):
+```html
+<!-- aim-harness:manual-check jira=OFV7-1596 status=pending-merge checked=2026-04-15 -->
+```
+
+**marker 조회 규칙 (completing-patch Step 0)**:
+1. 처리 대상 IMS 번호로 `ims=<num>` marker 검색
+2. 없으면 연결 Jira 키로 `jira=<key>` marker 검색
+3. 둘 다 없으면 **marker 없음** 상태 → Step 1부터 지금 판단
+4. 여러 marker가 매칭되면 **가장 최근** `checked` 값 사용 (Update MR 시 갱신 고려)
+
+**id 필드 없는 marker (하위 호환)**:
+단일 IMS MR에서만 사용. 여러 IMS + id 없는 marker는 모호하므로 Red Flag → 각 IMS별로 분리 재작성.
 
 ### Step 1 결과 → marker 매핑
 

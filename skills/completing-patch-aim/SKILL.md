@@ -34,7 +34,11 @@ After MR merge, write the patch verification document in IMS for QA review.
 
 completing-patch 진입 시 가장 먼저 수행한다. 매뉴얼 작업 진입점이 `finishing-a-development-branch-aim`과 이 스킬 둘이라서 중복 실행을 방지하기 위한 상태 기반 분기이다.
 
-### 1. MR description에서 marker 조회
+### 1. 처리 대상 IMS 식별
+
+completing-patch는 IMS 패치 검증서 작성이 목적이므로 **처리 대상 IMS 번호**가 입력으로 주어진다. 한 MR에 여러 IMS가 묶여 있어도 현재 처리 중인 IMS 1건에 대한 marker만 조회한다.
+
+### 2. MR description에서 marker 조회
 
 ```bash
 curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
@@ -42,19 +46,24 @@ curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
   | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('description',''))"
 ```
 
-description에서 `<!-- aim-harness:manual-check status=... -->` 패턴을 찾는다.
+description에서 **처리 대상 IMS에 해당하는 marker**를 검색한다 (regex 또는 문자열 검색):
 
-### 2. 상태별 분기 (Step 6에서 실행)
+1. `<!-- aim-harness:manual-check ims=<IMS번호> ... -->` 매칭 우선
+2. 없으면 연결된 Jira 키로 `<!-- aim-harness:manual-check jira=OFV7-<num> ... -->` 매칭
+3. 여러 marker가 매칭되면 `checked` 필드가 **가장 최근**인 것 사용 (Update MR 재판단 고려)
+4. id 필드 없는 marker (`<!-- aim-harness:manual-check status=... -->`)는 **단일 IMS MR**에서만 유효. 복수 IMS가 묶인 MR에서 id 없는 marker를 만나면 **Red Flag**로 사용자에게 보고 (각 IMS별 분리 재작성 요청).
+
+### 3. 상태별 분기 (Step 6에서 실행)
 
 | Marker 상태 | 의미 | 동작 |
 |------------|------|------|
-| **marker 없음** | finishing-branch에서 매뉴얼 판단이 생략됨 (예: Option 3 Keep as-is 이후 MR 생성이 별도 경로로 이뤄진 경우) | **Step 6에서 manual-guide Step 1부터 실행** (지금 판단) |
-| `status=pending-merge` | finishing-branch에서 "필요 + MR merge 후 진행" 결정 완료 | **Step 6에서 manual-guide Step 2~8 직행** (판단 건너뛰고 작성) |
+| **대상 IMS marker 없음** | 이 IMS에 대해 매뉴얼 판단이 생략됨 | **Step 6에서 manual-guide Step 1부터 실행** (지금 판단) |
+| `status=pending-merge` | "필요 + MR merge 후 진행" 결정 완료 | **Step 6에서 manual-guide Step 2~8 직행** (판단 건너뛰고 작성) |
 | `status=done` | 이미 처리 완료 (불필요/이미반영/지금작성완료/사용자skip) | Step 6 매뉴얼 작업 skip |
 
 **중요**: 매뉴얼 작업은 패치 검증서(IMS) 작성과 **독립**이다. Step 1~5(패치 검증서)와 Step 6(매뉴얼)은 병렬 진행 가능. 둘 다 사용자 검토/승인이 필요하므로 순서는 에이전트 판단으로 결정.
 
-### 3. 상태 저장 후 본 작업 진입
+### 4. 상태 저장 후 본 작업 진입
 
 Step 0 결과(`none` / `pending-merge` / `done`)를 기억한 후 Step 1(정보 수집)부터 시작한다.
 
