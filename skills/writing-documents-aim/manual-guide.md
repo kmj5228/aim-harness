@@ -62,6 +62,16 @@ Jira description은 **구현자가 작성**한 것이고 최종 코드와 다를
 
 트리거 시점에 이 건이 실제로 매뉴얼 추가가 필요한지 먼저 판단한다. **이 단계를 건너뛰고 작성 단계로 진입 금지**.
 
+**사전 체크 (필수)**: 판단 전에 **MANUAL repo에서 기존 작성 여부부터 확인**한다.
+
+```bash
+cd /Users/mjkang/company/MANUAL/openFrame_aim
+git log --all --grep=<IMS번호> --oneline
+git log --all --grep=<OFV7-num> --oneline
+```
+
+둘 중 하나라도 hit하면 **이미 반영된 케이스**. 트리거가 재진입일 수 있다.
+
 **추가 필요 기준** (사용자 노출 변화가 있는 경우):
 - CLI 툴의 사용법/옵션 신규·변경
 - 유틸 바이너리의 사용법 변경
@@ -79,9 +89,10 @@ Jira description은 **구현자가 작성**한 것이고 최종 코드와 다를
 - 빌드 시스템 변경
 - 내부 모듈 간 인터페이스 변경
 
-**판단 결과 3가지**:
+**판단 결과 4가지**:
 - **추가 필요** → Step 2~8 진행
 - **추가 불필요** → 사용자에게 근거 보고 후 종료. 예: "이 MR은 내부 리팩토링으로 사용자 노출 변화가 없어 매뉴얼 추가 불필요"
+- **이미 반영됨** → 사전 체크에서 MANUAL repo에 기존 commit 발견. 사용자에게 commit SHA + 반영 내용 요약 보고 후 **재작성/보완 필요 여부 질의**. 임의로 재작성 진입 금지. 사용자가 "보완 필요"라고 하면 Step 2~8 진행 시 기존 내용과의 delta만 추가
 - **애매** → 사용자 질의. 판단 근거가 부족하면 "그대로 진행"이 아니라 **질의**
 
 ### Step 2: Jira 키 조회
@@ -98,12 +109,18 @@ curl -u <user>:<token> "http://tmaxsoft.atlassian.net/rest/api/2/issue/OFV7-<num
 
 두 가지 방법을 **모두** 사용한다. 한 쪽에만 의존 금지.
 
-**방법 1: git log**
+**방법 1: git log (IMS 번호 + Jira 키 둘 다 필수)**
 ```bash
 dx git log --all --grep=<IMS번호> --oneline
 dx git log --all --grep=<OFV7-num> --oneline
 ```
-**모든 결과를 본다**. 본기능 커밋 + 후속 수정 커밋을 전수 확인.
+
+**두 grep을 모두 실행하고 합집합을 본다**. 한쪽만 돌리고 0건이면 포기 금지. aim repo commit 관례가 혼재되어 있다:
+- IMS 번호만 기록: `IMS#347742, ...` (MANUAL repo 관례에 가까움)
+- Jira 키만 기록: `fa468669 [#OFV7-1596] INC기능 지원` (305201 실제 사례)
+- 둘 다 기록: `3cb581f2 IMS#310719:<feat> 7.1 to 7.3` + 본문에 Jira 키
+
+한쪽 grep이 0건이어도 반대쪽에 본기능이 있을 수 있다. **본기능 커밋 + 후속 수정 커밋을 전수 확인**.
 
 **방법 2: GitLab MR 조회**
 ```bash
@@ -354,6 +371,7 @@ IMS#<num1>, IMS#<num2>, <설명>    # 여러 IMS 묶기도 함
 |------|---------------|------|----------|
 | 2026-04 | IMS 347742 / OFV7-1641 | 단일파일 (tool-reference) | 후속 커밋(`54abeb02`)의 char-set 변경을 놓칠 뻔. 경험적 검증 + `git log --all --grep` 전수 확인의 근거. `print_usage`에서 DCMS 의도적 제외 — 사용자 계약 = print_usage |
 | 2026-04 | IMS 305201 / OFV7-1596 | 다중파일 (configuration + resource) | "쓰지 않을 파일" 명시 판단의 근거. 가독성 편집 후 재검증 누락 → "manual's exact text == verified text" 불변식 |
+| 2026-04-15 | 자가 진화 첫 실증 | meta | Skill Gap Reporting 메커니즘(using-aim-harness) 도입 직후, GREEN 검증 에이전트가 manual-guide 자체에서 2건 gap 자발 보고 → 반영: Step 1 "이미 반영됨" 4번째 분기 + 사전 체크, Step 3 IMS/Jira 이중 grep 합집합 규칙 |
 
 **누적 반영 방법**:
 1. 실전 케이스마다 위 표에 1줄 append
