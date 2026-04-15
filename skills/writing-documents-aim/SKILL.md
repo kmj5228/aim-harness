@@ -82,6 +82,7 @@ Turn 3: 저장 함수 호출
 | GitLab | `gitlab-guide.md` | MR description (default.md), 코멘트 |
 | Mail | `mail-guide.md` | 제목/본문/서명, 발신자 규칙 |
 | Markdown | `markdown-guide.md` | plan/report/분석 문서 |
+| Manual | `manual-guide.md` | AIM 제품 매뉴얼 (Antora/AsciiDoc, 경험적 검증 필수, 8단계 워크플로우) |
 
 ### Step 4: 사용자 검토
 
