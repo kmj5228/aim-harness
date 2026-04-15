@@ -22,11 +22,41 @@ After MR merge, write the patch verification document in IMS for QA review.
 
 ## Checklist
 
+0. **매뉴얼 필요성 상태 확인** (진입 직후, 필수)
 1. **정보 수집** — MR 변경 사항, 커밋 내역, 테스트 결과 확인
 2. **초안 작성** — 5개 섹션을 텍스트 파일로 작성
 3. **사용자 검토** — 초안 확인 후 승인
 4. **HTML 변환** — X-Free Editor 호환 HTML로 변환
 5. **IMS 등록** — 브라우저 자동화로 IMS 에디터에 반영
+6. **매뉴얼 후속 작업 실행** — 상태(0번에서 확인)에 따라 분기
+
+## Step 0: 매뉴얼 필요성 상태 확인
+
+completing-patch 진입 시 가장 먼저 수행한다. 매뉴얼 작업 진입점이 `finishing-a-development-branch-aim`과 이 스킬 둘이라서 중복 실행을 방지하기 위한 상태 기반 분기이다.
+
+### 1. MR description에서 marker 조회
+
+```bash
+curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  "http://192.168.51.106/api/v4/projects/211/merge_requests/<MR_IID>" \
+  | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('description',''))"
+```
+
+description에서 `<!-- aim-harness:manual-check status=... -->` 패턴을 찾는다.
+
+### 2. 상태별 분기 (Step 6에서 실행)
+
+| Marker 상태 | 의미 | 동작 |
+|------------|------|------|
+| **marker 없음** | finishing-branch에서 매뉴얼 판단이 생략됨 (예: Option 3 Keep as-is 이후 MR 생성이 별도 경로로 이뤄진 경우) | **Step 6에서 manual-guide Step 1부터 실행** (지금 판단) |
+| `status=pending-merge` | finishing-branch에서 "필요 + MR merge 후 진행" 결정 완료 | **Step 6에서 manual-guide Step 2~8 직행** (판단 건너뛰고 작성) |
+| `status=done` | 이미 처리 완료 (불필요/이미반영/지금작성완료/사용자skip) | Step 6 매뉴얼 작업 skip |
+
+**중요**: 매뉴얼 작업은 패치 검증서(IMS) 작성과 **독립**이다. Step 1~5(패치 검증서)와 Step 6(매뉴얼)은 병렬 진행 가능. 둘 다 사용자 검토/승인이 필요하므로 순서는 에이전트 판단으로 결정.
+
+### 3. 상태 저장 후 본 작업 진입
+
+Step 0 결과(`none` / `pending-merge` / `done`)를 기억한 후 Step 1(정보 수집)부터 시작한다.
 
 ## 5개 섹션
 
@@ -168,6 +198,34 @@ window.confirm = origConfirm;
 
 저장 후 페이지 새로고침 → iframe ID 변경됨.
 
+## Step 6: 매뉴얼 후속 작업
+
+Step 0에서 저장한 marker 상태에 따라 매뉴얼 작업을 진행한다.
+
+### marker 없음 (판단 생략된 MR)
+
+`writing-documents-aim/manual-guide.md`의 Step 1(매뉴얼 필요성 판단 GATE)을 지금 실행한다. 판단 결과에 따라:
+- 추가 필요 → 사용자에게 "지금 작성 / 차후 직접 진행" 확인 후 Step 2~8 진행
+- 추가 불필요 → 근거 보고 후 skip
+- 이미 반영됨 → commit SHA 보고 + 재작성 여부 질의
+- 애매 → 사용자 질의
+
+판단 결과를 이 세션의 최종 응답에 기록한다. (MR description marker는 merge 후 상태라 필요 시 업데이트만.)
+
+### `status=pending-merge` (finishing-branch에서 결정됨)
+
+판단은 이미 완료. manual-guide Step 2~8을 바로 진행:
+1. Jira API + git log + MR 조회 (Step 2~4)
+2. 경험적 검증 (Step 5)
+3. MANUAL repo 대상 파일 탐색 + 스타일 미러링 (Step 6~7)
+4. 초안 작성 → 사용자 승인 → `7.3_main` 직접 push (Step 8)
+
+push 완료 후 MR description의 marker를 `status=done`으로 갱신(선택).
+
+### `status=done`
+
+매뉴얼 작업 skip. 패치 검증서(Step 1~5)만 수행.
+
 ## Red Flags
 
 - 상수명/함수명/코드 레벨 설명 사용
@@ -175,6 +233,9 @@ window.confirm = origConfirm;
 - HTML에 `<h2>`, `<th>`, CSS class 사용
 - 사용자 검토 없이 IMS 등록
 - `savePatch()` 호출 (이것은 Patch Registration용 — `doRndSave()` 사용)
+- **Step 0 marker 확인 생략** → 매뉴얼 중복 작업 또는 누락 발생
+- **`pending-merge` 상태를 무시하고 판단부터 재실행** → 사용자가 이미 내린 결정을 뒤집는 행위
+- **marker 없음 상태에서 매뉴얼 판단 자체 생략** → 매뉴얼 누락의 주 원인
 
 ## Integration
 
@@ -183,7 +244,9 @@ window.confirm = origConfirm;
 
 **Uses:**
 - **writing-documents-aim** — 공통 문서 작성 규칙 (독자/톤/두괄식)
+- **writing-documents-aim / manual-guide.md** — Step 0 marker 확인 + Step 6 매뉴얼 후속 작업
 
 **Requires:**
 - IMS 로그인 상태 (비밀번호 입력은 사용자가 직접)
 - Chrome 브라우저 자동화 도구 (`mcp__claude-in-chrome__*`)
+- GitLab API 접근 (Mac curl, PAT은 `../agent/info/access.md`)

@@ -348,12 +348,46 @@ IMS#<num1>, IMS#<num2>, <설명>    # 여러 IMS 묶기도 함
 
 **호출 패턴**:
 - **사용자 명시 요청**: "매뉴얼 작성해줘", "매뉴얼 작성 여부 알려줘", "매뉴얼 검토해줘" 등. 특정 IMS/Jira/MR을 함께 전달하는 경우 포함
-- **개발 완료 자동 트리거** (구현 예정): MR 생성 또는 승인 시점에 aim-harness 워크플로우가 이 스킬을 호출 → **Step 1 필요성 판단 선행 필수**
+- **finishing-a-development-branch-aim Step 5 Option 1/2 직후** (자동): MR 생성·갱신 직후 Step 1 필요성 판단 자동 호출. 판단 결과를 MR description marker로 저장 (`<!-- aim-harness:manual-check status=pending-merge|done -->`).
+- **completing-patch-aim Step 0/6** (자동, 상태 기반): MR merge 후 completing-patch 진입 시 marker 확인:
+  - marker 없음 → Step 1부터 실행 (지금 판단)
+  - `status=pending-merge` → Step 2~8 직행 (판단 건너뛰고 작성)
+  - `status=done` → skip
 - **writing-documents-aim 본체**: 독자 식별(고객/QA), 톤(격식체, `~한다` 체), HARD-GATE(push 전 승인), 동사 분리(작성 ≠ push)
 
 **진입 시 기대 입력**:
 - 사용자 요청 + 식별자 (IMS 번호, Jira 키, MR IID 중 하나 이상)
 - 또는 MR 컨텍스트 (자동 트리거 시 MR description + diff)
+
+### Marker 형식 (상태 기반 이중 진입)
+
+MR description 맨 아래에 HTML 주석으로 삽입. finishing-branch가 쓰고, completing-patch가 읽는다.
+
+```html
+<!-- aim-harness:manual-check status=pending-merge checked=2026-04-15 -->
+<!-- aim-harness:manual-check status=done checked=2026-04-15 reason=not-needed -->
+```
+
+| 필드 | 값 | 설명 |
+|------|------|------|
+| status | `pending-merge` | 매뉴얼 추가 필요 + merge 후 작성 (completing-patch Step 6에서 실행) |
+| status | `done` | 이 MR에 대한 매뉴얼 판단 종료 (불필요/이미반영/지금작성완료/사용자skip) |
+| checked | ISO date | 판단 수행일 |
+| reason | 선택 | `done` 상태일 때 구체 사유 (`not-needed`, `already-reflected`, `written-now`, `user-skip`) |
+
+**marker 없음**: 판단 자체 생략된 상태. completing-patch가 진입 시 지금 판단.
+
+### Step 1 결과 → marker 매핑
+
+| Step 1 결과 | 사용자 선택 | Marker |
+|------------|----------|--------|
+| 추가 필요 | A. 지금 작성 | `done reason=written-now` (작성 완료 후) |
+| 추가 필요 | B. MR merge 후 | `pending-merge` |
+| 추가 필요 | C. skip | `done reason=user-skip` |
+| 추가 불필요 | — | `done reason=not-needed` |
+| 이미 반영됨 | 재작성 안 함 | `done reason=already-reflected` |
+| 이미 반영됨 | 보완 필요 | `pending-merge` |
+| 애매 | 사용자 질의 후 | 수렴된 결과에 따라 |
 
 **참고 메모리**:
 - `reference_aim_manual_repo` — MANUAL 저장소 위치/버전/언어
@@ -361,7 +395,8 @@ IMS#<num1>, IMS#<num2>, <설명>    # 여러 IMS 묶기도 함
 
 **관련 스킬**:
 - writing-documents-aim (본체)
-- finishing-a-development-branch-aim (향후 MR 시점 자동 트리거 지점 후보)
+- finishing-a-development-branch-aim (Step 5 Option 1/2 직후 Step 1 자동 호출 + marker 작성)
+- completing-patch-aim (Step 0 marker 확인 + Step 6 후속 작업)
 
 ## Sources (근거 사례)
 

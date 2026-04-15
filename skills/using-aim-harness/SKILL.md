@@ -100,7 +100,17 @@ issue-analysis-aim (optional entry)
                     └─→ finishing-a-development-branch-aim (all done)
                           ├─→ requesting-code-review-aim (self-review)
                           ├─→ receiving-code-review-aim (feedback)
-                          └─→ [MR merged] → completing-patch-aim (패치 검증서)
+                          ├─→ [MR create/update] → writing-documents-aim/manual-guide Step 1 (자동)
+                          │     ├─→ 필요 + now   → Step 2~8 즉시 + marker=done
+                          │     ├─→ 필요 + later → marker=pending-merge (→ completing-patch Step 6)
+                          │     └─→ 불필요/skip  → marker=done
+                          └─→ [MR merged] → completing-patch-aim
+                                ├─→ Step 0: marker 확인
+                                ├─→ Step 1~5: 패치 검증서 (IMS)
+                                └─→ Step 6: marker 기반 매뉴얼 후속
+                                      ├─→ marker 없음      → manual-guide Step 1부터 실행
+                                      ├─→ pending-merge   → manual-guide Step 2~8 직행
+                                      └─→ done            → skip
 
 Independent (direct invoke):
   issue-analysis-aim — issue analysis (chain entry or direct invoke)

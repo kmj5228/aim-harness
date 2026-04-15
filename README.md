@@ -63,7 +63,7 @@ AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
 |------|------|
 | **issue-analysis-aim** | IMS 이슈 분석 → 4종 판정 (버그/정상/설정오류/미지원) |
 | **completing-patch-aim** | MR merge 후 IMS 패치 검증서. QA 관점 |
-| **writing-documents-aim** | 문서 작성 통합 가이드. 6개 플랫폼 (Jira/Confluence/IMS/GitLab/메일/markdown) |
+| **writing-documents-aim** | 문서 작성 통합 가이드. 7개 플랫폼 (Jira/Confluence/IMS/GitLab/메일/markdown/**manual**) |
 
 ### 메타
 
@@ -122,7 +122,23 @@ flowchart TD
     M --> RCV["receiving-code-review-aim\n(리뷰 피드백 처리)"]
     RCV --> MR
     MR -->|피드백 있음| RCV
-    MR -->|approved & merged| N["completing-patch-aim\n(패치 검증서 등록)"]
+    MR -->|approved & merged| N["completing-patch-aim\n(패치 검증서 + marker 확인)"]
+
+    K --> MG1{"manual-guide Step 1\n필요성 판단 (자동)"}
+    MG1 -->|"필요 + now"| MGW["manual-guide Step 2~8\n(매뉴얼 작성 + 7.3_main push)"]
+    MG1 -->|"필요 + later"| MRK1["MR marker:\npending-merge"]
+    MG1 -->|"불필요/skip"| MRK2["MR marker:\ndone"]
+    MRK1 --> MR
+    MRK2 --> MR
+    MGW --> MR
+
+    N --> MG2{"Step 0: marker 확인"}
+    MG2 -->|"marker 없음"| MG1B["manual-guide Step 1\n(지금 판단)"]
+    MG2 -->|"pending-merge"| MGW2["manual-guide Step 2~8\n(작성 직행)"]
+    MG2 -->|"done"| SKIP["매뉴얼 skip"]
+    MG1B --> MGW2
+    MGW2 --> DONE["완료"]
+    SKIP --> DONE
 
     A -->|"정상/설정오류"| O["writing-documents-aim\n(IMS 답변 등록)"]
     A -->|"미지원"| Q["writing-documents-aim\n(Jira feature request)"]
@@ -131,6 +147,8 @@ flowchart TD
     K -.->|"MR description"| WD
     M -.->|"MR 코멘트"| WD
     N -.->|"검증서 공통 규칙"| WD
+    MGW -.->|"manual-guide (신규)"| WD
+    MGW2 -.->|"manual-guide (신규)"| WD
 
     style START fill:transparent,stroke:transparent
     style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
@@ -209,7 +227,8 @@ aim-harness/
     │   ├── ims-guide.md
     │   ├── gitlab-guide.md
     │   ├── mail-guide.md
-    │   └── markdown-guide.md
+    │   ├── markdown-guide.md
+    │   └── manual-guide.md
     └── writing-skills-aim/                # 스킬 작성 방법론
         ├── anthropic-best-practices.md
         ├── testing-skills-with-subagents.md
