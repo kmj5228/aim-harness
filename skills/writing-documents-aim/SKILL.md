@@ -45,6 +45,7 @@ Turn 3: 저장 함수 호출
 - GitLab 작성 (MR description, MR 코멘트)
 - 메일 작성
 - markdown 작성 (plan, report, 분석 문서 등)
+- 매뉴얼 작성 (AIM 제품 매뉴얼, Antora/AsciiDoc, `openFrame_aim` 저장소 `7.3_main`) — `manual-guide.md`
 
 ## 4-Step Process
 
@@ -164,8 +165,11 @@ Turn 3: 저장 함수 호출
 
 **Called by:**
 - **issue-analysis-aim** — IMS 답변 초안, Jira feature request 작성 시
-- **completing-patch-aim** — 패치 검증서의 공통 작성 규칙 참조
-- **finishing-a-development-branch-aim** — MR description 작성 시 (gitlab-guide.md)
-- **code-reviewer-aim** Phase F — MR 코멘트 작성 시 (gitlab-guide.md)
+- **completing-patch-aim** — 패치 검증서 공통 규칙(독자/톤/두괄식) + Step 0 marker 기반 `manual-guide` 자동 호출 (marker 없으면 Step 1, `pending-merge`면 Step 2~8)
+- **finishing-a-development-branch-aim** — MR description 작성 시(`gitlab-guide.md`) + Step 5 Option 1/2 직후 `manual-guide` Step 1 자동 호출 (필요성 판단 + MR description에 marker 삽입)
+- **code-reviewer-aim** Phase F — MR 코멘트 작성 시(`gitlab-guide.md`)
 
-**Pattern:** 이 스킬은 문서 작성의 hub로, 다른 스킬에서 cross-reference되어 사용된다. 직접 호출도 가능.
+**Auto-trigger (manual-guide 전용)**:
+`finishing-branch` + `completing-patch`가 MR 생명주기에서 `manual-guide`를 자동 호출한다. 상태 공유는 MR description의 HTML 주석 marker(`<!-- aim-harness:manual-check ims=... status=... -->`)로 하며, IMS 단위로 기록. 복수 IMS MR은 각 IMS별 marker. 상세는 `manual-guide.md`의 "Marker 형식" 섹션과 `manual-guide.md` Integration 섹션 참조.
+
+**Pattern:** 이 스킬은 문서 작성의 hub로, 다른 스킬에서 cross-reference되어 사용된다. 직접 호출도 가능. 7개 서브가이드(jira/confluence/ims/gitlab/mail/markdown/**manual**)를 동봉.
