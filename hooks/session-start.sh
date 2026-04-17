@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# SessionStart hook for aim-harness
-# using-aim-harness 스킬 내용을 세션 시작 시 자동 주입
+# SessionStart hook for base-harness
+# using-base-harness 메타 스킬 내용을 자동 주입한다.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_DIR="$(cd "${SCRIPT_DIR}/../skills" && pwd)"
 
-# Read using-aim-harness SKILL.md
-skill_content=$(cat "${SKILLS_DIR}/using-aim-harness/SKILL.md" 2>&1 || echo "Error reading using-aim-harness skill")
+# Read meta skill
+skill_content=$(cat "${SKILLS_DIR}/using-base-harness/SKILL.md" 2>&1 || echo "Error reading using-base-harness skill")
 
 # Escape for JSON
 escape_for_json() {
@@ -22,7 +22,7 @@ escape_for_json() {
 }
 
 skill_escaped=$(escape_for_json "$skill_content")
-session_context="<EXTREMELY_IMPORTANT>\nYou have aim-harness skills.\n\n**Below is the full content of your 'using-aim-harness' skill. For all other skills, use the 'Skill' tool:**\n\n${skill_escaped}\n</EXTREMELY_IMPORTANT>"
+session_context="<EXTREMELY_IMPORTANT>\nYou have base-harness skills in migration.\n\n**Below is the full content of your 'using-base-harness' meta skill. For all other skills, use the 'Skill' tool:**\n\n${skill_escaped}\n</EXTREMELY_IMPORTANT>"
 
 printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
 

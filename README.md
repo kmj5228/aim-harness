@@ -1,263 +1,200 @@
-# aim-harness
+# base-harness
 
 ## 소개
 
-AI 코딩 에이전트(Claude Code, Cursor, Copilot CLI 등)가 코드를 작성할 때, 우리 프로젝트의 규칙과 워크플로우를 따르게 하려면 어떻게 해야 할까요?
+`base-harness`는 현재 `aim-harness`를 출발점으로 삼아, 여러 제품에서 재사용 가능한 공통 하네스를 만드는 작업 저장소다.
 
-aim-harness는 AIM 프로젝트에서 이 문제를 해결하기 위해 구축한 **스킬 체계**입니다. 에이전트에게 "이 프로젝트에서는 이렇게 일해"를 가르치는 규칙과 도구의 묶음입니다.
+이 저장소의 목표는 단순 복제가 아니라 분리다.
 
+- 공통 워크플로우는 코어로 남긴다.
+- 제품 전용 규칙은 별도 product pack 성격으로 격리한다.
+- 지금 당장 일반화하기 어려운 내용은 `legacy` 후보로 표시하고 보존한다.
+
+하네스의 기본 구성은 그대로 유지한다.
+
+```text
+Harness = Skills + Agents/Prompts + Repository Rules + Hooks
 ```
-Harness = 스킬(Skills) + 에이전트 정의(Agents) + 프로젝트 규칙(CLAUDE.md) + 자동화(Hooks)
-```
 
-- **스킬(Skill)**: "TDD로 개발해", "리뷰 전에 테스트를 먼저 돌려" 같은 작업 지침
-- **에이전트(Agent)**: "코드 리뷰어", "테스트 작성자" 같은 전문 역할 정의
-- **프로젝트 규칙**: "빌드는 dx make로", "rb_73에 직접 commit 금지" 같은 프로젝트 규칙
-- **Hook**: 세션 시작 시 자동으로 규칙을 주입하는 메커니즘
+## 현재 상태
 
-Harness 없이 AI에게 "이 기능 구현해줘"라고 하면, AI는 자기 방식대로 코드를 작성합니다. Harness가 있으면 **우리 프로젝트의 컨벤션, 테스트 정책, Git 전략을 자동으로 따릅니다.**
+현재 `base-harness`는 구조상 이미 별도 저장소이고, 코어 개발 루프와 주요 협업 스킬의 1차 공통화는 완료됐다.
 
-18개 스킬로 설계부터 MR 완료까지 전체 개발 루프를 커버합니다.
+- 메타 스킬과 hook 참조는 `using-base-harness` 기준으로 정리됐다.
+- 코어/협업 스킬과 주요 support prompt 본문은 대부분 공통화됐다.
+- 남은 잔재의 중심은 `product-specific/`로 분리한 product pack 번들, 일부 product-specific support 파일, 그리고 마이그레이션 기록 문서다.
 
-## 주의사항
+따라서 이 저장소는 지금 “완성된 공통 하네스”가 아니라, **공통화 작업 중인 베이스 레이어**로 보는 것이 맞다.
 
-**이 레포는 AIM 프로젝트에 특화된 harness이다. 그대로 설치하여 사용하는 것이 아니라, 구조와 방법론을 참고하는 프로젝트이다.**
+짧게 말하면:
 
-AIM 환경에 종속된 요소가 스킬 전반에 포함되어 있다:
-- `dx` (dev_exec.sh) — Docker 컨테이너 경유 빌드/테스트/Git 명령
-- `rb_73` 브랜치 정책 — feature branch 전용 commit
-- IMS / Jira / GitLab 연동 — 사내 이슈 트래커/코드 리뷰 도구
-- GoogleTest + gcov — C 단위 테스트 + 커버리지 80% 정책
-- NotebookLM XSP 스펙 참조 — Fujitsu Mainframe 사양서
+- 공통 실행 루프는 이미 `base-harness` 쪽으로 기울었다.
+- 남은 문제는 주로 `product-specific/` 번들의 장기 구조와 후속 product-pack 구조 정리다.
 
-다른 프로젝트에 적용하려면 위 요소를 자체 환경에 맞게 치환해야 한다.
+## 무엇을 공통화하는가
 
-## 스킬 목록 (18개)
+기본 원칙은 [AGENTS.md](/home/smj/harness/base-harness/AGENTS.md:1)에 정리돼 있다.
 
-### 개발 루프
+1차적으로 제거 또는 분리 대상인 요소:
 
-| 스킬 | 역할 |
+- 특정 제품명과 조직 용어: `AIM`, `aim-harness`
+- 특정 브랜치 정책: `rb_73`
+- 특정 실행 래퍼: `dx`
+- 특정 협업 도구 결합: `IMS`, `Jira`, `GitLab`, `Confluence`, `NotebookLM`
+- 특정 테스트 스택 강제: `GoogleTest`, `gcov`, diff coverage 80%
+- 특정 운영 문서 절차: patch verification, `manual-guide`
+
+이 요소들은 즉시 삭제하지 않고 아래 셋 중 하나로 다룬다.
+
+- 공통 개념으로 일반화
+- product pack 후보로 격리
+- 현재 라운드에서 보존하되 제품 전용으로 명시
+
+## 스킬 분류
+
+현재 스킬 이름은 1차 rename이 끝나 `*-base` 기준으로 정리됐다. 다만 일부 스킬은 내용상 여전히 product-specific product pack 성격을 가진다.
+
+### 공통 코어 후보
+
+| 스킬 | 비고 |
 |------|------|
-| **brainstorming-aim** | 새 기능/수정/리팩토링의 설계. IMS/Jira/NotebookLM 기반 |
-| **writing-plans-aim** | 설계 완료 후 태스크 분해. TDD 체크포인트 포함 |
-| **executing-plans-aim** | 계획을 순차 실행. Phase gate 검증 |
-| **subagent-driven-development-aim** | fresh 서브에이전트로 태스크별 독립 실행 |
-| **dispatching-parallel-agents-aim** | 독립 태스크 병렬 처리 |
-| **test-driven-development-aim** | RED-GREEN-REFACTOR. GoogleTest 기반 |
-| **systematic-debugging-aim** | 테스트 실패/런타임 에러 시 4단계 근본 원인 분석 |
-| **verification-before-completion-aim** | 완료 주장 전 빌드/테스트/커버리지 검증 |
-| **using-feature-branches-aim** | feature branch 생성/관리. rb_73 직접 commit 금지 |
-| **finishing-a-development-branch-aim** | push + GitLab MR 생성. 4가지 옵션 제시 |
+| `brainstorming-base` | 설계 절차는 공통화 가능, 외부 도구 의존 제거 필요 |
+| `writing-plans-base` | 태스크 분해/TDD 체크포인트는 공통화 가능 |
+| `executing-plans-base` | 실행 gate는 공통화 가능, 명령은 파라미터화 필요 |
+| `test-driven-development-base` | 핵심 루프는 공통화 가능, 테스트 스택 고정 제거 필요 |
+| `systematic-debugging-base` | 디버깅 절차는 공통화 가능 |
+| `verification-before-completion-base` | 완료 전 검증 규칙은 공통화 가능 |
+| `writing-skills-base` | 스킬 작성 방법론의 1차 공통화 완료 |
 
-### 코드 리뷰
+### 협업 레이어 후보
 
-| 스킬 | 역할 |
+| 스킬 | 비고 |
 |------|------|
-| **code-reviewer-aim** | 타인 MR 리뷰. 에이전트 5명 + 오케스트레이터, Phase A~I |
-| **requesting-code-review-aim** | 내 코드 셀프 리뷰 (code-reviewer-aim --auto) |
-| **receiving-code-review-aim** | 리뷰 피드백 수신 후 처리 |
+| `subagent-driven-development-base` | 서브에이전트 패턴은 공통화 가능 |
+| `dispatching-parallel-agents-base` | 병렬 분배 규칙은 공통화 가능 |
+| `using-feature-branches-base` | 브랜치 전략은 일반화 가능, 현재 규칙은 제품 종속 |
+| `requesting-code-review-base` | 셀프 리뷰 루프는 공통화 가능 |
+| `receiving-code-review-base` | 피드백 처리 루프는 공통화 가능 |
+| `code-reviewer-base` | 리뷰 구조는 재사용 가능하나 외부 연동 의존 큼 |
+| `finishing-a-development-branch-base` | 완료/정리 절차는 일반화 가능, MR/manual 세부는 분리 필요 |
 
-### AIM 전용
+### Product Packs
 
-| 스킬 | 역할 |
+| 번들 | 이유 |
 |------|------|
-| **issue-analysis-aim** | IMS 이슈 분석 → 4종 판정 (버그/정상/설정오류/미지원) |
-| **completing-patch-aim** | MR merge 후 IMS 패치 검증서. QA 관점 |
-| **writing-documents-aim** | 문서 작성 통합 가이드. 7개 플랫폼 (Jira/Confluence/IMS/GitLab/메일/markdown/**manual**) |
+| `product-specific/skills/issue-analysis-base` | IMS/Jira/NotebookLM 흐름 의존 |
+| `product-specific/skills/completing-patch-base` | IMS patch verification 절차 의존 |
+| `product-specific/skills/writing-documents-base` | 문서 작성 자체는 공통화 가능하지만 현재는 도구/플랫폼 결합이 강함 |
+| `product-specific/code-reviewer-base/*` | 외부 시스템/API/coverage 정책 결합이 강한 지원 자산 |
+
+이 번들은 기본 `skills/` 라우팅에서 분리해 `product-specific/`로 이동했다.
+
+- `issue-analysis-base`: 제품/조직의 이슈 트리아지 예시
+- `completing-patch-base`: 제품별 배포 후속/검증 문서 예시
+- `writing-documents-base`: 다중 협업 도구 연동 예시
+- `code-reviewer-base` product-specific assets: 정보 수집/커버리지 측정 자산
+
+후속 단계에서는 이들을 명시적 product-pack 구조로 더 정리한다.
+
+- 공통 개념만 추출해 새 코어 스킬로 재구성
+- 제품 전용 pack으로 유지
+- 장기적으로 `product-packs/<product>/` 구조로 승격
+
+현재 유지 정책은 단순하다.
+
+- 코어 가치가 분명한 문서는 공통화한다.
+- 외부 시스템/API/조직 절차에 강하게 묶인 문서는 `product-specific/`로 분리해 둔다.
+- 스킬명 rename은 1차 완료됐고, 남은 정리는 product-specific pack의 최종 구조 문제다.
+
+배치 정책도 함께 고정한다.
+
+- 현재는 `product-specific/`로 1차 분리까지 완료했다.
+- 이 디렉토리는 장기적으로 첫 번째 product pack 영역으로 해석한다.
 
 ### 메타
 
-| 스킬 | 역할 |
+| 스킬 | 비고 |
 |------|------|
-| **using-aim-harness** | 스킬 사용 규칙. SessionStart hook으로 자동 주입 |
-| **writing-skills-aim** | 스킬 작성 방법론. 스킬에 TDD 적용 |
+| `using-base-harness` | SessionStart hook으로 자동 주입되는 메타 스킬 |
 
-## 워크플로우 체인
+## 추출 순서
 
-```mermaid
-flowchart TD
-    A["issue-analysis-aim\n(이슈 분석/판정/XSP 사양 분석)"] -->|"버그/기능 필요"| B["brainstorming-aim\n(설계/XSP 사양 분석)"]
-    START[ ] -->|직접 시작| B
-    B --> C["writing-plans-aim\n(태스크 분해)"]
-    C --> D{실행 방식 택1\n사용자 선택}
+작업은 크게 다섯 단계로 나눈다.
 
-    D -->|"순차 (태스크 1~2개)"| BR1["using-feature-branches-aim\n(Step 0: feature branch)"]
-    BR1 --> E["executing-plans-aim\n(순차 실행)"]
-    E --> TDD1
+1. 메타 문서 공통화: `AGENTS.md`, `README.md`, `CLAUDE.md`
+2. hook 메시지와 설정의 `aim-harness` 잔재 정리
+3. 공통 코어 스킬 1차 정리
+4. 협업 레이어 스킬 일반화
+5. 제품 전용 스킬을 product pack 후보로 분리
 
-    D -->|"서브에이전트 (권장)"| BR2["using-feature-branches-aim\n(Step 0: feature branch)"]
-    BR2 --> F["subagent-driven-development-aim\n(서브에이전트 실행)"]
-    F --> TDD2
+상세 체크리스트와 진행 기록은 [MIGRATION.md](/home/smj/harness/base-harness/MIGRATION.md:1)에 유지한다.
 
-    subgraph TDD1 ["각 태스크 (순차)"]
-        direction TB
-        G1["test-driven-development-aim\n(TDD)"] -->|완료| J1["verification-before-completion-aim\n(태스크 완료 gate)"]
-        J1 --> CM1["Commit"]
-        G1 -.->|실패| I1["systematic-debugging-aim\n(4단계 디버깅)"]
-        I1 -.-> VD1["verification-before-completion-aim\n(fix 검증 gate)"]
-        VD1 -.->|재개| G1
-    end
+## 현재 워크플로우 해석
 
-    subgraph TDD2 ["각 태스크 (서브에이전트)&nbsp;&nbsp;※ 리뷰 FAIL 시 implementer 재스폰"]
-        direction TB
-        IMP["implementer 스폰"] --> G2["test-driven-development-aim\n(TDD)"]
-        G2 -->|완료| J2["verification-before-completion-aim\n(태스크 완료 gate)"]
-        J2 --> CM2["Commit\n(implementer 내부)"]
-        CM2 --> SR2["spec-reviewer 스폰"]
-        SR2 -->|PASS| CR2["code-quality-reviewer 스폰"]
-        G2 -.->|실패| I2["systematic-debugging-aim\n(4단계 디버깅)"]
-        I2 -.-> VD2["verification-before-completion-aim\n(fix 검증 gate)"]
-        VD2 -.->|재개| G2
-        SR2 -.->|FAIL ↺| RSP2([재스폰])
-        CR2 -.->|FAIL ↺| RSP2
-    end
+`base-harness`는 아직 이름과 내부 절차가 뒤섞여 있으므로, 당분간 워크플로우를 아래처럼 해석한다.
 
-    TDD1 -->|전체 완료| VF["verification-before-completion-aim\n(최종 gate)"]
-    TDD2 -->|전체 완료| VF
-    VF --> COV["Coverage gate\n(measure_diff_cov.sh ≥ 80%)"]
-    COV --> K["finishing-a-development-branch-aim\n(push + MR 생성)"]
-    K -->|셀프 리뷰| L["requesting-code-review-aim\n(셀프 리뷰 요청)"]
-    L --> M["code-reviewer-aim\n(셀프 리뷰, Phase A~E --auto)"]
-    K -->|셀프 리뷰 건너뜀| MR[MR 리뷰/승인]
-    M --> RCV["receiving-code-review-aim\n(리뷰 피드백 처리)"]
-    RCV --> MR
-    MR -->|피드백 있음| RCV
-    MR -->|approved & merged| N["completing-patch-aim\n(패치 검증서 + marker 확인)"]
-
-    K --> MG1{"manual-guide Step 1\n필요성 판단 (자동)"}
-    MG1 -->|"필요 + now"| MGW["manual-guide Step 2~8\n(매뉴얼 작성 + 7.3_main push)"]
-    MG1 -->|"필요 + later"| MRK1["MR marker:\npending-merge"]
-    MG1 -->|"불필요/skip"| MRK2["MR marker:\ndone"]
-    MRK1 --> MR
-    MRK2 --> MR
-    MGW --> MR
-
-    N --> MG2{"Step 0: marker 확인"}
-    MG2 -->|"marker 없음"| MG1B["manual-guide Step 1\n(지금 판단)"]
-    MG2 -->|"pending-merge"| MGW2["manual-guide Step 2~8\n(작성 직행)"]
-    MG2 -->|"done"| SKIP["매뉴얼 skip"]
-    MG1B --> MGW2
-    MGW2 --> DONE["완료"]
-    SKIP --> DONE
-
-    A -->|"정상/설정오류"| O["writing-documents-aim\n(IMS 답변 등록)"]
-    A -->|"미지원"| Q["writing-documents-aim\n(Jira feature request)"]
-
-    WD["writing-documents-aim\n(문서 작성 hub)"]
-    K -.->|"MR description"| WD
-    M -.->|"MR 코멘트"| WD
-    N -.->|"검증서 공통 규칙"| WD
-    MGW -.->|"manual-guide (신규)"| WD
-    MGW2 -.->|"manual-guide (신규)"| WD
-
-    style START fill:transparent,stroke:transparent
-    style TDD1 fill:transparent,stroke:#888,stroke-dasharray: 5 5
-    style TDD2 fill:transparent,stroke:#888,stroke-dasharray: 5 5
-    style WD fill:#e0e0e0,color:#000,stroke-dasharray: 3 3
-
-    %% 시작 (파랑)
-    style A fill:#bbdefb,color:#000
-    style B fill:#bbdefb,color:#000
-
-    %% 끝 (주황)
-    style N fill:#ffe0b2,color:#000
-    style O fill:#ffe0b2,color:#000
-    style Q fill:#ffe0b2,color:#000
-
-    %% 분기 (노랑) — 에이전트/사용자 결정
-    style D fill:#fff9c4,color:#000
-
-    %% verification gate (연한 초록)
-    style VD1 fill:#dcedc8,color:#000
-    style VD2 fill:#dcedc8,color:#000
-    style J1 fill:#dcedc8,color:#000
-    style J2 fill:#dcedc8,color:#000
-    style VF fill:#dcedc8,color:#000
-    style COV fill:#dcedc8,color:#000
+```text
+Design
+  -> Plan
+  -> Execute
+  -> Test / Debug
+  -> Verify
+  -> Review / Collaboration
+  -> Product-specific completion steps (optional)
 ```
 
-**독립 스킬** (체인 외, 직접 호출):
-- **issue-analysis-aim** — 이슈 분석 (체인 진입점 겸 독립)
-- **code-reviewer-aim** — 타인 MR 리뷰 (Phase A~I, 에이전트 5명 + 오케스트레이터)
-- **dispatching-parallel-agents-aim** — 독립 문제 병렬 디버깅/조사 (구현 병렬화 아님)
-- **using-feature-branches-aim** — feature branch 생성/관리
-- **writing-documents-aim** — 문서 작성 (각 스킬에서 문서 작성 시 cross-reference)
-- **writing-skills-aim** — 스킬 작성/수정
+즉, 설계-계획-실행-검증 루프는 공통 코어로 살리고, 이슈 트래킹/문서/배포 후속 절차는 제품별 확장으로 밀어낸다.
 
 ## 디렉토리 구조
 
-```
-aim-harness/
-├── CLAUDE.md                              # 스킬 라우팅 표 + 사용 규칙
-├── settings.json                          # SessionStart hook 설정
+```text
+base-harness/
+├── AGENTS.md
+├── README.md
+├── CLAUDE.md
+├── MIGRATION.md
+├── settings.json
 ├── hooks/
-│   └── session-start.sh                   # using-aim-harness 자동 주입
+│   └── session-start.sh
 └── skills/
-    ├── using-aim-harness/                 # 메타: 스킬 사용 규칙
-    ├── brainstorming-aim/                 # 설계
-    │   └── spec-document-reviewer-prompt.md
-    ├── writing-plans-aim/                 # 태스크 분해
-    │   └── plan-document-reviewer-prompt.md
-    ├── executing-plans-aim/               # 순차 실행
-    ├── subagent-driven-development-aim/   # 서브에이전트 실행
-    │   ├── implementer-prompt.md
-    │   ├── spec-reviewer-prompt.md
-    │   └── code-quality-reviewer-prompt.md
-    ├── dispatching-parallel-agents-aim/   # 병렬 처리
-    ├── test-driven-development-aim/       # TDD
-    │   └── testing-anti-patterns.md
-    ├── systematic-debugging-aim/          # 디버깅
-    │   ├── condition-based-waiting.md
-    │   ├── defense-in-depth.md
-    │   ├── root-cause-tracing.md
-    │   └── find-polluter.sh
-    ├── verification-before-completion-aim/ # 검증
-    ├── using-feature-branches-aim/        # 브랜치 관리
-    ├── finishing-a-development-branch-aim/ # MR 생성
-    ├── requesting-code-review-aim/        # 셀프 리뷰
-    ├── receiving-code-review-aim/         # 리뷰 피드백
-    ├── code-reviewer-aim/                 # 타인 리뷰 (에이전트 팀)
-    │   ├── *-prompt.md (5개)
-    │   └── scripts/measure_diff_cov.sh
-    ├── issue-analysis-aim/                # IMS 이슈 분석
-    ├── completing-patch-aim/              # 패치 검증서
-    ├── writing-documents-aim/             # 문서 작성
-    │   ├── jira-guide.md
-    │   ├── confluence-guide.md
-    │   ├── ims-guide.md
-    │   ├── gitlab-guide.md
-    │   ├── mail-guide.md
-    │   ├── markdown-guide.md
-    │   └── manual-guide.md
-    └── writing-skills-aim/                # 스킬 작성 방법론
-        ├── anthropic-best-practices.md
-        ├── testing-skills-with-subagents.md
-        └── examples/
+    ├── using-base-harness/
+    ├── brainstorming-base/
+    ├── writing-plans-base/
+    ├── executing-plans-base/
+    ├── subagent-driven-development-base/
+    ├── dispatching-parallel-agents-base/
+    ├── test-driven-development-base/
+    ├── systematic-debugging-base/
+    ├── verification-before-completion-base/
+    ├── using-feature-branches-base/
+    ├── finishing-a-development-branch-base/
+    ├── requesting-code-review-base/
+    ├── receiving-code-review-base/
+    ├── code-reviewer-base/
+    └── writing-skills-base/
+product-specific/
+├── skills/
+│   ├── issue-analysis-base/
+│   ├── completing-patch-base/
+│   └── writing-documents-base/
+└── code-reviewer-base/
+    ├── info-collector-prompt.md
+    ├── coverage-analyst-prompt.md
+    └── scripts/
 ```
 
-## 설치 방법 (Claude Code 스킬 일반)
+## 설치 관점 참고
 
-Claude Code에서 스킬을 설치하는 일반적인 방법이다.
+최종 목표는 프로젝트가 이 저장소의 결과물을 자신의 `.claude/` 또는 동등한 하네스 경로에 설치해서 사용할 수 있게 만드는 것이다.
 
-### 1. 스킬 파일 배치
+현재 단계에서는 설치 문서보다 공통화 기준을 먼저 다룬다.
 
-```bash
-# 프로젝트 루트의 .claude/skills/ 디렉토리에 스킬 폴더를 복사
-cp -r skills/<skill-name> <project>/.claude/skills/<skill-name>
-```
+- `settings.json`은 hook 연결 지점을 보여주는 예시다.
+- `hooks/session-start.sh`는 메타 스킬 자동 주입 예시다.
+- `skills/`는 기본 base runtime skill set이다.
+- `product-specific/`는 첫 번째 product pack 번들을 분리 보관하는 영역이다.
 
-각 스킬은 `SKILL.md`를 필수로 포함하며, 필요에 따라 prompt 파일, 스크립트 등을 동봉한다.
-
-### 2. CLAUDE.md 설정
-
-프로젝트의 `.claude/CLAUDE.md`에 스킬 사용 규칙과 라우팅 표를 기술한다. Claude Code는 세션 시작 시 이 파일을 자동으로 읽는다.
-
-### 3. SessionStart hook (선택)
-
-`.claude/settings.json`에 hook을 설정하면, 세션 시작/clear/compact 시 특정 스킬의 내용을 자동 주입할 수 있다.
-
-```json
-{
+설치 방법은 코어/product-pack 구조가 더 안정되면 다시 정리한다.
   "hooks": {
     "SessionStart": [
       {
