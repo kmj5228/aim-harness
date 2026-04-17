@@ -862,3 +862,17 @@ git -C base-harness status --short
 
 - 현재 루트 기준의 source of truth는 `AGENTS.md`다
 - Claude 관련 기록은 남기되, 현재 구조와 충돌하지 않게 historical grouping만 유지하는 편이 낫다
+
+### 2026-04-17 38. Codex hook source 추가
+
+수정:
+
+- `hooks/config.toml`, `hooks/hooks.json`, `hooks/session-start.sh`를 추가
+- `hooks/`를 Codex hook source-of-truth로 문서화
+- `README.md`, `AGENTS.md`에 실제 Codex 사용 시 `.codex/` 또는 `~/.codex/` 배치가 필요하다는 점을 명시
+
+판단:
+
+- 저장소를 `git pull`하는 것만으로는 사용자 로컬 Codex 런타임에 hook이 자동 적용되지 않는다
+- 하지만 repository source 차원에서는 Codex hook 자산을 함께 버전 관리하는 편이 낫다
+- 따라서 `hooks/`는 소스 위치로 두고, 실제 활성화는 사용자 설치 단계에서 수행하는 구조가 적절하다

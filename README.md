@@ -10,6 +10,7 @@
 - 기본 런타임은 Codex다.
 - 공통 작업 방식은 `skills/`에 둔다.
 - 제품 전용 절차는 `product-specific/`로 분리한다.
+- Codex hook source-of-truth는 `hooks/`에 둔다.
 - Claude 자산은 선택형 runtime pack으로 `claude/`에 둔다.
 
 ## 현재 상태
@@ -19,12 +20,14 @@
 - 코어 개발 루프와 주요 협업 스킬의 1차 공통화 완료
 - `*-aim` 스킬을 `*-base`로 정리
 - 제품 전용 절차와 강결합 자산을 `product-specific/`로 분리
+- Codex용 `SessionStart` 훅 source를 `hooks/`로 정리
 - 루트는 Codex 기본 진입점, Claude 자산은 별도 pack으로 분리
 
 즉, `base-harness`는 더 이상 단순 복제본이 아니라:
 
 - `skills/` = 기본 base runtime skill set
 - `product-specific/` = 선택형 product pack
+- `hooks/` = Codex hook source-of-truth
 - `claude/` = 선택형 Claude runtime pack
 
 구조로 해석하는 것이 맞다.
@@ -85,6 +88,11 @@ base-harness/
 ├── AGENTS.md
 ├── README.md
 ├── MIGRATION.md
+├── hooks/
+│   ├── README.md
+│   ├── config.toml
+│   ├── hooks.json
+│   └── session-start.sh
 ├── skills/
 │   ├── using-base-harness/
 │   ├── brainstorming-base/
@@ -118,8 +126,9 @@ base-harness/
 ### Codex
 
 - 기본 진입점은 루트 [AGENTS.md](/home/smj/harness/base-harness/AGENTS.md:1)다.
-- 루트에는 Codex 전용 `settings.json`이나 hook을 두지 않는다.
-- Codex용 추가 runtime asset은 실제 필요가 확인될 때만 도입한다.
+- [hooks](/home/smj/harness/base-harness/hooks) 는 Codex hook source-of-truth다.
+- 저장소를 `git pull`하는 것만으로는 로컬 Codex 런타임에 자동 활성화되지 않는다.
+- 실제 사용하려면 `hooks/config.toml`, `hooks/hooks.json`을 `~/.codex/` 또는 프로젝트 `.codex/` 레이아웃에 맞게 배치하거나 병합해야 한다.
 
 ### Claude
 

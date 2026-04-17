@@ -7,9 +7,10 @@
 - 루트 `AGENTS.md`는 Codex가 바로 따르는 실제 하네스 규칙이다.
 - `skills/`는 기본 base runtime skill set이다.
 - `product-specific/`는 기본 런타임에 포함하지 않는 product pack 번들이다.
+- `hooks/`는 Codex hook source-of-truth다.
 - `claude/`는 선택형 Claude runtime pack이다.
 
-루트에는 Codex 전용 `settings.json`이나 hook을 두지 않는다.
+루트에는 활성화된 Codex 런타임 파일을 직접 두지 않는다.
 Codex 기본 진입점은 이 문서와 `skills/`다.
 
 ## Core Runtime Boundary
@@ -17,6 +18,7 @@ Codex 기본 진입점은 이 문서와 `skills/`다.
 - 기본 런타임 규칙: `AGENTS.md`
 - 기본 스킬 세트: `skills/`
 - 선택형 제품 확장: `product-specific/`
+- Codex hook source: `hooks/`
 - 선택형 Claude 자산: `claude/`
 - 마이그레이션 기록: `MIGRATION.md`
 
@@ -128,6 +130,7 @@ Proposal: <specific improvement>
 - `AGENTS.md`: Codex 기본 런타임 규칙
 - `README.md`: 구조와 사용법
 - `MIGRATION.md`: 마이그레이션 이력과 판단 로그
+- `hooks/`: Codex hook source-of-truth
 - `claude/`: Claude 사용자용 선택형 runtime pack
 
 새 runtime-specific 자산은 루트에 바로 두지 않는다.
