@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SessionStart hook for base-harness
-# using-base-harness 메타 스킬 내용을 자동 주입한다.
+# SessionStart hook for the optional Claude runtime pack.
+# This script assumes deployment under `.claude/hooks/` where `../skills/` exists.
 
 set -euo pipefail
 
@@ -22,7 +22,7 @@ escape_for_json() {
 }
 
 skill_escaped=$(escape_for_json "$skill_content")
-session_context="<EXTREMELY_IMPORTANT>\nYou have base-harness skills in migration.\n\n**Below is the full content of your 'using-base-harness' meta skill. For all other skills, use the 'Skill' tool:**\n\n${skill_escaped}\n</EXTREMELY_IMPORTANT>"
+session_context="<EXTREMELY_IMPORTANT>\nYou have base-harness skills.\n\n**Below is the full content of your 'using-base-harness' meta skill. For all other skills, use the 'Skill' tool:**\n\n${skill_escaped}\n</EXTREMELY_IMPORTANT>"
 
 printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"
 

@@ -16,7 +16,7 @@ If a relevant skill exists, use it.
 ## Instruction Priority
 
 1. **User instructions** — highest priority
-2. **Repository rules** (`AGENTS.md`, `CLAUDE.md`) — next
+2. **Repository rules** (`AGENTS.md`, runtime-specific docs when explicitly used) — next
 3. **base-harness skills** — workflow guidance
 4. **Default system behavior** — lowest priority
 

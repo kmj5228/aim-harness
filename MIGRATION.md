@@ -29,9 +29,7 @@
 
 - `AGENTS.md`
 - `README.md`
-- `CLAUDE.md`
-- `settings.json`
-- `hooks/session-start.sh`
+- Claude runtime files (`CLAUDE.md`, `settings.json`, `hooks/session-start.sh`)
 - `skills/*`
 
 ### Product-Specific Term Inventory
@@ -39,9 +37,7 @@
 1차 스캔 대상:
 
 - `README.md`
-- `CLAUDE.md`
-- `settings.json`
-- `hooks/session-start.sh`
+- Claude runtime files
 - `skills/*/SKILL.md`
 
 반복적으로 확인된 제품 종속 키워드:
@@ -94,20 +90,11 @@
 - 거의 전면이 `aim-harness` 소개문이었다.
 - 공통화용 소개, 현재 상태, 스킬 분류, 추출 전략으로 재작성했다.
 
-#### `CLAUDE.md`
+#### Claude runtime files
 
-- 라우팅 표는 일부 재사용 가능했지만 설명이 AIM 운영 절차에 강하게 묶여 있었다.
-- 공통 루프와 제품 전용 확장 루프를 분리하는 방향으로 1차 수정했다.
-
-#### `hooks/session-start.sh`
-
-- 주석과 메시지가 모두 `aim-harness` 기준이었다.
-- 현재 메타 스킬명이 `using-aim-harness`라서 완전 일반화는 어렵지만, base-harness의 과도기 상태를 설명하도록 수정했다.
-
-#### `settings.json`
-
-- 구조는 유지 가능하다.
-- hook 경로 정책은 설치 대상 레이아웃과 함께 다시 검토한다.
+- `CLAUDE.md`는 라우팅 표 일부는 재사용 가능했지만 설명이 AIM 운영 절차에 강하게 묶여 있었다.
+- `hooks/session-start.sh`는 주석과 메시지가 모두 `aim-harness` 기준이었다.
+- `settings.json`은 구조 자체보다 hook 경로 정책이 핵심 검토 대상이었다.
 
 ### Ordered Execution
 
@@ -158,15 +145,14 @@ git -C base-harness status --short
 
 ### 2026-04-17 2. 기준선 및 인벤토리 수집
 
-- 기준 파일 목록 확인: `AGENTS.md`, `README.md`, `CLAUDE.md`, `settings.json`, `hooks/session-start.sh`, `skills/*`
+- 기준 파일 목록 확인: `AGENTS.md`, `README.md`, Claude runtime files, `skills/*`
 - 메타 문서와 hook에서 제품 종속 키워드 수집
 - 스킬 전체에서 `AIM`, `IMS`, `dx`, `rb_73`, `GitLab`, `Jira`, `NotebookLM`, `manual-guide` 잔존 여부 확인
 
 확인 결과:
 
 - `README.md`는 거의 전면이 `aim-harness` 소개문
-- `CLAUDE.md`는 공통 라우팅 표 일부만 재사용 가능
-- `hooks/session-start.sh`는 메시지와 주석이 `aim-harness` 기준
+- Claude runtime files는 공통 라우팅 표 일부만 재사용 가능했고, 메시지와 주석은 `aim-harness` 기준이 강했다
 - 코어 후보 스킬에도 제품 종속 명령과 도구 결합이 광범위하게 남아 있음
 
 ### 2026-04-17 3. 마이그레이션 체크리스트 문서화
@@ -177,18 +163,17 @@ git -C base-harness status --short
 ### 2026-04-17 4. 메타 문서 1차 공통화
 
 - `README.md`를 `base-harness` 목적 중심 문서로 재작성
-- `CLAUDE.md`를 공통 워크플로우와 제품 전용 확장으로 분리해 1차 일반화
-- `hooks/session-start.sh` 메시지를 `base-harness` 과도기 상태 설명으로 수정
+- Claude runtime guide를 공통 워크플로우와 제품 전용 확장으로 분리해 1차 일반화
+- Claude hook 메시지를 `base-harness` 과도기 상태 설명으로 수정
 
 ### 2026-04-17 5. 1차 재검증
 
-- `README.md`, `CLAUDE.md`, `hooks/session-start.sh`, 마이그레이션 문서를 대상으로 잔존 용어 재검색 수행
+- `README.md`, Claude runtime files, 마이그레이션 문서를 대상으로 잔존 용어 재검색 수행
 
 재검증 결과:
 
 - `README.md`의 잔존 표현은 현재 상태 설명, 분류표, 과도기 스킬명 설명에 한정됨
-- `CLAUDE.md`의 잔존 표현은 `using-aim-harness` 참조 1건만 남음
-- `hooks/session-start.sh`의 잔존 표현은 현재 메타 스킬명 `using-aim-harness`를 그대로 참조하는 부분만 남음
+- Claude runtime files의 잔존 표현은 당시 메타 스킬명 `using-aim-harness` 참조에 한정됨
 - 마이그레이션 문서의 잔존 표현은 인벤토리와 작업 기록 목적의 의도된 보존
 
 판단:
@@ -325,7 +310,7 @@ git -C base-harness status --short
 
 - 코어 스킬 6개에서는 매칭 없음
 - 잔존 표현은 대부분 `README.md`의 현재 상태 설명과 제품 종속 요소 인벤토리 섹션에만 남음
-- `hooks/session-start.sh`, `CLAUDE.md`는 `using-aim-harness`라는 과도기 메타 스킬명을 직접 참조하므로 후속 rename 전까지 잔존이 예상됨
+- Claude runtime files는 `using-aim-harness`라는 과도기 메타 스킬명을 직접 참조하므로 후속 rename 전까지 잔존이 예상됨
 
 판단:
 
@@ -463,7 +448,7 @@ git -C base-harness status --short
 
 - `using-aim-harness`를 `using-base-harness`로 교체
 - 새 메타 스킬 파일 `skills/using-base-harness/SKILL.md` 추가
-- `README.md`, `CLAUDE.md`, `hooks/session-start.sh` 참조를 새 이름으로 갱신
+- `README.md`와 Claude runtime files 참조를 새 이름으로 갱신
 - SessionStart hook이 새 메타 스킬을 직접 주입하도록 변경
 
 검증:
@@ -840,7 +825,40 @@ git -C base-harness status --short
 - 필요하면 기록성 문구를 더 줄인다.
 - 다음 라운드에서만 `product-specific/`의 구조 승격 여부를 다시 검토한다.
 
+### 2026-04-17 36. Codex-first runtime 구조로 재정렬
+
+수정:
+
+- 기존 migration 성격의 루트 `AGENTS.md`를 제거하고, Codex 기본 런타임 규칙 문서로 재작성
+- 루트 `CLAUDE.md`, `settings.json`, `hooks/session-start.sh`를 `claude/` 아래 선택형 runtime pack으로 이동
+- `README.md`를 `Codex-first`, `Claude-optional` 구조로 재작성
+- `claude/README.md`를 추가해 Claude pack의 설치 전제를 문서화
+
+판단:
+
+- 루트의 메인 규칙 문서는 Codex가 직접 따르는 `AGENTS.md`여야 한다
+- Claude 자산을 루트에 두면 기본 런타임이 무엇인지 계속 혼선을 준다
+- Codex용 `settings.json`과 hook은 아직 런타임 계약이 확정되지 않았으므로 이번 라운드에서는 도입하지 않는다
+
+결과:
+
+- 루트는 `AGENTS.md` + `skills/` 중심의 Codex 기본 런타임으로 정리됐다
+- Claude 사용자는 `claude/` 디렉토리의 선택형 runtime pack을 사용할 수 있다
+
 ## Next Actions
 
 1. 필요하면 기록성 문구를 더 압축한다.
-2. 다음 라운드에서 `product-specific/` 구조 승격 여부를 다시 검토한다.
+2. 필요하면 Codex 전용 runtime asset이 실제로 필요한지 별도 판단한다.
+
+### 2026-04-17 37. runtime 용어 정리 및 기록 압축
+
+수정:
+
+- `using-base-harness`의 repository rule 우선순위에서 루트 `CLAUDE.md` 전제를 제거
+- `MIGRATION.md` 초기 기록에서 `CLAUDE.md`, `settings.json`, `hooks/session-start.sh` 반복 서술을 `Claude runtime files` 묶음으로 압축
+- 이번 세션 범위 밖인 `product-specific/` 구조 승격 제안은 `Next Actions`에서 제거
+
+판단:
+
+- 현재 루트 기준의 source of truth는 `AGENTS.md`다
+- Claude 관련 기록은 남기되, 현재 구조와 충돌하지 않게 historical grouping만 유지하는 편이 낫다

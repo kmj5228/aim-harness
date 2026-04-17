@@ -1,126 +1,134 @@
-# Base Harness Agent Guide
+# Base Harness Agents
 
 ## Purpose
 
-`base-harness`는 현재 `aim-harness`를 출발점으로 삼아, 여러 제품에서 재사용할 수 있는 공통 하네스로 정리하는 저장소다.
+`base-harness`의 기본 런타임은 Codex다.
 
-이 저장소에서의 작업 목표는 세 가지다.
+- 루트 `AGENTS.md`는 Codex가 바로 따르는 실제 하네스 규칙이다.
+- `skills/`는 기본 base runtime skill set이다.
+- `product-specific/`는 기본 런타임에 포함하지 않는 product pack 번들이다.
+- `claude/`는 선택형 Claude runtime pack이다.
 
-1. AIM 전용 규칙과 용어를 식별한다.
-2. 다른 제품에도 그대로 적용 가능한 공통 워크플로우만 남긴다.
-3. 제품별 차이는 별도 adapter/example 레이어로 분리할 수 있게 만든다.
+루트에는 Codex 전용 `settings.json`이나 hook을 두지 않는다.
+Codex 기본 진입점은 이 문서와 `skills/`다.
 
-## Current State
+## Core Runtime Boundary
 
-- 현재 `base-harness`는 `aim-harness`의 복제본에 가깝다.
-- 파일명, 스킬명, 설명, hook 메시지에 `aim` 용어와 AIM 전용 프로세스가 아직 많이 남아 있다.
-- 따라서 현 시점의 `base-harness` 내용은 최종 정책이 아니라, 공통화 대상 원본으로 취급한다.
+- 기본 런타임 규칙: `AGENTS.md`
+- 기본 스킬 세트: `skills/`
+- 선택형 제품 확장: `product-specific/`
+- 선택형 Claude 자산: `claude/`
+- 마이그레이션 기록: `MIGRATION.md`
 
-## What Counts As Product-Specific
+`product-specific/` 아래의 문서는 기본 스킬 라우팅에 자동 포함되지 않는다.
+명시적으로 제품 전용 워크플로우가 필요할 때만 사용한다.
 
-아래 요소는 기본적으로 공통 코어가 아니라 제품 종속으로 본다.
+## Skill Rule
 
-- 특정 조직/제품명: `AIM`, `IMS`, 사내 시스템명
-- 특정 브랜치 정책: `rb_73` 같은 팀 전용 Git 규칙
-- 특정 실행 래퍼: `dx`, `dev_exec.sh`
-- 특정 협업 도구 강결합: Jira, GitLab, Confluence, NotebookLM
-- 특정 테스트 스택 강제: GoogleTest, gcov 80% 같은 고정 조합
-- 특정 문서/배포 절차: patch verification, manual guide 같은 AIM 운영 절차
+관련 스킬이 있으면 행동 전에 먼저 사용한다.
 
-이런 요소는 삭제보다 먼저 아래 셋 중 하나로 재분류한다.
+우선순위:
 
-- 공통 개념으로 일반화
-- 제품 adapter/example로 격리
-- 당장 재사용 가치가 없으면 제거 후보로 표시
+1. 프로세스 스킬
+2. 실행 스킬
+3. 협업 스킬
+4. product-specific pack
 
-## Core Principles
+우선 확인 대상:
 
-- 공통 하네스는 특정 제품명을 몰라도 이해되고 적용 가능해야 한다.
-- 워크플로우는 유지하되, 도구와 조직 정책은 파라미터화한다.
-- 한 번에 크게 갈아엎지 말고, 문서와 스킬을 작은 단위로 분리한다.
-- 이름을 바꾸면 참조도 함께 바꾼다. 반쪽 rename은 금지한다.
-- 설명보다 구조를 먼저 공통화한다. 즉, 용어 교체만 하고 내부 절차가 그대로 AIM 종속이면 완료가 아니다.
+- `brainstorming-base`
+- `writing-plans-base`
+- `executing-plans-base`
+- `subagent-driven-development-base`
+- `test-driven-development-base`
+- `systematic-debugging-base`
+- `verification-before-completion-base`
+- `requesting-code-review-base`
+- `receiving-code-review-base`
+- `code-reviewer-base`
+- `writing-skills-base`
 
-## Migration Rules
+## Skill Routing
 
-### 1. Preserve the Harness Shape
+| Situation | Skill |
+|------|------|
+| 새 기능/수정/리팩토링 설계 | `brainstorming-base` |
+| 설계 후 태스크 분해 | `writing-plans-base` |
+| 계획을 순차 실행 | `executing-plans-base` |
+| 계획을 서브에이전트로 실행 | `subagent-driven-development-base` |
+| 독립 작업 병렬 처리 | `dispatching-parallel-agents-base` |
+| 구현/버그 수정 | `test-driven-development-base` |
+| 실패 분석/원인 추적 | `systematic-debugging-base` |
+| 완료 주장 전 검증 | `verification-before-completion-base` |
+| feature branch/workspace 분리 | `using-feature-branches-base` |
+| 브랜치 정리/리뷰 준비 | `finishing-a-development-branch-base` |
+| 셀프 리뷰 요청 | `requesting-code-review-base` |
+| 리뷰 피드백 처리 | `receiving-code-review-base` |
+| 타인 변경 리뷰 | `code-reviewer-base` |
+| 스킬 작성/수정 | `writing-skills-base` |
 
-다음 4개 축은 유지한다.
+## Default Workflow
 
-- `skills/`: 작업 방식 자체를 정의하는 재사용 가능한 지침
-- `AGENTS.md`, `CLAUDE.md`: 저장소 단위 규칙과 라우팅
-- `hooks/`: 세션 시작 시 주입할 최소 컨텍스트
-- `settings.json`: hook 연결 지점
+```text
+brainstorming-base
+  -> writing-plans-base
+  -> executing-plans-base / subagent-driven-development-base
+     -> test-driven-development-base
+     -> systematic-debugging-base (when needed)
+     -> verification-before-completion-base
+  -> finishing-a-development-branch-base
+     -> requesting-code-review-base
+     -> receiving-code-review-base
+```
 
-### 2. Separate Core From Example
+독립 스킬:
 
-공통화할 때는 가능한 한 아래 구조를 목표로 한다.
+- `dispatching-parallel-agents-base`
+- `code-reviewer-base`
+- `using-feature-branches-base`
+- `writing-skills-base`
 
-- core: 제품과 무관한 절차
-- adapter: 특정 제품/팀 도구에 맞춘 치환 규칙
-- example: AIM 같은 기존 구현 예시
+## Product Pack Rule
 
-아직 구조 개편 전이라도, 문서 안에서는 이 구분을 명시적으로 드러낸다.
+아래 경로는 기본 런타임 스킬이 아니다.
 
-### 3. Rename Carefully
+- `product-specific/skills/issue-analysis-base`
+- `product-specific/skills/completing-patch-base`
+- `product-specific/skills/writing-documents-base`
+- `product-specific/code-reviewer-base/*`
 
-- `*-aim` 접미사는 당장은 과도기 이름으로 본다.
-- 실제 rename은 관련 문서, hook, settings, cross-reference를 한 번에 맞출 수 있을 때만 한다.
-- 이름만 일반화하고 내용이 AIM 전용이면 rename하지 않는다.
+사용 조건:
 
-### 4. Prefer Parameterization Over Hardcoding
+- 특정 제품 절차가 명시적으로 필요할 때
+- 기본 `skills/`만으로는 작업 문맥이 부족할 때
+- 제품별 issue/document/review workflow를 복원해야 할 때
 
-예:
+## Execution And Verification
 
-- `dx make test` → `<project_test_command>`
-- `GitLab MR` → `code review / merge workflow`
-- `IMS issue` → `issue tracker item`
+- 비자명한 작업은 설계 후 실행한다.
+- 실행 중에는 태스크 단위 검증과 최종 검증을 분리한다.
+- 검증 없이 완료를 주장하지 않는다.
+- 완료 보고에는 실제 실행한 검증 또는 검증하지 못한 이유를 포함한다.
 
-단, 너무 추상적이어서 실행 불가능해지면 안 된다. 추상화할 때는 최소 1개의 concrete example을 남긴다.
+## Skill Gap Reporting
 
-## Skill Editing Rules
+스킬이 오래됐거나 실제 저장소 상태와 어긋나면 사용자에게 보고한다.
 
-- 스킬을 수정할 때는 먼저 그 스킬이 공통 코어인지, AIM 전용인지 분류한다.
-- 공통 코어 스킬은 trigger, workflow, verification을 제품 중립적으로 다시 쓴다.
-- AIM 전용 스킬은 억지로 일반화하지 말고, 왜 전용인지 문서에 남긴다.
-- 스킬 간 중복 설명은 줄이고, 공통 규칙은 `AGENTS.md` 또는 `CLAUDE.md`로 올린다.
-- 새 스킬을 추가한다면 이름부터 제품 중립적으로 설계한다.
+형식:
 
-## Recommended Extraction Order
+```text
+[Skill Gap] <skill-name>
+Finding: <what is wrong>
+Evidence: <file, command, or observed behavior>
+Proposal: <specific improvement>
+```
 
-우선순위는 아래 순서를 기본으로 한다.
+## Document Ownership
 
-1. 메타 문서: `AGENTS.md`, `README.md`, `CLAUDE.md`
-2. 공통 개발 루프: brainstorming, plans, execution, TDD, debugging, verification
-3. 협업 루프: branch, review, completion
-4. AIM 전용 절차: issue analysis, patch completion, manual/document workflow
-5. hook 및 settings의 AIM 잔재 제거
+- `AGENTS.md`: Codex 기본 런타임 규칙
+- `README.md`: 구조와 사용법
+- `MIGRATION.md`: 마이그레이션 이력과 판단 로그
+- `claude/`: Claude 사용자용 선택형 runtime pack
 
-## Definition Of Done
-
-어떤 문서나 스킬이 `base-harness`에 맞게 정리됐다고 보려면 최소 아래를 만족해야 한다.
-
-- 특정 제품명 없이도 언제 쓰는지 이해된다.
-- 특정 사내 도구 없이도 절차가 성립한다.
-- 필요 시 치환할 변수나 adapter 포인트가 보인다.
-- 관련 cross-reference가 끊어지지 않는다.
-- AIM 예시는 있어도, 규칙 본문은 AIM에 종속되지 않는다.
-
-## Change Safety
-
-- 대량 rename, 대량 이동, 스킬 일괄 삭제는 한 번에 하지 않는다.
-- 공통화 과정에서 정보가 빠지면, 삭제 대신 `example`, `legacy`, `product-specific` 성격으로 먼저 표시한다.
-- hook, settings, 문서 경로는 쉽게 깨지므로 파일 이동 전후에 참조를 반드시 다시 확인한다.
-
-## Decision Heuristic
-
-판단이 애매하면 아래 순서로 결정한다.
-
-1. 이 규칙이 다른 제품에서도 그대로 유효한가?
-2. 아니라면 제품 adapter로 분리할 수 있는가?
-3. 그것도 아니라면 AIM example/legacy로 남겨야 하는가?
-4. 셋 다 아니면 제거 후보다.
-
-## Immediate Working Assumption
-
-별도 지시가 없으면, 현재 작업은 `aim-harness`를 한 번에 새로 쓰는 것이 아니라 `base-harness`를 점진적으로 경량화하는 방향으로 진행한다.
+새 runtime-specific 자산은 루트에 바로 두지 않는다.
+필요하면 별도 디렉토리 아래에 모은다.
