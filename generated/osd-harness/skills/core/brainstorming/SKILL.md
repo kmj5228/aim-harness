@@ -172,7 +172,7 @@ Wait for user approval. Only then invoke writing-plans.
 ## Integration
 
 **Called by:**
-- prior analysis already captured in the current topic workspace — when existing investigation should feed design
+- product-specific `issue-analysis` — when prior analysis already exists and should feed design
 - direct user entry
 
 **Feeds into:**
