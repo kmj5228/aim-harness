@@ -52,8 +52,9 @@ Typical flow:
 | Implementation finished, need branch/review handoff | **finishing-a-development-branch-base** |
 | Need structured self-review | **requesting-code-review-base** |
 | Need to process review feedback | **receiving-code-review-base** |
-| Need a structured review workflow | **code-reviewer-base** |
+| Need a structured review workflow | **code-reviewer** |
 | Need to derive a product harness from product-bound source assets | **harness-initiator** |
+| Need to improve an already generated harness | **product-harness-refinement** |
 | Creating or editing skills | **writing-skills-base** |
 
 ## Workflow Chain
@@ -71,15 +72,11 @@ brainstorming-base
 
 Independent / specialized:
   dispatching-parallel-agents-base
-  code-reviewer-base
+  code-reviewer
   harness-initiator
+  product-harness-refinement
   using-feature-branches-base
   writing-skills-base
-
-Current product-bound assets (transitional layout):
-  product-specific/skills/issue-analysis-base
-  product-specific/skills/completing-patch-base
-  product-specific/skills/writing-documents-base
 
 Planned direction for this repository:
   templates/<product>/...
@@ -102,18 +99,19 @@ Proposal: <specific improvement>
 
 Report the gap. Do not silently rewrite the skill without approval.
 
-## Product-Specific Product Packs
+## Template And Generated Boundary
 
-Some product-bound workflows are no longer part of the default `skills/` routing set.
+Product-bound source assets are no longer part of the default `skills/` routing set.
 
-- location: `product-specific/skills/`
-- purpose: preserve product-specific product packs without mixing them into the base runtime skill set
-- current packs: issue analysis, patch completion, documentation workflow
+- source pack location: `templates/<pack>/`
+- adapter drafts: `adapters/<product>/`
+- generated runtime target: `generated/<product>-harness/`
 
-This is the current transitional layout, not the long-term target model.
-As the repository evolves, product-bound source assets may move into `templates/`,
-and generated product harnesses may live under `generated/<product>-harness/`.
-Until that migration happens, continue treating `product-specific/skills/` as the live product-bound area.
+Interpretation:
+
+- `templates/` is generation input, not default runtime skill space
+- `harness-initiator` owns template selection, adapter drafting, generation, and generated-structure validation
+- `product-harness-refinement` owns post-generation quality improvements inside an already generated harness
 
 ## Artifact Convention
 
@@ -132,6 +130,7 @@ When multiple skills might apply:
 
 1. **Process skills first** — e.g. `brainstorming-base`, `systematic-debugging-base`
 2. **Execution skills second** — e.g. `test-driven-development-base`, `executing-plans-base`
+3. **Harness generation/refinement skills only when the task is actually about harness work**
 
 ## Common Red Flags
 

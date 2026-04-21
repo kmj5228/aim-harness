@@ -7,24 +7,48 @@ description: Use when adapting product-bound source assets into a new product ha
 
 ## Overview
 
-Turn product-bound source assets into a first product harness draft without rewriting everything by hand.
+Turn template source assets into a first product harness draft without rewriting everything by hand.
 
 **Core principle:** Separate inferred facts, unresolved operational gaps, and generated output. Do not let guesses become adapter truth.
 
-This skill is the first-class deliverable. Generated product harnesses are downstream validation targets, not the primary artifact of this round.
+This skill is the first-class deliverable. Generated product harnesses are downstream validation targets, but the long-term target is still a standalone product harness rather than a thin overlay.
 
 ## When to Use
 
-- A new product harness such as `ofgw-harness` needs to be derived from existing product-bound assets
-- Existing source assets contain reusable workflow plus product-specific bindings that need to be split
+- A new product harness such as `ofgw-harness` needs to be derived from existing template source assets
+- Existing source assets contain reusable workflow plus product-bound bindings that need to be split
 - You need adapter drafts before generating a product harness
 - You want to validate whether the current template boundary is sufficient for a first generated harness
+
+## Responsibility Boundary
+
+`harness-initiator` is responsible for:
+
+- selecting template scope
+- extracting binding candidates
+- drafting adapters
+- confirming unresolved gaps
+- generating the first product harness draft
+- reviewing the generated harness for structural correctness
+- classifying source assets as:
+  - absorb into active skill
+  - defer
+  - leave in `templates/`
+
+`harness-initiator` is not the long-term owner of:
+
+- polishing full product-specific skill bodies
+- evolving review/manual/coverage workflow semantics after the first viable generated draft exists
+- ongoing authoring work inside an already generated standalone harness
+
+Treat those as generated harness refinement work, not as core initiator responsibility.
 
 Do not use for:
 
 - ordinary feature development inside one repository
-- direct cleanup of all product-specific assets at once
+- direct cleanup of every template pack at once
 - manual-guide / patch-completion style workflows that are still ops-locked
+- ongoing product-skill refinement after the generated harness already has a usable first draft
 
 ## First-Run Scope
 
@@ -45,6 +69,12 @@ Current excluded scope:
 - `completing-patch`
 - `manual-guide`
 - coverage-specific prompt/script assets
+
+Interpretation:
+
+- the full source body for `manual-guide` remains excluded while external publish behavior is still unbound
+- a reduced local `manual-workflow` may still be generated when only reusable gate and draft-first semantics are absorbed
+- diff-aware or policy-heavy coverage automation remains excluded until a product-bound coverage workflow exists
 
 ## Required Inputs
 
@@ -82,17 +112,56 @@ Stop if:
 
 Goal:
 - translate inferred repository facts into adapter drafts
+- combine codebase-derived facts with template-inherited binding candidates
 - keep inferred values separate from unresolved values
 
 Produce:
 - `adapters/<product>/product-profile.yaml` draft
 - `adapters/<product>/mappings.yaml` draft
 - inferred-vs-unresolved field list
+- a user-facing `fill-now` list of concrete unresolved values
 
 Rules:
 - fill only codebase-derived facts directly
+- carry template-inherited access patterns as suggested defaults, not as confirmed product truth
 - leave unresolved operational fields as explicit gaps
 - do not invent policy values
+- after the first adapter draft, always show the user the exact values that still need to be filled
+- for each unresolved value, include:
+  - field path
+  - current draft value
+  - short meaning
+  - expected answer shape
+  - recommended value only when repo or org evidence makes one plausible
+
+Extraction checklist:
+
+- scan selected templates for explicit URL patterns, repo paths, notebook targets, API snippets, and mode hints such as `mcp`, `browser`, `api`, `workspace_file`
+- map those inline patterns to `access_bindings.*` candidates
+- distinguish generated runtime conventions such as artifact paths or workspace placeholders from provider bindings
+- keep ops-locked prompts/scripts as excluded assets unless the current pass explicitly absorbs them
+- record source-asset handling in `generation_assets` using only:
+  - `generate`
+  - `absorb`
+  - `absorb_partial`
+  - `defer`
+  - `stay_in_templates`
+
+Draft default bias:
+
+- when org-level evidence already supports the same integration shape across products, prefer:
+  - Jira:
+    - `enabled: true`
+    - `default_mode: mcp`
+    - `fallback_modes: [api]`
+    - `location: atlassian-rovo`
+  - local manual workspace:
+    - `manual_workflow_required: true`
+    - `manual_repo.enabled: true`
+    - `manual_repo.default_mode: workspace_file`
+    - `manual_repo.location: generated/manual/`
+- treat these as draft defaults for user-config minimization, not as irreversible truth
+- if repo or product evidence conflicts, the adapter may still override or reopen them
 
 ### Phase 3: Confirm Gaps
 
@@ -117,8 +186,24 @@ Preferred report shape:
 
 - `Inferred Facts`
 - `Needs Confirmation`
+- `Fill Now`
 - `Red Flags`
 - `Proposed Next Step`
+
+`Fill Now` rule:
+
+- always present the unresolved values as a short fill-in list immediately after the first adapter draft
+- do not hide them only inside prose
+- keep the list answerable in one reply
+- prefer exact field paths over vague labels
+
+Preferred item shape:
+
+- `<field path>`
+  - current draft: `<value>`
+  - meaning: `<what this controls>`
+  - answer shape: `<true|false|path|url|enum>`
+  - recommended: `<value or none>`
 
 Group unresolved questions by:
 
@@ -149,13 +234,104 @@ Report explicitly:
 - what was skipped
 - what remains ops-locked or unresolved
 
-For the first validation pass, keep the generated skeleton minimal:
+Long-term target layout:
+
+- root metadata such as `AGENTS.md` and `README.md`
+- `hooks/`
+- `skills/core/`
+- `skills/collab/`
+- `skills/docs/`
+- `skills/review/`
+- `skills/product/`
+- materialized workspace bindings such as `agent/` and `generated/manual/` when confirmed
+
+Second-pass bundling criteria:
+
+- include `skills/core/` when the base skill is stack-neutral and already follows the artifact contract
+- include `skills/collab/` when the workflow is product-neutral and does not depend on AIM-only systems
+- include `skills/review/` when the review layer can be expressed as reusable review workflow plus product-bound bindings
+- promote source review context-collector patterns into active `skills/review/` when provider bindings are confirmed and outputs can be normalized into local artifacts
+- promote product-safe coverage workflows into active `skills/review/` when the repository already exposes a trustworthy native coverage path such as JaCoCo
+- promote a local `manual-workflow` into `skills/docs/` when the manual target is confirmed as workspace-local and external publish steps remain deferred
+- absorb support guidance such as markdown conventions into active skills or root docs instead of carrying a generated `references/` tree
+- keep ops-locked review prompts/scripts in `templates/` until adapter inputs can bind them safely
+
+Default base-runtime carry-over policy:
+
+- treat reusable root `skills/` entries as generator-owned defaults, not as product adapter data
+- bundle `skills/core/` by default when the corresponding base skills have already been neutralized enough for standalone reuse
+- bundle `skills/collab/` by default when the workflow is repository-neutral
+- bundle the base `code-reviewer` workflow by default as the minimum reusable review orchestrator
+- when generated review companions such as `review-context-collector` or `coverage-review` also exist, the carried-over `code-reviewer` must acknowledge them as optional bound helpers rather than leaving the review layer disconnected
+- when carrying these defaults into a generated harness, preserve standalone runtime names and do not reintroduce legacy `*-base` naming
+- do not require `generation_assets` entries for these carry-over defaults
+- use `generation_assets` only for template-derived productization decisions
+- if a product needs to opt out of a default carry-over rule later, add an explicit policy hook then; do not pre-emptively expand adapter schema
+
+For the first validation pass, allow the generated skeleton to stay minimal:
 
 - root metadata such as `AGENTS.md`, `README.md`, and `GENERATION_SUMMARY.md`
 - generated drafts for `skills/product/issue-analysis/` and `skills/docs/writing-documents/`
-- `references/markdown-guide.md` as carried support reference
+- materialized workspace bindings such as `agent/` and `generated/manual/` when their locations are already confirmed
 
-Do not treat missing `hooks/`, `profiles/`, `skills/core/`, or `skills/collab/` as first-pass failure.
+Interpret missing areas carefully:
+
+- do not treat missing `hooks/`, `skills/core/`, `skills/collab/`, or `skills/review/` as first-pass failure
+- do treat them as explicit next-pass generation targets
+- do not describe the first-pass skeleton as the final intended harness shape
+
+### Phase 5: Review Generated Harness
+
+Goal:
+- inspect the generated harness as a generated product artifact rather than as a source-pack draft
+- catch structural regressions before treating the pass as complete
+
+Produce:
+- generated-harness review notes
+- required follow-up fixes
+- confirmed deferred scope
+
+Preferred artifact:
+- `adapters/<product>/REVIEW_GENERATED_HARNESS.md`
+
+Interpretation:
+
+- this file is a validation artifact only
+- it is not a runtime skill
+- it is not adapter truth
+- it must not become an input source for later generation passes
+- generated harness root should keep runtime-facing docs only:
+  - `README.md`
+  - `AGENTS.md`
+  - `GENERATION_SUMMARY.md`
+
+Check explicitly:
+- target layout conformity
+- active skill vs deferred source-asset classification
+- source-pack path leakage
+- naming normalization
+- hook/runtime consistency
+- review-layer coherence when companion review skills are generated
+- excluded-scope reporting
+- `generation_assets` consistency for template-derived outputs
+- maturity gain vs initiator-only baseline when available
+- interface cost of any attached refinement schema
+- portability of the observed refinement outcomes
+
+Reference handling rule:
+
+- standalone product harnesses should not keep a generated `references/` directory
+- active runtime behavior should live under `skills/*` or explicit runtime docs such as `README.md`
+- support guidance needed at runtime should be absorbed into skills or root docs
+- source-derived comparison material should remain in `templates/`, not inside the generated harness
+- AIM-locked carry-over assets stay source-side until they are either productized or intentionally dropped
+
+Naming normalization rule:
+
+- generated carry-over skills must use standalone names in the generated tree
+- preserve standalone frontmatter `name:` fields during carry-over
+- rewrite any lingering legacy `*-base` cross-skill references to standalone runtime names
+- do not leak template or source-pack file paths into active generated runtime skills
 
 ## Output Contract
 
@@ -183,16 +359,19 @@ For the first validation pass, success means the skill preserves the full contra
 - draft `product-profile.yaml` and `mappings.yaml`
 - produce a grouped confirmation packet
 - after confirmation, generate only a minimal harness draft for the selected template scope
+- preserve source hard gates and behavior-critical safety rules unless the generated harness explicitly replaces them with an equivalent rule
+- keep the long-term standalone target visible rather than collapsing the contract to a docs/product-only overlay
 
 For the current `ofgw` validation target, the selected scope is:
 
 - `issue-analysis`
 - `writing-documents`
-- `markdown-guide` as support reference only
+- `markdown-guide` rules absorbed into the generated docs layer
 
 Do not treat first-pass success as:
 
 - a full `ofgw-harness` rollout
+- proof that the final generated harness should remain docs/product-only
 - proof that mixed-stack `ofgw` facts should rewrite the template body
 - permission to silently include excluded assets such as `completing-patch`
 
@@ -202,6 +381,7 @@ At the current design stage:
 
 - `analyze`, `draft-adapter`, and `confirm-gaps` are ready to execute
 - `generate-harness` is blocked until the first adapter draft is reviewed and required unresolved values are no longer `unknown`
+- `review-generated-harness` runs immediately after generation and is required before calling the pass complete
 
 Treat the next run as a real draft attempt, not as another abstract design pass.
 
@@ -213,14 +393,15 @@ Treat the next run as a real draft attempt, not as another abstract design pass.
 - Generating the harness before user confirmation
 - Hiding excluded assets instead of reporting them
 - Letting source-pack cleanup and harness generation become one uncontrolled refactor
+- Treating every `references/` asset as either permanent runtime behavior or guaranteed future deletion
 
 ## Integration
 
 Pairs with:
 
-- `writing-skills-base` — if the initiator workflow itself needs revision
-- `brainstorming-base` — when the generation approach or boundary still needs design work
-- `writing-plans-base` — when the initiator implementation itself needs a task breakdown
+- `writing-skills` — if the initiator workflow itself needs revision
+- `brainstorming` — when the generation approach or boundary still needs design work
+- `writing-plans` — when the initiator implementation itself needs a task breakdown
 
 Produces drafts for:
 
@@ -247,9 +428,39 @@ Start with exactly two adapter files:
 
 - source pack name
 - target product name
-- terminology mapping
+- terminology mapping using `canonical` + `aliases`
 - command bindings
 - provider-style access and integration bindings
 - a `confirm` list for unresolved mappings
+
+Binding source rule:
+
+- `repo.*` and most `command_bindings.*` come from the target codebase
+- `access_bindings.*` often start from template-inherited patterns such as URL forms, tool modes, and workflow semantics
+- repository docs and user confirmation decide whether those inherited patterns are actually enabled for the target product
+- therefore initiator does not require a separate `templates/<pack>/bindings/` directory before it can draft adapters
+
+Inline extraction rule:
+
+- treat template body text as a valid source of binding candidates while the source pack is still in mixed inline form
+- prefer extracting stable facts from repeated statements such as:
+  - access URL patterns
+  - tool-mode restrictions
+  - notebook/manual workflow semantics
+  - MR or issue marker contracts
+- do not promote one-off prose examples into binding fields unless they materially affect runtime routing
+
+Terminology rule:
+
+- use `canonical` for generated default wording
+- keep `aliases` for input interpretation and synonym coverage
+
+Workflow default rule:
+
+- if `workflow.defaults.*` are directly implied by confirmed provider bindings, treat them as derived defaults rather than a separate generation gate
+
+Generation preservation rule:
+
+- keep source hard gates and behavior-critical safety rules unless the generated harness explicitly replaces them with an equivalent rule
 
 Do not expand the schema early unless repeated generation attempts show a stable need.

@@ -1,0 +1,48 @@
+product:
+  name: osd
+
+repo:
+  build_systems:
+    - make
+  primary_languages:
+    - c
+    - c++
+    - shell
+  modules:
+    - errcode
+    - msgcode
+    - include
+    - sysmsg
+    - src/lib
+    - src/server
+    - src/tool
+    - src/util
+    - test/lib
+    - test/server
+    - test/tool
+    - test/util
+    - dist
+  test_frameworks:
+    - gtest
+    - gmock
+  coverage_tool: lcov+gcov
+  commands:
+    build: make
+    test: make -C test
+    coverage: test/run_coverage.sh
+
+workflow:
+  defaults:
+    issue_tracker: jira
+    review_channel: pull_request
+    docs_channel: repo_markdown
+    manual_workflow_required: true
+
+runtime:
+  artifact_workspace_root: agent/
+  manual_workspace_root: generated/manual/
+
+notes:
+  - root build and coverage flow depend on environment variables such as SOURCE_BASE, OPENFRAME_HOME, and OPENFRAME_ROOT
+  - coverage is repository-native but not fully environment-neutral
+  - patch and distribution workflows are operationally coupled and should stay outside first-pass generation unless explicitly confirmed

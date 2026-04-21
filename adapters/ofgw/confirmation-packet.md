@@ -38,8 +38,14 @@
   - evidence: current repository documentation is markdown-based and workspace-local
 - `access_bindings.docs_targets.repo_markdown.location`: `agent/`
   - evidence: user wants a product-root `agent/` directory while preserving existing skill subfolder structure
-- `access_bindings.manual_targets.manual_repo.enabled`: keep unresolved
-  - evidence: no reliable repository signal for product-level manual repo workflow
+- `workflow.defaults.manual_workflow_required`: `true`
+  - evidence: user chose to keep the AIM-style manual workflow in the default completion path
+- `access_bindings.manual_targets.manual_repo.enabled`: `true`
+  - evidence: user chose to keep manual access enabled whenever the manual workflow is required
+- `access_bindings.manual_targets.manual_repo.default_mode`: `workspace_file`
+  - evidence: user chose a generated workspace path rather than a browser-only manual system
+- `access_bindings.manual_targets.manual_repo.location`: `generated/manual/`
+  - evidence: user chose to preserve the AIM-style manual flow while relocating the writable target under the generated harness workspace
 
 ### Jira Setup Required
 
@@ -81,16 +87,19 @@ Current target notebook:
 
 ### Release / Manual Policy
 
-- `workflow.defaults.manual_workflow_required`: unknown
-- `access_bindings.manual_targets.manual_repo.enabled`: unknown
-- `access_bindings.manual_targets.manual_repo.default_mode`: unknown
-- `access_bindings.manual_targets.manual_repo.location`: unknown
+- `workflow.defaults.manual_workflow_required`: confirmed `true`
+- `access_bindings.manual_targets.manual_repo.enabled`: confirmed `true`
+- `access_bindings.manual_targets.manual_repo.default_mode`: confirmed `workspace_file`
+- `access_bindings.manual_targets.manual_repo.location`: confirmed `generated/manual/`
 
 ### Terminology
 
-- `terminology.issue_item`: unknown
-- `terminology.review_artifact`: unknown
-- `terminology.docs_artifact`: unknown
+- `terminology.issue_item.canonical`: confirmed `issue`
+- `terminology.issue_item.aliases`: `ticket`, `jira`, `ims`
+- `terminology.review_artifact.canonical`: confirmed `PR`
+- `terminology.review_artifact.aliases`: `pull request`, `review request`
+- `terminology.docs_artifact.canonical`: confirmed `markdown document`
+- `terminology.docs_artifact.aliases`: `doc`, `note`, `report`
 
 ## Red Flags
 
@@ -101,12 +110,13 @@ Current target notebook:
 - IMS is enabled by default, but access still assumes Chrome/browser automation according to the inherited URL pattern.
 - NotebookLM provider is assumed to exist via the community MCP CLI; the current `ofgw` draft already fixes one notebook target URL, but future products will still need their own notebook target.
 - Generated markdown storage is assumed to live under the product root `agent/` directory.
+- Manual flow now follows AIM-style gating semantics, but the writable target is a generated workspace directory instead of a separate MANUAL repository.
 
 ## Proposed Next Step
 
-- Confirm the unresolved manual repo usage and terminology values.
 - Keep the first generated scope limited to:
   - `issue-analysis`
   - `writing-documents`
   - `markdown-guide` as support reference
-- After confirmation, generate only the minimal first-pass skeleton for `generated/ofgw-harness/`.
+- Review the generated first-pass skeleton for `generated/ofgw-harness/`.
+- Use findings from the first generation pass to smooth the initiator contract before widening template scope.

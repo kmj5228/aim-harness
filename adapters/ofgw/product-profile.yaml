@@ -32,13 +32,10 @@ workflow:
     issue_tracker: jira
     review_channel: pull_request
     docs_channel: repo_markdown
-    manual_workflow_required: null
-confirm:
-  - workflow.defaults.issue_tracker
-  - workflow.defaults.review_channel
-  - workflow.defaults.docs_channel
-  - workflow.defaults.manual_workflow_required
+    manual_workflow_required: true
+confirm: []
 notes:
   - ofgw is a mixed-stack validation target; generated template bodies must remain stack-agnostic
   - avoid defaulting to root packaging tasks because jar/war flows can update version files and trigger git commits
-  - workflow defaults are provisional and must not be treated as confirmed access bindings
+  - workflow defaults are derived from the confirmed provider bindings and should not be treated as a separate generate gate
+  - manual workflow follows the AIM-style completion path, but the generated manual workspace lives under `generated/manual/`

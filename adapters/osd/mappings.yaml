@@ -1,0 +1,146 @@
+source_pack: aim-template
+target_product: osd
+terminology:
+  issue_item:
+    canonical: issue
+    aliases:
+      - ticket
+      - jira
+      - ims
+  review_artifact:
+    canonical: PR
+    aliases:
+      - pull request
+      - review request
+  docs_artifact:
+    canonical: markdown document
+    aliases:
+      - doc
+      - note
+      - report
+generation_assets:
+  - source: templates/aim/skills/issue-analysis/SKILL.md
+    action: generate
+    target: skills/product/issue-analysis/SKILL.md
+    note: generate the product issue-analysis skill with osd bindings
+  - source: templates/aim/skills/writing-documents/SKILL.md
+    action: generate
+    target: skills/docs/writing-documents/SKILL.md
+    note: generate the bound docs workflow for repo markdown and review/manual routing
+  - source: templates/aim/skills/writing-documents/markdown-guide.md
+    action: absorb
+    target: skills/docs/writing-documents/SKILL.md
+    note: fold markdown conventions into the generated docs skill
+  - source: templates/aim/skills/writing-documents/manual-guide.md
+    action: absorb_partial
+    target: skills/docs/manual-workflow/SKILL.md
+    note: absorb need-gate and draft-first semantics only if local manual drafting is confirmed
+  - source: templates/aim/skills/completing-patch/SKILL.md
+    action: defer
+    note: patch workflow is strongly tied to patch_osd.sh and operational environment
+  - source: templates/aim/review/code-reviewer/info-collector-prompt.md
+    action: absorb_partial
+    target: skills/review/review-context-collector/SKILL.md
+    note: absorb reusable review-context gathering semantics and replace AIM identifiers with osd bindings
+  - source: templates/aim/review/code-reviewer/coverage-analyst-prompt.md
+    action: absorb_partial
+    target: skills/review/coverage-review/SKILL.md
+    note: absorb product-safe coverage review semantics around test/run_coverage.sh without copying AIM gcov workflow directly
+  - source: templates/aim/review/code-reviewer/measure_diff_cov.sh
+    action: stay_in_templates
+    note: keep the AIM-locked helper script in templates only
+  - source: templates/aim/skills/writing-documents/jira-guide.md
+    action: stay_in_templates
+    note: platform reference asset, not a generated runtime skill
+  - source: templates/aim/skills/writing-documents/gitlab-guide.md
+    action: stay_in_templates
+    note: platform reference asset, not a generated runtime skill
+  - source: templates/aim/skills/writing-documents/ims-guide.md
+    action: stay_in_templates
+    note: platform reference asset, not a generated runtime skill
+  - source: templates/aim/skills/writing-documents/confluence-guide.md
+    action: stay_in_templates
+    note: platform reference asset, not a generated runtime skill
+  - source: templates/aim/skills/writing-documents/mail-guide.md
+    action: stay_in_templates
+    note: platform reference asset, not a generated runtime skill
+command_bindings:
+  project_build_command: make
+  project_test_command: make -C test
+  coverage_command: test/run_coverage.sh
+access_bindings:
+  issue_sources:
+    jira:
+      enabled: true
+      default_mode: mcp
+      fallback_modes:
+        - api
+      location: atlassian-rovo
+      setup:
+        mcp_server_url: https://mcp.atlassian.com/v1/mcp
+        mcp_server_name: atlassian-rovo
+        setup_steps:
+          - codex mcp add atlassian-rovo --url https://mcp.atlassian.com/v1/mcp
+          - codex mcp login atlassian-rovo
+          - codex mcp list
+          - codex mcp get atlassian-rovo
+        api_fallback:
+          auth_source: agent/info/access.md
+          example: |
+            curl -s -u "<EMAIL>:<API_TOKEN>" \
+              "https://tmaxsoft.atlassian.net/rest/api/2/issue/<JIRA_KEY>" | jq '.fields.summary, .fields.description'
+    ims:
+      enabled: true
+      default_mode: browser
+      fallback_modes: []
+      location: https://ims.tmaxsoft.com/tody/ims/issue/issueView.do?issueId=<IMS_NUMBER>
+      notes:
+        - `patch_osd.sh` requires an IMS-style identifier, so IMS remains a likely active issue source
+  spec_sources:
+    notebooklm:
+      enabled: true
+      default_mode: mcp
+      fallback_modes:
+        - browser
+      location: https://notebooklm.google.com/notebook/158fe966-8a78-4a7e-a6c9-40747330edc5
+      setup:
+        provider_type: community_mcp
+        source_repo: https://github.com/jacob-bd/notebooklm-mcp-cli
+        notes:
+          - use the open-source NotebookLM MCP CLI as the default provider
+          - the user only needs to provide the target notebook URL or notebook identifier
+  review_targets:
+    pull_request:
+      enabled: true
+      default_mode: browser
+      fallback_modes:
+        - git
+      location: http://192.168.51.106/openframe/openframe7/osd
+    merge_request:
+      enabled: false
+      default_mode: browser
+      fallback_modes: []
+      location: null
+  docs_targets:
+    repo_markdown:
+      enabled: true
+      default_mode: workspace_file
+      fallback_modes: []
+      location: agent/
+    confluence:
+      enabled: false
+      default_mode: browser
+      fallback_modes:
+        - api
+      location: null
+  manual_targets:
+    manual_repo:
+      enabled: true
+      default_mode: workspace_file
+      fallback_modes: []
+      location: generated/manual/
+confirm: []
+notes:
+  - repo markdown workspace can likely reuse the same agent/ convention as ofgw
+  - review target is inferred from git remote and still needs a product confirmation pass
+  - coverage workflow should stay explicit about environment prerequisites if promoted into a generated review skill

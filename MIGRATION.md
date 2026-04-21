@@ -53,23 +53,23 @@
 
 #### Common Core Candidates
 
-- `brainstorming-base`
-- `writing-plans-base`
-- `executing-plans-base`
-- `test-driven-development-base`
-- `systematic-debugging-base`
-- `verification-before-completion-base`
-- `writing-skills-base`
+- `brainstorming`
+- `writing-plans`
+- `executing-plans`
+- `test-driven-development`
+- `systematic-debugging`
+- `verification-before-completion`
+- `writing-skills`
 
 #### Collaboration Layer Candidates
 
-- `subagent-driven-development-base`
-- `dispatching-parallel-agents-base`
-- `using-feature-branches-base`
-- `requesting-code-review-base`
-- `receiving-code-review-base`
-- `code-reviewer-base`
-- `finishing-a-development-branch-base`
+- `subagent-driven-development`
+- `dispatching-parallel-agents`
+- `using-feature-branches`
+- `requesting-code-review`
+- `receiving-code-review`
+- `code-reviewer`
+- `finishing-a-development-branch`
 
 #### Product-Specific Product Pack Candidates
 
@@ -132,7 +132,7 @@ git -C base-harness status --short
 
 - `using-aim-harness`는 SessionStart hook이 의존하므로 즉시 rename하지 않음
 - `issue-analysis-base`, `completing-patch-base`, `writing-documents-base`는 현재 기준으로 제품 전용 product pack 후보로 분류
-- `brainstorming-base`, `writing-plans-base`, `executing-plans-base`, `test-driven-development-base`, `systematic-debugging-base`, `verification-before-completion-base`를 다음 공통화 우선 대상으로 유지
+- `brainstorming`, `writing-plans`, `executing-plans`, `test-driven-development`, `systematic-debugging`, `verification-before-completion`를 다음 공통화 우선 대상으로 유지
 - `MIGRATION_PLAN.md`와 `MIGRATION_LOG.md`는 역할이 겹치므로 `MIGRATION.md` 하나로 통합
 
 ## Execution Log
@@ -187,9 +187,9 @@ git -C base-harness status --short
 - 전략과 실행 이력을 한 문서에서 함께 유지하도록 구조 변경
 - `README.md`의 마이그레이션 문서 참조를 `MIGRATION.md`로 변경
 
-### 2026-04-17 7. `brainstorming-base` 1차 공통화
+### 2026-04-17 7. `brainstorming` 1차 공통화
 
-- `brainstorming-base/SKILL.md`에서 `AIM`, `IMS`, `Jira`, `NotebookLM` 등 제품 종속 표현 식별
+- `brainstorming/SKILL.md`에서 `AIM`, `IMS`, `Jira`, `NotebookLM` 등 제품 종속 표현 식별
 - description을 AIM 전용 설계 스킬에서 공통 설계 진입 조건으로 변경
 - 체크리스트의 `analysis_report.md`, 외부 시스템 조사, affected modules를 공통 개념으로 일반화
 - 설계 문서 템플릿을 `Affected Modules`, 헤더 변경, errcode 중심에서 범용 component/interface/error-handling 구조로 변경
@@ -197,17 +197,17 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide" base-harness/skills/brainstorming-base/SKILL.md`
+- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide" base-harness/skills/brainstorming/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
-- 파일명 `brainstorming-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `brainstorming` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 - `../agent/prompt/<topic>/design_spec.md` 경로는 공통화 관점에서 후속 검토가 필요함
 
-### 2026-04-17 8. `writing-plans-base` 1차 공통화
+### 2026-04-17 8. `writing-plans` 1차 공통화
 
-- `writing-plans-base/SKILL.md`에서 `AIM`, `dx`, 특정 헤더 규칙, errcode/msgcode, C/OpenFrame 전제 식별
+- `writing-plans/SKILL.md`에서 `AIM`, `dx`, 특정 헤더 규칙, errcode/msgcode, C/OpenFrame 전제 식별
 - description과 overview를 AIM 전용 구현 계획 스킬에서 공통 태스크 분해 스킬로 변경
 - 파일 구조 섹션을 특정 헤더 규칙이 아니라 "현재 디렉토리 관례 우선" 원칙으로 일반화
 - task granularity를 `gtest`, `dx make` 고정에서 "targeted verification + broader verification" 구조로 변경
@@ -216,7 +216,7 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|OpenFrame|C developer|errcode|msgcode|lib/svr/tool/util" base-harness/skills/writing-plans-base/SKILL.md`
+- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|OpenFrame|C developer|errcode|msgcode|lib/svr/tool/util" base-harness/skills/writing-plans/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
@@ -224,17 +224,17 @@ git -C base-harness status --short
 - 예시 코드와 명령이 `TypeScript + pnpm`에 치우쳐 있어 완전한 스택 중립 예시는 아님
 - `../agent/prompt/<topic>/plan_tasks.md` 경로는 공통화 관점에서 후속 검토가 필요함
 
-### 2026-04-17 9. `executing-plans-base` 1차 공통화
+### 2026-04-17 9. `executing-plans` 1차 공통화
 
-- `executing-plans-base/SKILL.md`에서 `rb_73`, `dx`, `gtest`, coverage 스크립트, AIM 전용 branch/build 규칙 식별
+- `executing-plans/SKILL.md`에서 `rb_73`, `dx`, `gtest`, coverage 스크립트, AIM 전용 branch/build 규칙 식별
 - Step 0을 특정 브랜치 검사에서 범용 working context 확인 단계로 변경
 - task execution 단계에서 `gtest`, `dx make` 고정을 제거하고 targeted verification + broader verification 구조로 일반화
-- task 완료 후 coverage 강제를 제거하고 `verification-before-completion-base`로 최종 검증을 위임
+- task 완료 후 coverage 강제를 제거하고 `verification-before-completion`로 최종 검증을 위임
 - commit/branch 규칙을 특정 저장소 정책이 아니라 repository-specific workflow 준수 원칙으로 변경
 
 검증:
 
-- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|clang-format|gtest|Text file busy" base-harness/skills/executing-plans-base/SKILL.md`
+- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|clang-format|gtest|Text file busy" base-harness/skills/executing-plans/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
@@ -242,9 +242,9 @@ git -C base-harness status --short
 - `../agent/prompt/<topic>/plan_tasks.md` 경로는 여전히 공통화 관점에서 후속 검토가 필요함
 - 일부 설명은 여전히 branch-based workflow를 기본 사례로 두고 있어 non-git 환경까지 완전히 일반화되진 않음
 
-### 2026-04-17 10. `test-driven-development-base` 1차 공통화
+### 2026-04-17 10. `test-driven-development` 1차 공통화
 
-- `test-driven-development-base/SKILL.md`에서 `GoogleTest`, `gcov`, `dx`, C 전용 예시, AIM 전용 testing patterns를 식별
+- `test-driven-development/SKILL.md`에서 `GoogleTest`, `gcov`, `dx`, C 전용 예시, AIM 전용 testing patterns를 식별
 - 부분 수정 대신 파일 전체를 공통 TDD 스킬로 재작성
 - 핵심 RED-GREEN-REFACTOR 루프와 검증 체크리스트는 유지하고, 특정 프레임워크/빌드 명령/커버리지 규칙은 제거
 - bug fix, task execution, refactoring에 모두 적용 가능한 범용 TDD 원칙으로 재구성
@@ -252,35 +252,35 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|gtest|measure_diff_cov|clang-format|C/GoogleTest|AIM_OK|AIM_ERR|Text file busy|/root/ofsrc/aim|valgrind" base-harness/skills/test-driven-development-base/SKILL.md`
+- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|gtest|measure_diff_cov|clang-format|C/GoogleTest|AIM_OK|AIM_ERR|Text file busy|/root/ofsrc/aim|valgrind" base-harness/skills/test-driven-development/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
 - 예시가 현재 `TypeScript` 중심이라 다중 언어 예시까지는 제공하지 않음
-- 파일명 `test-driven-development-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `test-driven-development` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 11. `systematic-debugging-base` 1차 공통화
+### 2026-04-17 11. `systematic-debugging` 1차 공통화
 
-- `systematic-debugging-base/SKILL.md`에서 AIM 경로, `dx`, `gdb`, `valgrind`, errcode 중심 예시를 식별
+- `systematic-debugging/SKILL.md`에서 AIM 경로, `dx`, `gdb`, `valgrind`, errcode 중심 예시를 식별
 - 부분 수정 대신 파일 전체를 공통 root-cause 디버깅 스킬로 재작성
 - 핵심 4단계 구조는 유지하고, 특정 빌드/디버깅 명령 대신 증거 수집, 재현, 데이터 흐름 추적, 가설 검증 원칙으로 일반화
 - supporting docs (`root-cause-tracing.md`, `defense-in-depth.md`, `condition-based-waiting.md`) 참조는 유지
-- Phase 4는 `test-driven-development-base`, `verification-before-completion-base`와의 연동 중심으로 정리
+- Phase 4는 `test-driven-development`, `verification-before-completion`와의 연동 중심으로 정리
 
 검증:
 
-- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|gtest|clang-format|/root/ofsrc/aim|gdb|valgrind|errcode|AIM_|fd 'filename'|Text file busy" base-harness/skills/systematic-debugging-base/SKILL.md`
+- `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|gtest|clang-format|/root/ofsrc/aim|gdb|valgrind|errcode|AIM_|fd 'filename'|Text file busy" base-harness/skills/systematic-debugging/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
 - 실제 도구 예시(`gdb`, profiler 등)를 일반 개념으로만 남겨서 도구 선택 가이드는 다소 추상적임
-- 파일명 `systematic-debugging-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `systematic-debugging` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 12. `verification-before-completion-base` 1차 공통화
+### 2026-04-17 12. `verification-before-completion` 1차 공통화
 
-- `verification-before-completion-base/SKILL.md`에서 `dx make gtest`, coverage 80%, 특정 스크립트 의존, AIM 전용 검증 순서를 식별
+- `verification-before-completion/SKILL.md`에서 `dx make gtest`, coverage 80%, 특정 스크립트 의존, AIM 전용 검증 순서를 식별
 - 부분 수정 대신 파일 전체를 공통 검증 게이트 스킬로 재작성
 - 핵심 "evidence before claims" 원칙은 유지하고, 저장소별 실제 검증 명령을 사용하라는 방향으로 일반화
 - coverage는 저장소가 실제로 요구할 때만 측정하는 선택적 policy gate로 재배치
@@ -288,15 +288,15 @@ git -C base-harness status --short
 
 검증:
 
-- 1차 검색: `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|gtest|measure_diff_cov|clang-format|/root/ofsrc/aim|Text file busy|80%|coverage" base-harness/skills/verification-before-completion-base/SKILL.md`
+- 1차 검색: `rg -n "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|gtest|measure_diff_cov|clang-format|/root/ofsrc/aim|Text file busy|80%|coverage" base-harness/skills/verification-before-completion/SKILL.md`
 - 관찰: `CLAIMS` 문자열 내부의 `AIM`이 false positive로 잡힘
-- 2차 검색: `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame" base-harness/skills/verification-before-completion-base/SKILL.md`
+- 2차 검색: `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame" base-harness/skills/verification-before-completion/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
 - generic `coverage` 언급은 남겨두었지만, 저장소별 정책으로만 해석되도록 유지함
-- 파일명 `verification-before-completion-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `verification-before-completion` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
 ### 2026-04-17 13. 코어/메타 재검색
 
@@ -304,7 +304,7 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame" base-harness/README.md base-harness/CLAUDE.md base-harness/hooks/session-start.sh base-harness/skills/brainstorming-base/SKILL.md base-harness/skills/writing-plans-base/SKILL.md base-harness/skills/executing-plans-base/SKILL.md base-harness/skills/test-driven-development-base/SKILL.md base-harness/skills/systematic-debugging-base/SKILL.md base-harness/skills/verification-before-completion-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame" base-harness/README.md base-harness/CLAUDE.md base-harness/hooks/session-start.sh base-harness/skills/brainstorming/SKILL.md base-harness/skills/writing-plans/SKILL.md base-harness/skills/executing-plans/SKILL.md base-harness/skills/test-driven-development/SKILL.md base-harness/skills/systematic-debugging/SKILL.md base-harness/skills/verification-before-completion/SKILL.md`
 
 결과:
 
@@ -317,9 +317,9 @@ git -C base-harness status --short
 - 코어 개발 루프 공통화 1차 완료
 - 다음 라운드는 협업 레이어 스킬 공통화와 과도기 메타 스킬 rename 전략 정리로 넘어감
 
-### 2026-04-17 14. `using-feature-branches-base` 1차 공통화
+### 2026-04-17 14. `using-feature-branches` 1차 공통화
 
-- `using-feature-branches-base/SKILL.md`에서 `rb_73`, branch naming, commit/push, token URL, Jira/IMS 기반 규칙 식별
+- `using-feature-branches/SKILL.md`에서 `rb_73`, branch naming, commit/push, token URL, Jira/IMS 기반 규칙 식별
 - 부분 수정 대신 파일 전체를 공통 branch/workspace isolation 스킬로 재작성
 - 핵심 원칙을 "shared baseline branch에 직접 commit 금지"로 일반화
 - branch naming, push flow, staging, review handoff를 저장소별 정책을 따르는 방향으로 정리
@@ -327,17 +327,17 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|OFV7|oauth2|openframe" base-harness/skills/using-feature-branches-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|OFV7|oauth2|openframe" base-harness/skills/using-feature-branches/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
 - branch-based workflow를 전제로 서술돼 있어 branchless trunk-based 환경까지 완전히 포괄하진 않음
-- 파일명 `using-feature-branches-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `using-feature-branches` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 15. `subagent-driven-development-base` 1차 공통화
+### 2026-04-17 15. `subagent-driven-development` 1차 공통화
 
-- `subagent-driven-development-base/SKILL.md`에서 `dx`, AIM 규칙, 2단계 리뷰의 저장소 전용 전제, 구현자 재스폰 규칙의 제품 종속 표현을 식별
+- `subagent-driven-development/SKILL.md`에서 `dx`, AIM 규칙, 2단계 리뷰의 저장소 전용 전제, 구현자 재스폰 규칙의 제품 종속 표현을 식별
 - 부분 수정 대신 파일 전체를 공통 subagent execution 패턴으로 재작성
 - 핵심 원칙을 "fresh implementer per task + review before acceptance"로 일반화
 - implementer status 처리, review 순서, re-dispatch 규칙, context curation 역할을 저장소 중립적 개념으로 정리
@@ -345,7 +345,7 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|gtest|clang-format" base-harness/skills/subagent-driven-development-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|gtest|clang-format" base-harness/skills/subagent-driven-development/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
@@ -353,9 +353,9 @@ git -C base-harness status --short
 - `../agent/prompt/<topic>/plan_tasks.md` 경로는 여전히 공통화 관점에서 후속 검토가 필요함
 - 구현자/리뷰자 역할 분리는 유지했지만, 실제 프롬프트 파일명(`implementer`, `spec-reviewer`, `code-quality-reviewer`) rename 전략은 아직 남아 있음
 
-### 2026-04-17 16. `dispatching-parallel-agents-base` 1차 공통화
+### 2026-04-17 16. `dispatching-parallel-agents` 1차 공통화
 
-- `dispatching-parallel-agents-base/SKILL.md`에서 `dx`, AIM rules, module 예시, 병렬 검증 명령의 제품 종속 표현을 식별
+- `dispatching-parallel-agents/SKILL.md`에서 `dx`, AIM rules, module 예시, 병렬 검증 명령의 제품 종속 표현을 식별
 - 부분 수정 대신 파일 전체를 공통 병렬 분배 스킬로 재작성
 - 핵심 원칙을 "독립 문제를 겹치지 않는 write scope로 나눠 병렬 처리"로 일반화
 - task framing, ownership, overlap 방지, integration review를 저장소 중립적 개념으로 정리
@@ -363,35 +363,35 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|gtest|clang-format" base-harness/skills/dispatching-parallel-agents-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|gtest|clang-format" base-harness/skills/dispatching-parallel-agents/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
 - 여전히 "agent"와 "parallel dispatch" 중심 표현이라 subagent 없는 환경에는 직접 적용성이 낮을 수 있음
-- 파일명 `dispatching-parallel-agents-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `dispatching-parallel-agents` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 17. `requesting-code-review-base` 1차 공통화
+### 2026-04-17 17. `requesting-code-review` 1차 공통화
 
-- `requesting-code-review-base/SKILL.md`에서 AIM/MR/Phase/branch diff 전제의 제품 종속 표현을 식별
+- `requesting-code-review/SKILL.md`에서 AIM/MR/Phase/branch diff 전제의 제품 종속 표현을 식별
 - 부분 수정 대신 파일 전체를 공통 셀프 리뷰 요청 스킬로 재작성
 - 핵심 원칙을 "외부 리뷰 전 자기 패치를 구조적으로 다시 검토"로 일반화
 - review scope 정의, review path 호출, findings triage, fix 후 재검증 루프를 저장소 중립적 개념으로 정리
-- `code-reviewer-base`는 선택 가능한 structured review workflow로만 남기고 특정 phase 설명은 제거
+- `code-reviewer`는 선택 가능한 structured review workflow로만 남기고 특정 phase 설명은 제거
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|MR|Phase|OFV7" base-harness/skills/requesting-code-review-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|MR|Phase|OFV7" base-harness/skills/requesting-code-review/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
-- 실제 self-review 실행 메커니즘은 아직 `code-reviewer-base` 의존이 커서 후속 공통화 필요
-- 파일명 `requesting-code-review-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 실제 self-review 실행 메커니즘은 아직 `code-reviewer` 의존이 커서 후속 공통화 필요
+- 파일명 `requesting-code-review` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 18. `receiving-code-review-base` 1차 공통화
+### 2026-04-17 18. `receiving-code-review` 1차 공통화
 
-- `receiving-code-review-base/SKILL.md`에서 AIM/GitLab/`dx`/MR discussion 전제의 제품 종속 표현을 식별
+- `receiving-code-review/SKILL.md`에서 AIM/GitLab/`dx`/MR discussion 전제의 제품 종속 표현을 식별
 - 부분 수정 대신 파일 전체를 공통 리뷰 피드백 처리 스킬로 재작성
 - 핵심 원칙을 "피드백을 기술적으로 검증한 뒤 수정"으로 일반화
 - triage, pushback, 채널별 응답 원칙, 수정 후 재검증 루프를 저장소 중립적 개념으로 정리
@@ -399,17 +399,17 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|MR|Phase|OFV7|curl|discussion" base-harness/skills/receiving-code-review-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|MR|Phase|OFV7|curl|discussion" base-harness/skills/receiving-code-review/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
-- structured review 결과를 생산하는 메커니즘은 여전히 `code-reviewer-base` 의존이 커서 후속 공통화 필요
-- 파일명 `receiving-code-review-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- structured review 결과를 생산하는 메커니즘은 여전히 `code-reviewer` 의존이 커서 후속 공통화 필요
+- 파일명 `receiving-code-review` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 19. `finishing-a-development-branch-base` 1차 공통화
+### 2026-04-17 19. `finishing-a-development-branch` 1차 공통화
 
-- `finishing-a-development-branch-base/SKILL.md`에서 MR/manual/marker/coverage/push/token/patch 후속 규칙의 제품 종속 표현을 식별
+- `finishing-a-development-branch/SKILL.md`에서 MR/manual/marker/coverage/push/token/patch 후속 규칙의 제품 종속 표현을 식별
 - 부분 수정 대신 파일 전체를 공통 branch/review completion 스킬로 재작성
 - 핵심 원칙을 "검증 -> 정리 -> 브랜치 동기화 -> 리뷰/완료 옵션 제시"로 일반화
 - manual-guide, marker, patch verification, GitLab API, 사내 템플릿, coverage 수치 같은 제품 전용 흐름 제거
@@ -417,17 +417,17 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|MR|marker|pending-merge|OFV7|oauth2|curl|coverage|squash" base-harness/skills/finishing-a-development-branch-base/SKILL.md`
+- `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|MR|marker|pending-merge|OFV7|oauth2|curl|coverage|squash" base-harness/skills/finishing-a-development-branch/SKILL.md`
 - 결과: 매칭 없음
 
 잔여 리스크:
 
 - review artifact를 PR/MR 중심으로 서술해 branchless direct-submit 환경까지 완전히 일반화되진 않음
-- 파일명 `finishing-a-development-branch-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `finishing-a-development-branch` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
-### 2026-04-17 20. `code-reviewer-base` 1차 공통화
+### 2026-04-17 20. `code-reviewer` 1차 공통화
 
-- `code-reviewer-base/SKILL.md`에서 AIM/GitLab/coverage/Phase 오케스트레이션, API 등록, 후속 검증 루프의 제품 종속 표현을 식별
+- `code-reviewer/SKILL.md`에서 AIM/GitLab/coverage/Phase 오케스트레이션, API 등록, 후속 검증 루프의 제품 종속 표현을 식별
 - 부분 수정 대신 파일 전체를 공통 리뷰 오케스트레이션 스킬로 재작성
 - 핵심 원칙을 "정보 수집 -> 분석 -> 종합 -> 후속 검증" 구조로 일반화
 - context collector / code reviewer / test reviewer / synthesizer 역할 분리를 저장소 중립적 개념으로 정리
@@ -435,14 +435,14 @@ git -C base-harness status --short
 
 검증:
 
-- 1차 검색: `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|Phase|coverage|curl|MR|LGTM|clang-format|Chrome|OFV7|IMS#" base-harness/skills/code-reviewer-base/SKILL.md`
+- 1차 검색: `rg -n -w "AIM|IMS|Jira|NotebookLM|dx|rb_73|GitLab|Confluence|GoogleTest|gcov|manual-guide|measure_diff_cov|OpenFrame|Phase|coverage|curl|MR|LGTM|clang-format|Chrome|OFV7|IMS#" base-harness/skills/code-reviewer/SKILL.md`
 - 관찰: `coverage` 일반 용어가 "missing coverage areas" 문맥으로 매칭됨
 - 판단: 제품 종속 잔재가 아니라 일반 리뷰 개념이므로 허용
 
 잔여 리스크:
 
 - 실제 structured review 실행 메커니즘과 동봉된 prompt 파일들은 아직 과거 naming을 유지하므로 후속 rename 전략 필요
-- 파일명 `code-reviewer-base` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
+- 파일명 `code-reviewer` 자체는 과도기 이름이라 아직 제품 중립적이지 않음
 
 ### 2026-04-17 21. 메타 스킬 rename 및 참조 정리
 
@@ -483,7 +483,7 @@ git -C base-harness status --short
 - **후속 rename/정리 필요**
   - `*-aim` 접미사를 유지한 스킬명 전반
   - 동봉 prompt/support 파일의 과거 naming
-  - `writing-skills-base` 내부의 AIM 전용 규칙
+  - `writing-skills` 내부의 AIM 전용 규칙
 
 판단:
 
@@ -523,28 +523,28 @@ git -C base-harness status --short
 
 후속 공통화 대상:
 
-- `brainstorming-base/spec-document-reviewer-prompt.md`
-- `writing-plans-base/plan-document-reviewer-prompt.md`
-- `subagent-driven-development-base/*.md`
-- `code-reviewer-base/*.md`
-- `test-driven-development-base/testing-anti-patterns.md`
-- `writing-skills-base/*`
+- `brainstorming/spec-document-reviewer-prompt.md`
+- `writing-plans/plan-document-reviewer-prompt.md`
+- `subagent-driven-development/*.md`
+- `code-reviewer/*.md`
+- `test-driven-development/testing-anti-patterns.md`
+- `writing-skills/*`
 
 관찰:
 
 - 코어/협업 `SKILL.md` 본문은 대부분 공통화됐지만, 동봉 prompt/support 파일은 아직 AIM 프로젝트 전제를 그대로 담고 있음
-- 특히 `writing-skills-base`은 description, naming 규칙, tool examples, branch/review guidance 전반이 AIM harness 기준이라 별도 라운드가 필요함
+- 특히 `writing-skills`은 description, naming 규칙, tool examples, branch/review guidance 전반이 AIM harness 기준이라 별도 라운드가 필요함
 - 따라서 현재 잔존의 중심은 더 이상 메인 스킬 본문이 아니라 support prompt와 skill-authoring guidance다
 
 ### 2026-04-17 25. 설계/계획 reviewer prompt 1차 공통화
 
-- `brainstorming-base/spec-document-reviewer-prompt.md`
-- `writing-plans-base/plan-document-reviewer-prompt.md`
+- `brainstorming/spec-document-reviewer-prompt.md`
+- `writing-plans/plan-document-reviewer-prompt.md`
 
 판단:
 
 - 두 파일은 제품 전용 product pack으로 남길 이유가 약함
-- 현재 `brainstorming-base`, `writing-plans-base` 본문과 직접 연결되는 보조 reviewer prompt이므로 같은 라운드에서 공통화하는 편이 자연스러움
+- 현재 `brainstorming`, `writing-plans` 본문과 직접 연결되는 보조 reviewer prompt이므로 같은 라운드에서 공통화하는 편이 자연스러움
 
 수정:
 
@@ -554,18 +554,18 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|dx|gtest|errcode|msgcode" base-harness/skills/brainstorming-base/spec-document-reviewer-prompt.md base-harness/skills/writing-plans-base/plan-document-reviewer-prompt.md`
+- `rg -n -w "AIM|dx|gtest|errcode|msgcode" base-harness/skills/brainstorming/spec-document-reviewer-prompt.md base-harness/skills/writing-plans/plan-document-reviewer-prompt.md`
 - 결과 없음
 
 ### 2026-04-17 26. subagent 지원 프롬프트 1차 공통화
 
-- `subagent-driven-development-base/implementer-prompt.md`
-- `subagent-driven-development-base/spec-reviewer-prompt.md`
-- `subagent-driven-development-base/code-quality-reviewer-prompt.md`
+- `subagent-driven-development/implementer-prompt.md`
+- `subagent-driven-development/spec-reviewer-prompt.md`
+- `subagent-driven-development/code-quality-reviewer-prompt.md`
 
 판단:
 
-- 세 파일 모두 특정 제품 예시라기보다 `subagent-driven-development-base`의 핵심 실행 패턴을 구성하는 보조 prompt다
+- 세 파일 모두 특정 제품 예시라기보다 `subagent-driven-development`의 핵심 실행 패턴을 구성하는 보조 prompt다
 - 따라서 product-specific pack으로 분리하기보다 generic subagent prompt로 먼저 공통화하는 편이 맞음
 
 수정:
@@ -577,18 +577,18 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|dx|gtest|rb_73|clang-format|errcode|msgcode" base-harness/skills/subagent-driven-development-base/*.md`
+- `rg -n -w "AIM|dx|gtest|rb_73|clang-format|errcode|msgcode" base-harness/skills/subagent-driven-development/*.md`
 - 결과 없음
 
 ### 2026-04-17 27. review 오케스트레이션 프롬프트 분류 및 1차 공통화
 
 대상:
 
-- `code-reviewer-base/code-reviewer-prompt.md`
-- `code-reviewer-base/test-reviewer-prompt.md`
-- `code-reviewer-base/review-synthesizer-prompt.md`
-- `code-reviewer-base/info-collector-prompt.md`
-- `code-reviewer-base/coverage-analyst-prompt.md`
+- `code-reviewer/code-reviewer-prompt.md`
+- `code-reviewer/test-reviewer-prompt.md`
+- `code-reviewer/review-synthesizer-prompt.md`
+- `code-reviewer/info-collector-prompt.md`
+- `code-reviewer/coverage-analyst-prompt.md`
 
 분류 판단:
 
@@ -609,16 +609,16 @@ git -C base-harness status --short
 
 검증:
 
-- 1차 검색: `rg -n -w "AIM|GitLab|Jira|gcov|Phase|MR|gtest|coverage" base-harness/skills/code-reviewer-base/code-reviewer-prompt.md base-harness/skills/code-reviewer-base/test-reviewer-prompt.md base-harness/skills/code-reviewer-base/review-synthesizer-prompt.md`
+- 1차 검색: `rg -n -w "AIM|GitLab|Jira|gcov|Phase|MR|gtest|coverage" base-harness/skills/code-reviewer/code-reviewer-prompt.md base-harness/skills/code-reviewer/test-reviewer-prompt.md base-harness/skills/code-reviewer/review-synthesizer-prompt.md`
 - 관찰: `coverage` 일반 용어가 테스트 범위 설명으로 1건 잡힘. 제품 종속 잔재는 아님
-- 2차 검색: `rg -n -w "AIM|GitLab|Jira|gcov|Phase|MR|gtest" base-harness/skills/code-reviewer-base/code-reviewer-prompt.md base-harness/skills/code-reviewer-base/test-reviewer-prompt.md base-harness/skills/code-reviewer-base/review-synthesizer-prompt.md`
+- 2차 검색: `rg -n -w "AIM|GitLab|Jira|gcov|Phase|MR|gtest" base-harness/skills/code-reviewer/code-reviewer-prompt.md base-harness/skills/code-reviewer/test-reviewer-prompt.md base-harness/skills/code-reviewer/review-synthesizer-prompt.md`
 - 결과 없음
 
-### 2026-04-17 28. `writing-skills-base` 공통 skill-authoring guide로 전환
+### 2026-04-17 28. `writing-skills` 공통 skill-authoring guide로 전환
 
 판단:
 
-- `writing-skills-base`는 제품 전용 product pack보다 코어 방법론 문서에 가깝다
+- `writing-skills`는 제품 전용 product pack보다 코어 방법론 문서에 가깝다
 - 남아 있던 AIM 전용 요소는 skill authoring 원리 자체가 아니라 naming, tooling, branch, testing stack, external system 예시에 집중돼 있었음
 - 따라서 legacy로 격리하기보다 본문을 공통 skill-authoring guide로 재작성하는 편이 저장소 목적에 부합함
 
@@ -632,21 +632,21 @@ git -C base-harness status --short
 
 검증:
 
-- `rg -n -w "AIM|aim-harness|dx|rb_73|GitLab|Jira|IMS|NotebookLM|GoogleTest|gcov|gtest|clang-format|C/GoogleTest" base-harness/skills/writing-skills-base/SKILL.md`
+- `rg -n -w "AIM|aim-harness|dx|rb_73|GitLab|Jira|IMS|NotebookLM|GoogleTest|gcov|gtest|clang-format|C/GoogleTest" base-harness/skills/writing-skills/SKILL.md`
 - 결과 없음
 
 ### 2026-04-17 29. support 문서 경량화 및 전체 잔존 표현 재분류
 
 수정:
 
-- `test-driven-development-base/testing-anti-patterns.md`를 범용 테스트 anti-pattern reference로 재작성
+- `test-driven-development/testing-anti-patterns.md`를 범용 테스트 anti-pattern reference로 재작성
 - 제목의 `C/GoogleTest` 전제 제거
 - AIM 전용 예시(`AimConfig`, `AIM_OK`, C struct/gtest 초기화 관용구 등)를 범용 테스트 예시로 교체
 
 전체 스캔 관찰:
 
 - `MIGRATION.md`, `AGENTS.md`, `README.md`의 다수 매칭은 과거 상태 설명과 분류 규칙 문맥이다
-- 남은 제품 종속 표현의 중심은 여전히 `issue-analysis-base`, `completing-patch-base`, `writing-documents-base`와 `code-reviewer-base/info-collector-prompt.md`, `code-reviewer-base/coverage-analyst-prompt.md` 같은 product-pack 후보 파일이다
+- 남은 제품 종속 표현의 중심은 여전히 `issue-analysis-base`, `completing-patch-base`, `writing-documents-base`와 `code-reviewer/info-collector-prompt.md`, `code-reviewer/coverage-analyst-prompt.md` 같은 product-pack 후보 파일이다
 
 재분류:
 
@@ -658,9 +658,9 @@ git -C base-harness status --short
   - `issue-analysis-base/*`
   - `completing-patch-base/*`
   - `writing-documents-base/*`
-  - `code-reviewer-base/info-collector-prompt.md`
-  - `code-reviewer-base/coverage-analyst-prompt.md`
-  - `code-reviewer-base/scripts/measure_diff_cov.sh`
+  - `code-reviewer/info-collector-prompt.md`
+  - `code-reviewer/coverage-analyst-prompt.md`
+  - `code-reviewer/scripts/measure_diff_cov.sh`
 - rename-only 또는 transitional 잔존:
   - `*-aim` 디렉토리명 전반
 
@@ -676,15 +676,15 @@ git -C base-harness status --short
 - `issue-analysis-base`
 - `completing-patch-base`
 - `writing-documents-base`
-- `code-reviewer-base/info-collector-prompt.md`
-- `code-reviewer-base/coverage-analyst-prompt.md`
-- `code-reviewer-base/scripts/measure_diff_cov.sh`
+- `code-reviewer/info-collector-prompt.md`
+- `code-reviewer/coverage-analyst-prompt.md`
+- `code-reviewer/scripts/measure_diff_cov.sh`
 
 관찰:
 
 - 메타 문서와 라우팅 문서가 여전히 현재 `skills/` 경로를 직접 참조한다
 - `issue-analysis-base`, `completing-patch-base`, `writing-documents-base`는 서로를 직접 참조한다
-- `code-reviewer-base` 내부 product-specific support 파일도 현재 skill 디렉토리와 결합돼 있다
+- `code-reviewer` 내부 product-specific support 파일도 현재 skill 디렉토리와 결합돼 있다
 
 결정:
 
@@ -711,20 +711,20 @@ git -C base-harness status --short
 
 수정:
 
-- `brainstorming-aim` -> `brainstorming-base`
-- `writing-plans-aim` -> `writing-plans-base`
-- `executing-plans-aim` -> `executing-plans-base`
-- `test-driven-development-aim` -> `test-driven-development-base`
-- `systematic-debugging-aim` -> `systematic-debugging-base`
-- `verification-before-completion-aim` -> `verification-before-completion-base`
-- `writing-skills-aim` -> `writing-skills-base`
-- `subagent-driven-development-aim` -> `subagent-driven-development-base`
-- `dispatching-parallel-agents-aim` -> `dispatching-parallel-agents-base`
-- `using-feature-branches-aim` -> `using-feature-branches-base`
-- `requesting-code-review-aim` -> `requesting-code-review-base`
-- `receiving-code-review-aim` -> `receiving-code-review-base`
-- `code-reviewer-aim` -> `code-reviewer-base`
-- `finishing-a-development-branch-aim` -> `finishing-a-development-branch-base`
+- `brainstorming-aim` -> `brainstorming`
+- `writing-plans-aim` -> `writing-plans`
+- `executing-plans-aim` -> `executing-plans`
+- `test-driven-development-aim` -> `test-driven-development`
+- `systematic-debugging-aim` -> `systematic-debugging`
+- `verification-before-completion-aim` -> `verification-before-completion`
+- `writing-skills-aim` -> `writing-skills`
+- `subagent-driven-development-aim` -> `subagent-driven-development`
+- `dispatching-parallel-agents-aim` -> `dispatching-parallel-agents`
+- `using-feature-branches-aim` -> `using-feature-branches`
+- `requesting-code-review-aim` -> `requesting-code-review`
+- `receiving-code-review-aim` -> `receiving-code-review`
+- `code-reviewer-aim` -> `code-reviewer`
+- `finishing-a-development-branch-aim` -> `finishing-a-development-branch`
 - `issue-analysis-aim` -> `issue-analysis-base`
 - `completing-patch-aim` -> `completing-patch-base`
 - `writing-documents-aim` -> `writing-documents-base`
@@ -748,16 +748,16 @@ git -C base-harness status --short
 - `skills/issue-analysis-base` -> `product-specific/skills/issue-analysis-base`
 - `skills/completing-patch-base` -> `product-specific/skills/completing-patch-base`
 - `skills/writing-documents-base` -> `product-specific/skills/writing-documents-base`
-- `skills/code-reviewer-base/info-collector-prompt.md` -> `product-specific/code-reviewer-base/info-collector-prompt.md`
-- `skills/code-reviewer-base/coverage-analyst-prompt.md` -> `product-specific/code-reviewer-base/coverage-analyst-prompt.md`
-- `skills/code-reviewer-base/scripts/measure_diff_cov.sh` -> `product-specific/code-reviewer-base/scripts/measure_diff_cov.sh`
+- `skills/code-reviewer/info-collector-prompt.md` -> `product-specific/code-reviewer/info-collector-prompt.md`
+- `skills/code-reviewer/coverage-analyst-prompt.md` -> `product-specific/code-reviewer/coverage-analyst-prompt.md`
+- `skills/code-reviewer/scripts/measure_diff_cov.sh` -> `product-specific/code-reviewer/scripts/measure_diff_cov.sh`
 
 수정:
 
 - `README.md`를 `skills/` = base runtime, `product-specific/` = product pack bundle 구조로 갱신
 - `CLAUDE.md`에서 제품 전용 bundle을 기본 skill routing에서 제거
 - `using-base-harness/SKILL.md`에서 product-specific 항목을 기본 skill table에서 제거하고 `product-specific/skills/` 안내로 교체
-- `brainstorming-base/SKILL.md`의 `issue-analysis-base` 참조를 product-pack bundle 참조로 완화
+- `brainstorming/SKILL.md`의 `issue-analysis-base` 참조를 product-pack bundle 참조로 완화
 - `product-specific/README.md` 신규 작성
 
 판단:
@@ -917,7 +917,7 @@ git -C base-harness status --short
   - `writing-documents-base/manual-guide.md`
 - **초기 범위 제외**
   - `writing-documents-base` 하위의 platform guide 다수
-  - `product-specific/code-reviewer-base/*`
+  - `product-specific/code-reviewer/*`
   - `measure_diff_cov.sh`
 
 판단:
@@ -934,10 +934,10 @@ git -C base-harness status --short
 
 주요 관찰:
 
-- `brainstorming-base`, `writing-plans-base`, `executing-plans-base`, `subagent-driven-development-base`는 `../agent/prompt/<topic>/...` 경로 계약을 공통 전제로 둔다
-- `writing-plans-base`, `test-driven-development-base`는 `TypeScript`/`pnpm` 예시 편향이 남아 있다
-- `verification-before-completion-base`, `systematic-debugging-base`, `code-reviewer-base`는 상대적으로 기술 스택 중립성이 높다
-- `using-base-harness`와 `writing-skills-base`는 strict core라기보다 runtime/meta 성격이므로 별도 취급이 적절하다
+- `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`는 `../agent/prompt/<topic>/...` 경로 계약을 공통 전제로 둔다
+- `writing-plans`, `test-driven-development`는 `TypeScript`/`pnpm` 예시 편향이 남아 있다
+- `verification-before-completion`, `systematic-debugging`, `code-reviewer`는 상대적으로 기술 스택 중립성이 높다
+- `using-base-harness`와 `writing-skills`는 strict core라기보다 runtime/meta 성격이므로 별도 취급이 적절하다
 
 판단:
 
@@ -969,7 +969,7 @@ git -C base-harness status --short
 
 수정:
 
-- `brainstorming-base`, `writing-plans-base`, `executing-plans-base`, `subagent-driven-development-base`, `test-driven-development-base`를 수정
+- `brainstorming`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `test-driven-development`를 수정
 - artifact 참조를 physical path 대신 logical artifact 중심으로 재서술
 - stack-specific 예시(`TypeScript`, `pnpm`)를 stack-neutral pseudocode로 교체
 
@@ -993,8 +993,8 @@ git -C base-harness status --short
 
 추가 점검:
 
-- `dispatching-parallel-agents-base`
-- `systematic-debugging-base`
+- `dispatching-parallel-agents`
+- `systematic-debugging`
 
 판단:
 
@@ -1393,3 +1393,724 @@ git -C base-harness status --short
 
 - initiator는 요청 유형에 따라 provider를 라우팅해야 하므로, group 내부 provider는 상호배타적일 필요가 없다
 - 다만 ambiguous한 생성 결과를 피하려면 각 group에서 우선 provider와 fallback 순서는 계속 명시해야 한다
+
+### 2026-04-21 63. AIM-style manual flow 유지 + generated workspace로 위치 전환
+
+수정:
+
+- `adapters/ofgw/product-profile.yaml` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `adapters/ofgw/confirmation-packet.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- `workflow.defaults.manual_workflow_required`를 `true`로 확정
+- `access_bindings.manual_targets.manual_repo.enabled`를 `true`로 확정
+- `access_bindings.manual_targets.manual_repo.default_mode`를 `workspace_file`로 확정
+- `access_bindings.manual_targets.manual_repo.location`을 `generated/manual/`로 확정
+- manual flow는 AIM의 상태 기반 completion semantics를 유지하되, legacy AIM MANUAL repo 대신 generated harness 내부 workspace를 writable target으로 사용한다고 문서화
+
+판단:
+
+- `manual_workflow_required`와 `manual_repo.enabled`는 같은 방향으로 묶는 편이 계약상 더 안전하다
+- `workspace_file`은 단순히 제품 repo 어딘가를 뜻하는 것이 아니라, 실제로 생성물이 쓸 수 있는 명시적 파일 경로를 뜻해야 한다
+- `generated/manual/`는 AIM의 외부 manual repo 개념을 generated harness 내부로 옮긴 단순화된 첫 구현 위치로 보기 적절하다
+
+### 2026-04-21 64. terminology를 canonical + aliases 구조로 확정
+
+수정:
+
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `adapters/ofgw/confirmation-packet.md` 수정
+
+핵심 변화:
+
+- terminology schema를 단일 문자열 대신 `canonical` + `aliases` 구조로 고정
+- `issue_item` canonical을 `issue`로, alias를 `ticket`, `jira`, `ims`로 확정
+- `review_artifact` canonical을 `PR`로, alias를 `pull request`, `review request`로 확정
+- `docs_artifact` canonical을 `markdown document`로, alias를 `doc`, `note`, `report`로 확정
+- `mappings.yaml`의 terminology confirm 항목을 제거하고 confirmation packet을 confirmed 상태로 갱신
+
+판단:
+
+- generated harness의 기본 문체와 예시는 `canonical`을 기준으로 맞추는 것이 좋다
+- runtime 해석과 사용자 입력 다양성은 `aliases`가 흡수하도록 두는 편이 더 유연하다
+- provider 이름과 사람이 읽는 용어를 같은 필드에 섞지 않는 현재 방향이 유지돼야 한다
+
+### 2026-04-21 65. First `generate-harness` pass 실행 및 derived-default 규칙 정리
+
+수정:
+
+- `generated/ofgw-harness/AGENTS.md` 추가
+- `generated/ofgw-harness/README.md` 추가
+- `generated/ofgw-harness/GENERATION_SUMMARY.md` 추가
+- `generated/ofgw-harness/skills/product/issue-analysis/SKILL.md` 추가
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md` 추가
+- `generated/ofgw-harness/references/markdown-guide.md` 추가
+- `generated/ofgw-harness/generated/manual/README.md` 추가
+- `adapters/ofgw/product-profile.yaml` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `adapters/ofgw/confirmation-packet.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- 첫 `generate-harness` pass로 `generated/ofgw-harness/` 최소 스켈레톤을 실제 생성
+- generated draft에서 concrete workspace convention을 명시적으로 materialize
+  - `agent/<topic>/`
+  - `agent/`
+  - `generated/manual/`
+- `manual`은 required completion policy로 유지하되, 첫 pass에서는 workspace binding만 생성하고 full `manual-guide` body는 계속 제외
+- `workflow.defaults.issue_tracker`, `review_channel`, `docs_channel`은 confirmed provider binding에서 직접 유도되는 derived default로 정리
+- `product-profile.yaml`의 workflow confirm 목록을 제거하고 `mappings.yaml`의 confirm을 빈 목록으로 정리
+
+판단:
+
+- generated harness의 첫 실증에서는 "무엇이 제외됐는지 숨기지 않는 것"과 "확정된 binding을 실제 경로로 내리는 것"이 중요하다
+- provider binding으로 충분히 결정되는 workflow label까지 별도 generate gate로 유지하면 adapter 인터페이스가 불필요하게 이중화된다
+- 따라서 generated pass 이후에는 derived default와 hard gate field를 구분해 주는 편이 initiator 계약을 더 매끄럽게 만든다
+
+### 2026-04-21 66. First generated draft review 반영
+
+수정:
+
+- `generated/ofgw-harness/agent/README.md` 추가
+- `generated/ofgw-harness/README.md` 수정
+- `generated/ofgw-harness/AGENTS.md` 수정
+- `generated/ofgw-harness/GENERATION_SUMMARY.md` 수정
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md` 수정
+- `generated/ofgw-harness/skills/product/issue-analysis/SKILL.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- `agent/` workspace placeholder를 실제로 추가해 generated path policy와 생성물을 일치시킴
+- generated `writing-documents` skill에 source workflow의 hard gate와 write/save 분리 규칙을 복원
+- generated `issue-analysis` skill에 NotebookLM target URL과 provider source를 반영
+- initiator contract에 "behavior-critical safety semantics 보존" 규칙을 추가
+
+판단:
+
+- generated draft가 source보다 작아도 사용자 안전과 행동 경계를 정하는 규칙은 빠지면 안 된다
+- 문서에만 있는 경로 정책은 실제 생성물이 따라오지 않으면 인터페이스 거칠음으로 드러난다
+- 따라서 generated artifact review는 생성 품질 검사이자 initiator contract 개선 루프의 일부로 다뤄야 한다
+
+### 2026-04-21 67. `templates/aim/` 물리 이동 실행 및 live layout 전환
+
+수정:
+
+- `templates/README.md` 추가
+- `templates/aim/README.md` 추가
+- `README.md` 수정
+- `AGENTS.md` 수정
+- `claude/CLAUDE.md` 수정
+- `skills/using-base-harness/SKILL.md` 수정
+- `skills/brainstorming/SKILL.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+- `skills/writing-skills/testing-skills-with-subagents.md` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `product-specific/` 하위 AIM 자산 이동
+
+핵심 변화:
+
+- `product-specific/`에 있던 AIM source 자산을 실제로 `templates/aim/` 아래로 옮김
+- `templates/`는 더 이상 미래 구조가 아니라 현재 live physical layout으로 전환됨
+- `templates/README.md`와 `templates/aim/README.md`를 추가해 source pack 레이어를 문서화
+- `ofgw` adapter의 `source_pack` 식별자를 `aim-template`으로 정리
+- skill authoring reference의 예시 경로를 현재 실제 위치로 맞춤
+
+판단:
+
+- 이제 initiator의 입력 계약은 개념적으로도 물리적으로도 `templates/<pack>/` 기준으로 읽는 편이 맞다
+- `product-specific/` 경로는 history 기록 안에서만 남기고, active 문서/스킬에서 더 이상 기준 경로로 쓰지 않는 것이 혼선을 줄인다
+- 이 전환으로 이후 `templates/ofgw/`, `templates/osc/` 같은 추가 pack을 도입할 발판이 생겼다
+
+### 2026-04-21 68. generated target을 standalone harness 방향으로 고정
+
+수정:
+
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+- `README.md` 수정
+
+핵심 변화:
+
+- generated harness에 대해 `current validation pass`와 `long-term standalone target`을 분리해 기술
+- 장기 target layout을 `skills/core`, `skills/collab`, `skills/docs`, `skills/review`, `skills/product` 구조로 명시
+- first-pass minimal skeleton은 final target이 아니라 validation scaffold라고 재정의
+
+판단:
+
+- 지금까지의 `generated/ofgw-harness/`는 의도적으로 축소된 검증 산출물이라, 그대로 최종 구조로 오해되면 initiator 인터페이스가 잘못 굳는다
+- 따라서 생성기의 다음 단계부터는 "무엇을 아직 생성하지 않았는가"를 long-term target에 비춰 평가해야 한다
+- 이 기준을 먼저 고정해 두는 편이 이후 core/collab bundling과 review layer 도입 순서를 정리하기 쉽다
+
+### 2026-04-21 69. `templates/aim/` 하위 분리 필요성 점검
+
+수정:
+
+- `templates/aim/README.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- `templates/aim/`를 지금 당장 `skills/`, `bindings/`, `examples/`로 나누지 않기로 결정
+- 현재 AIM pack의 binding 정보는 대부분 `issue-analysis`, `writing-documents`, `manual-guide`, review prompt 안의 inline 규칙으로 존재한다고 정리
+- example 역시 독립 asset보다 본문 예시나 runtime 외부 참조 비중이 높아 별도 `examples/` 디렉토리 실익이 낮다고 판단
+
+판단:
+
+- 지금 물리 분리를 먼저 하면 디렉토리만 늘고 initiator가 실제로 소비할 안정 스키마는 아직 생기지 않는다
+- 따라서 현 단계에서는 얕은 `skills/` + `review/` 구조를 유지하고, inline binding을 adapter draft로 뽑아내는 규칙을 다듬는 편이 낫다
+- `bindings/`와 `examples/` 분리는 두 번째 template pack 이상이 생기거나, 반복되는 추출 패턴이 확인된 뒤 도입하는 것이 자연스럽다
+
+### 2026-04-21 70. binding 추출 소스 해석 보정
+
+수정:
+
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- initiator의 adapter draft가 codebase-derived facts만으로 만들어지는 것처럼 읽히던 문구를 보정
+- `access_bindings.*`는 target codebase, selected template 안의 inherited pattern, 사용자 확인을 함께 써서 초안을 만든다고 명시
+- 별도 `templates/<pack>/bindings/` 디렉토리 없이도 현재 `ofgw` draft가 성립한 이유를 문서에 남김
+
+판단:
+
+- 실제 `ofgw` adapter를 보면 build/test/coverage command와 repo facts는 codebase에서 왔지만, IMS URL pattern, NotebookLM/Manual semantics, provider mode 후보는 template 본문과 조직 기본값에서 왔다
+- 따라서 "binding은 전부 코드베이스에서 온다"는 해석은 현재 계약과 실제 산출물 모두에 맞지 않는다
+- 앞으로는 codebase-derived와 template-inherited를 분리해서 설명해야 initiator 인터페이스가 덜 헷갈린다
+
+### 2026-04-21 71. inline binding inventory와 second-pass 포함 기준 추가
+
+수정:
+
+- `templates/aim/README.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- `templates/aim`의 source별 inline binding 후보를 실제 draft target과 함께 목록화
+- initiator 계약에 `access_bindings`, runtime convention, support reference를 가르는 extraction rule을 추가
+- second-pass generate에서 `skills/core`, `skills/collab`, `skills/review`를 포함하는 기준을 문서화
+
+판단:
+
+- 이제 다음 generate pass는 "무엇을 더 넣을까"가 아니라 "어떤 자산이 standalone target에 들어갈 자격이 있나"라는 기준 위에서 진행할 수 있다
+- 별도 `bindings/` 디렉토리가 없어도, source pack 안의 inline 규칙만으로 adapter draft를 만드는 경로가 충분히 설명된다
+- core/collab/review bundling 기준을 먼저 고정해 두면 `generated/ofgw-harness/` 2차 재생성 범위를 훨씬 선명하게 잡을 수 있다
+
+### 2026-04-21 72. `generated/ofgw-harness/` second-pass 재생성
+
+수정:
+
+- `generated/ofgw-harness/AGENTS.md` 수정
+- `generated/ofgw-harness/README.md` 수정
+- `generated/ofgw-harness/GENERATION_SUMMARY.md` 수정
+- `generated/ofgw-harness/hooks/*` 추가/수정
+- `generated/ofgw-harness/skills/core/*` 추가
+- `generated/ofgw-harness/skills/collab/*` 추가
+- `generated/ofgw-harness/skills/review/code-reviewer/SKILL.md` 추가
+- `generated/ofgw-harness/references/review/README.md` 추가
+- `generated/ofgw-harness/references/review/aim/*` 추가
+
+핵심 변화:
+
+- standalone target에 맞춰 `core`, `collab`, `review` 레이어를 generated harness 안에 실제로 포함
+- base runtime carry-over skill을 generated naming으로 정리해 포함
+- `hooks/`를 generated tree 안으로 가져오고 SessionStart hook이 generated `AGENTS.md`를 읽도록 변경
+- AIM review prompt/script는 active `ofgw` skill이 아니라 reference-only 자산으로 분리해 포함
+
+판단:
+
+- 이제 `generated/ofgw-harness/`는 "docs/product binding 실험"을 넘어서 standalone target 수렴 여부를 실제로 점검할 수 있는 단계에 들어왔다
+- 다만 review 자동화는 아직 AIM 결합이 강하므로, reference-only 계층을 두고 active skill 승격은 다음 판단으로 미루는 편이 안전하다
+- 다음 검토는 `references/review/aim/*` 중 어떤 부분을 `ofgw` review workflow로 productize할 수 있는지에 집중하면 된다
+
+### 2026-04-21 73. `review-generated-harness` phase 공식 추가 및 `references/` 장기 역할 보정
+
+수정:
+
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- initiator workflow를 `analyze -> draft-adapter -> confirm-gaps -> generate-harness -> review-generated-harness`로 확장
+- generated harness 검토 시 확인할 항목을 target layout, active/reference 분류, source path leakage, naming normalization, hook/runtime consistency, excluded-scope reporting으로 고정
+- `references/`를 무조건 제거 대상인 임시 디렉토리로 보지 않고, active behavior 밖의 support/example/comparison 자산 계층으로 재정의
+
+판단:
+
+- generated harness 리뷰는 사용자 사용 중에만 드러나는 ergonomics와 별개로, initiator가 반드시 제공해야 하는 post-generate 품질 게이트다
+- standalone harness가 완성된 뒤에도 `references/` 자체는 남을 수 있다
+- 다만 AIM-locked carry-over 자산은 productized되거나 폐기되기 전까지 과도기적 reference로 취급하는 편이 맞다
+
+### 2026-04-21 74. `generated/ofgw-harness/` 첫 공식 review 실행
+
+수정:
+
+- `generated/ofgw-harness/REVIEW_GENERATED_HARNESS.md` 추가
+- `generated/ofgw-harness/hooks/hooks.json` 수정
+- `generated/ofgw-harness/skills/core/brainstorming/SKILL.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- `review-generated-harness` phase의 대표 산출물을 `generated/<product>-harness/REVIEW_GENERATED_HARNESS.md`로 고정
+- 현재 `generated/ofgw-harness/`에 대해 target layout, active/reference 분류, source path leakage, hook consistency, excluded-scope reporting을 기준으로 첫 공식 리뷰 실행
+- 리뷰 과정에서 `hooks/hooks.json`의 accidental patch-text 오염과 `brainstorming`의 source-pack path leakage를 즉시 수정
+
+판단:
+
+- 현재 draft는 standalone-target harness로서 구조적으로는 유효하다
+- 남은 핵심 쟁점은 구조 자체보다 review/manual 자산 중 무엇을 active skill로 승격할지에 가깝다
+
+### 2026-04-21 75. review context 승격 및 local manual workflow 추가
+
+수정:
+
+- `generated/ofgw-harness/skills/review/review-context-collector/SKILL.md` 추가
+- `generated/ofgw-harness/skills/docs/manual-workflow/SKILL.md` 추가
+- `generated/ofgw-harness/references/manual/README.md` 추가
+- `generated/ofgw-harness/skills/review/code-reviewer/SKILL.md` 수정
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md` 수정
+- `generated/ofgw-harness/generated/manual/README.md` 수정
+- `generated/ofgw-harness/README.md` 수정
+- `generated/ofgw-harness/AGENTS.md` 수정
+- `generated/ofgw-harness/GENERATION_SUMMARY.md` 수정
+- `generated/ofgw-harness/references/review/README.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- AIM `info-collector`의 재사용 가능한 부분을 `ofgw` binding에 맞는 active `review-context-collector` skill로 승격
+- AIM `manual-guide` 전체 body는 복제하지 않고, need gate와 local draft safety semantics만 흡수한 `manual-workflow`를 generated docs layer에 추가
+- coverage prompt/script는 저장소 정책과 실행 환경 결합이 강하므로 계속 reference-only로 유지
+
+판단:
+
+- 현재 initiator는 source asset을 통째로 복제하기보다, product-safe semantics만 추출해 active skill로 재구성하는 편이 더 맞다
+- review context 수집은 이미 productized 가능한 단계에 도달했지만, coverage automation과 외부 manual publish workflow는 아직 그렇지 않다
+
+### 2026-04-21 76. `references/` 제거 방향 확정 및 `coverage-review` 추가
+
+수정:
+
+- `generated/ofgw-harness/skills/review/coverage-review/SKILL.md` 추가
+- `generated/ofgw-harness/skills/review/code-reviewer/SKILL.md` 수정
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md` 수정
+- `generated/ofgw-harness/README.md` 수정
+- `generated/ofgw-harness/AGENTS.md` 수정
+- `generated/ofgw-harness/GENERATION_SUMMARY.md` 수정
+- `generated/ofgw-harness/REVIEW_GENERATED_HARNESS.md` 수정
+- `generated/ofgw-harness/references/*` 삭제
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- `ofgw`에 맞는 JaCoCo 기반 active `coverage-review` skill을 추가
+- generated standalone harness에서 `references/` 디렉토리를 제거
+- `markdown-guide` 규칙은 `writing-documents`로 흡수하고, template/source-only carry-over는 `templates/`에 남기는 방향으로 계약을 보정
+
+판단:
+
+- standalone harness는 runtime bundle처럼 보여야 하므로 `references/` 없는 구조가 더 자연스럽다
+- source pack 설명 자산이나 미승격 자산을 generated harness에 들고 있는 것보다 `templates/`에 남겨두는 편이 책임 분리가 선명하다
+- coverage review는 이제 active skill이 됐고, 남은 보류 범위는 diff-aware coverage gating과 external manual publish workflow다
+
+### 2026-04-21 77. initiator 책임 경계 재정의
+
+수정:
+
+- `HARNESS_INITIATOR.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+
+핵심 변화:
+
+- initiator의 핵심 책임을 template scope selection, binding extraction, adapter drafting, generation, generated-structure review로 한정
+- generated harness 내부 skill body를 계속 고도화하는 작업은 refinement work로 분리
+- 최근 `ofgw` review/manual/coverage skill 구체화는 initiator 검증을 위한 exploratory pass였다고 재분류
+
+판단:
+
+- initiator는 생성기이지 product skill authoring 엔진이 아니다
+- 앞으로 검증 포인트는 "무엇을 생성하고 무엇을 남기며 어떤 구조로 정리하는가"에 두는 편이 더 정확하다
+
+### 2026-04-21 78. initiator 검증 기준 문서화
+
+수정:
+
+- `INITIATOR_VALIDATION.md` 추가
+- `HARNESS_INITIATOR.md` 수정
+- `MIGRATION.md` 수정
+
+핵심 변화:
+
+- complete assembly 정의, initiator/refinement 범위 표, adapter 추가 정보 항목을 문서화
+- initiator 입력/출력 체크리스트를 별도 validation 문서에 정리
+- `templates/aim` 자산 분류표와 `ofgw` 순수 initiator walkthrough, readiness 평가, second validation target 제안을 함께 정리
+
+판단:
+
+- 이제 initiator 검증은 개별 세션 로그가 아니라 명시적 validation pack 기준으로 볼 수 있다
+- `ofgw`는 initiator 계약 실증에는 충분히 가깝지만, machine-readable asset classification이 더 필요하다
+- second validation target은 현재 로컬 후보 기준 `osd`가 가장 타당하다
+
+### 2026-04-21 79. `generation_assets` 초안 추가
+
+수정:
+
+- `adapters/ofgw/mappings.yaml` 수정
+- `INITIATOR_VALIDATION.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- `generation_assets`를 실제 `mappings.yaml` 필드로 추가
+- `generate`, `absorb`, `absorb_partial`, `defer`, `stay_in_templates` action을 `ofgw` adapter 초안에 반영
+- source asset 처리 계획은 `product-profile.yaml`보다 `mappings.yaml` 층위에 둔다는 결정을 문서화
+
+판단:
+
+- 이제 `ofgw` adapter는 binding뿐 아니라 source asset 처리 계획까지 일부 machine-readable하게 담는다
+- 완전 자동 generation까지 가려면 아직 schema를 더 다듬어야 하지만, initiator 단독 생성 가능성은 한 단계 올라갔다
+
+### 2026-04-21 80. `generation_assets` 스키마 초안 및 `ofgw` 일치 검증
+
+수정:
+
+- `INITIATOR_VALIDATION.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+- `adapters/ofgw/generation-assets-check.md` 추가
+
+핵심 변화:
+
+- `generation_assets`의 minimum shape와 action별 규칙을 문서화
+- `ofgw`의 template-derived generated asset이 현재 `generation_assets`와 실제 tree에 맞는지 점검
+- base-runtime carry-over는 별도 adapter schema가 아니라 initiator skill 기본 정책으로 해석하는 쪽이 더 낫다는 방향으로 보정
+
+판단:
+
+- `generation_assets`는 template-derived generation 범위를 설명하는 데는 유효하다
+- base-runtime carry-over는 지금 단계에서는 별도 machine-readable schema보다 initiator skill 정책으로 유지하는 편이 더 단순하고 적절하다
+
+### 2026-04-21 81. base runtime 기본 carry-over policy와 generation-assets-check 절차 명시
+
+수정:
+
+- `skills/harness-initiator/SKILL.md` 수정
+- `INITIATOR_VALIDATION.md` 수정
+- `adapters/ofgw/generation-assets-check.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- base runtime carry-over는 adapter schema가 아니라 initiator skill의 기본 generator policy라고 명시
+- `generation-assets-check`를 post-generate 표준 검증 절차로 정리
+- `ofgw` 검증 문서에 실제 적용 절차를 짧게 추가
+
+판단:
+
+- 이제 generated tree 검증은
+  - template-derived 부분은 `generation_assets`
+  - base-runtime 부분은 initiator default policy
+  로 나눠 해석하면 된다
+
+### 2026-04-21 82. `REVIEW_GENERATED_HARNESS.md`의 non-runtime 성격 명시
+
+수정:
+
+- `skills/harness-initiator/SKILL.md` 수정
+- `INITIATOR_VALIDATION.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- `REVIEW_GENERATED_HARNESS.md`를 runtime layer가 아니라 post-generate validation artifact로 명시
+- generated tree 안에 존재할 수는 있지만, later generation input이나 adapter truth로 취급하면 안 된다는 점을 문서화
+
+판단:
+
+- generated harness 안의 검증 문서와 runtime asset의 계층을 분리해 두는 것이 이후 재구성과 검증에 더 안전하다
+
+### 2026-04-21 83. `ofgw-harness` 재구성 및 generated naming 정규화
+
+수정:
+
+- `generated/ofgw-harness/*` 재구성
+- `adapters/ofgw/generation-assets-check.md` 수정
+- `skills/brainstorming/SKILL.md` 수정
+- `skills/harness-initiator/SKILL.md` 수정
+- `INITIATOR_VALIDATION.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- 백업된 이전 draft와 현재 initiator 계약을 기준으로 `generated/ofgw-harness/`를 clean rebuild
+- template-derived asset은 `generation_assets`, base-runtime carry-over는 initiator 기본 정책으로 다시 materialize
+- rebuilt tree에서 source `*-base` naming을 standalone runtime naming으로 정규화
+- `brainstorming` generated copy에 남아 있던 template source path 누수를 제거
+- `REVIEW_GENERATED_HARNESS.md`와 `generation-assets-check.md`를 rebuilt tree 기준으로 갱신
+
+판단:
+
+- 현재 initiator 계약은 `ofgw-harness`를 usable first draft 수준으로 재현할 수 있다
+- 다만 carry-over skill의 naming normalization은 generator policy에 더 명시적으로 남겨야 한다
+- 이후 initiator 검증은 “재구성 가능성”과 “runtime naming hygiene”를 함께 봐야 한다
+
+### 2026-04-21 84. root `skills/`의 `*-base` postfix 제거
+
+수정:
+
+- `skills/brainstorming/`
+- `skills/code-reviewer/`
+- `skills/dispatching-parallel-agents/`
+- `skills/executing-plans/`
+- `skills/finishing-a-development-branch/`
+- `skills/receiving-code-review/`
+- `skills/requesting-code-review/`
+- `skills/subagent-driven-development/`
+- `skills/systematic-debugging/`
+- `skills/test-driven-development/`
+- `skills/using-feature-branches/`
+- `skills/verification-before-completion/`
+- `skills/writing-plans/`
+- `skills/writing-skills/`
+- `README.md`
+- `skills/using-base-harness/SKILL.md`
+- `skills/harness-initiator/SKILL.md`
+- `HARNESS_INITIATOR.md`
+- `INITIATOR_VALIDATION.md`
+- `generated/ofgw-harness/*`
+
+핵심 변화:
+
+- root `skills/` 아래 reusable common skill 디렉토리에서 `-base` postfix를 제거
+- source skill frontmatter와 cross-skill reference도 같은 standalone naming으로 정리
+- initiator 문서의 default carry-over 정책을 새 root layout 기준으로 보정
+- regenerated `ofgw-harness` 검증 문서도 legacy naming이 다시 새어 나오지 않는다는 기준으로 갱신
+
+판단:
+
+- 이제 `skills/`는 source/runtime 공통 레이어로서도 더 자연스러운 naming을 갖는다
+- generated harness naming normalization은 여전히 필요하지만, 앞으로는 “legacy `*-base` 누수 방지” 수준으로 더 단순해진다
+
+### 2026-04-21 85. `product-harness-refinement` skill 분리
+
+수정:
+
+- `skills/product-harness-refinement/SKILL.md` 추가
+- `skills/using-base-harness/SKILL.md` 수정
+- `README.md` 수정
+- `INITIATOR_VALIDATION.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+
+핵심 변화:
+
+- generated harness 이후의 고도화 작업을 `harness-initiator`에서 분리
+- refinement를 "생성기 후속 단계"가 아니라 별도 skill 책임으로 명시
+- `using-base-harness` 라우팅에 `product-harness-refinement`를 추가
+
+판단:
+
+- 생성기와 generated harness authoring을 분리하는 편이 경계가 선명하다
+- 앞으로 initiator는 generation/classification/review에 집중하고, generated harness 고도화는 별도 skill에서 다루는 편이 확장에 유리하다
+
+### 2026-04-21 86. refinement schema 초안 및 `ofgw` 목적 고정
+
+수정:
+
+- `skills/product-harness-refinement/SKILL.md` 수정
+- `INITIATOR_VALIDATION.md` 수정
+- `HARNESS_INITIATOR.md` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `adapters/ofgw/analysis-summary.md` 수정
+
+핵심 변화:
+
+- `product-harness-refinement`용 최소 schema로 `refinement_goal`, `refinement_targets` 초안 추가
+- `ofgw` refinement의 목적을 "product-harness-refinement skill/schema 검증"으로 고정
+- refinement target을 generated runtime asset 기준으로만 적고, initiator scope 재개방과 구분
+- `analysis-summary.md`의 stale evidence path를 현재 워크스페이스 경로로 교정
+
+판단:
+
+- `ofgw` 소스코드는 실제로 refinement/adapter 근거로 계속 참조하고 있다
+- 다만 그 참조는 generated harness 확장 자체보다 refinement skill과 schema의 유효성 검증에 쓰는 편이 현재 목적에 더 맞다
+
+### 2026-04-21 87. `product-harness-refinement` 첫 적용: `writing-documents`
+
+수정:
+
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `skills/product-harness-refinement/SKILL.md` 수정
+
+핵심 변화:
+
+- 첫 refinement target을 `writing-documents`로 선택
+- `ofgw` 실제 repo 경계(`ofgwSrc`, `webterminal`, `ofgwAdmin`)를 generated docs skill에 반영
+- docs skill이 패키징/릴리스 증거를 과장하지 않도록 safe evidence guidance를 추가
+- refinement schema의 `status`, `result_note` 형태를 실제 한 번 사용해 봄
+
+판단:
+
+- 이 라운드의 목적은 `ofgw-harness` 완성도가 아니라 refinement skill/schema 검증이므로, publish adapter 확장 없이 generated docs skill만 좁게 다듬는 접근이 맞다
+- `product-harness-refinement`는 generated runtime asset 하나를 선택해 점진적으로 개선하는 방식으로 검증하는 편이 적절하다
+
+### 2026-04-21 88. 두 번째 refinement target: `coverage-review`
+
+수정:
+
+- `generated/ofgw-harness/skills/review/coverage-review/SKILL.md` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `skills/product-harness-refinement/SKILL.md` 수정
+- `INITIATOR_VALIDATION.md` 수정
+
+핵심 변화:
+
+- `coverage-review`를 두 번째 refinement target으로 적용
+- generated coverage skill에 `ofgwSrc`만 현재 coverage boundary라는 점과 `webterminal`/`ofgwAdmin` 비포함 범위를 명시
+- packaging task나 broader build 결과를 coverage evidence처럼 과장하지 않도록 rule을 추가
+- refinement schema에 `priority`, `depends_on`를 추가해 실행 순서와 선행관계를 표현
+
+판단:
+
+- refinement schema는 단순 target 목록만으로는 부족하고, 최소한 우선순위와 선행관계가 있으면 더 실용적이다
+- `coverage-review` refinement는 `ofgw` 실 repo 근거를 잘 반영하면서도 diff-aware gating 같은 미확정 범위를 다시 열지 않는 선에서 검증됐다
+## 89. Cross-Product Refinement Guardrail
+
+- `product-harness-refinement`와 refinement schema가 `ofgw`에 과적합되지 않도록 cross-product guardrail을 명시했다.
+- refinement schema에 `portability`를 추가했다:
+  - `product_local`
+  - `shared_candidate`
+- `adapters/ofgw/mappings.yaml`의 refinement targets를 이 기준으로 다시 표시했다.
+- `manual-workflow` refinement는 `ofgw` 모듈 지식을 더 넣는 대신, reusable local draft contract를 분명히 하는 방향으로 정리했다.
+
+## 90. Two-Skill Rebuild Evaluation
+
+- `generated/ofgw-harness/`의 refined 상태를 백업한 뒤, initiator-only baseline으로 되돌리고 다시 refinement를 적용했다.
+- 목적은 생성기/고도화기 분리가 실제로 유효한지 확인하는 것이었다.
+- `product-harness-refinement`와 `INITIATOR_VALIDATION.md`에 refinement pass 평가 기준을 추가했다:
+  - baseline 대비 성숙도 상승
+  - adapter/schema 복잡도 증가가 정당한지
+  - 결과가 `product_local`인지 `shared_candidate`인지
+- 평가 결과:
+  - 두-skill 분리는 유지 가치가 있다
+  - `manual-workflow` local draft contract 강화는 shared candidate에 가깝다
+  - 현재 refinement schema는 아직 `mappings.yaml` 안에서 직접 읽을 수 있는 수준이다
+
+## 91. Shared Review Criteria and OSD Draft Adapter
+
+- `review-generated-harness` 기준에 아래 평가 축을 추가했다:
+  - maturity gain
+  - interface cost
+  - portability
+- `HARNESS_FLOW_IO.md`를 추가해 두 skill의 입력/출력 경계를 한 장으로 정리했다.
+- second validation target인 `osd`에 대해 initiator 범위의 초안을 만들었다:
+  - `analysis-summary.md`
+  - `product-profile.yaml`
+  - `mappings.yaml`
+  - `confirmation-packet.md`
+- `osd`는 아직 generate 단계로 넘기지 않았다.
+  - Jira/NotebookLM/manual policy가 미확정이어서 confirm-gaps가 먼저 필요하다고 판단했다.
+
+## 92. Fill Now Contract
+
+- `harness-initiator`에 `Fill Now` 계약을 추가했다.
+- 첫 adapter draft 이후에는 unresolved 값을 prose 안에 숨기지 않고, 사용자가 바로 답할 수 있는 짧은 목록으로 항상 제시한다.
+- 각 항목은 다음 정보를 포함한다:
+  - field path
+  - current draft
+  - meaning
+  - answer shape
+  - recommended value if plausible
+
+## 93. Jira/Auth Path and OSD Default Policy
+
+- Jira MCP binding은 `ofgw`와 같은 형식을 다른 제품 adapter 초안에도 기본 적용 가능하도록 정리했다.
+- `auth_source`는 live runtime 기준으로 `agent/info/access.md`가 더 맞다고 판단해 `ofgw` mapping도 수정했다.
+- `osd` 초안에서 아래 기본값을 확정했다:
+  - Jira enabled = true
+  - manual required = true
+  - manual enabled = true
+  - manual location = generated/manual/
+- 이 변경 후 `osd`에서 남은 필수 confirmation은 NotebookLM 여부만 남는다.
+
+## 94. OSD NotebookLM Default Alignment
+
+- `osd`의 NotebookLM binding도 first draft 단계에서는 `ofgw`와 같은 기본값으로 닫았다.
+- 목적은 실제 notebook selection보다 binding shape 재현성을 먼저 검증하는 데 있다.
+- 이 변경으로 `osd`는 generation 가능한 상태가 됐다.
+
+## 95. OSD First Draft Generation
+
+- `generated/osd-harness/` first draft를 생성했다.
+- base runtime carry-over는 `harness-initiator` 기본 정책을 따랐고, product-bound file은 `osd` repo facts에 맞게 다시 작성했다.
+- `osd` generated tree 안의 `ofgw` 흔적은 hook/agent/readme/review 문서까지 포함해 정리했다.
+- `adapters/osd/generation-assets-check.md`를 추가해 template-derived generation 정합성을 기록했다.
+
+## 96. Draft Default Bias
+
+- `harness-initiator`에 draft default bias를 추가했다.
+- 목적은 user 설정을 최소화하면서도 adapter override 가능성을 유지하는 것이다.
+- 현재 bias:
+  - Jira = `mcp` default
+  - manual workspace = `generated/manual/`
+- 이 값들은 hardcoded final truth가 아니라 first draft convenience bias로 해석한다.
+
+## 97. OSD Review-Layer Evaluation and Shared `code-reviewer` Fix
+
+- `generated/osd-harness/`를 전반 평가한 결과, 주요 gap은 `osd` 전용 세부 정보 부족이 아니라 generated review layer 내부 연결 부족이었다.
+- `review-context-collector`와 `coverage-review`가 생성돼도 carried-over `code-reviewer`가 이를 bound helper로 다루지 않으면 harness는 구조상 맞아도 실제 사용 흐름이 덜 성숙해진다.
+- 이 문제는 `osd` adapter나 refinement schema를 더 키우는 것보다 shared `skills/code-reviewer/` 보강으로 푸는 편이 맞다고 판단했다.
+- 따라서:
+  - shared `skills/code-reviewer/SKILL.md`에 companion review helper 규칙을 추가했다
+  - generated `ofgw-harness`, `osd-harness`의 `skills/review/code-reviewer/SKILL.md`도 동기화했다
+  - initiator 검증 기준에 review-layer coherence 항목을 추가했다
+- 결론:
+  - `osd-harness`는 usable first draft로 본다
+  - 추가 product-local refinement보다 shared carry-over skill 품질 개선이 먼저였다
+
+## 98. Root Harness Docs Consolidation
+
+- root md 파일이 너무 많아 역할이 겹치는 문제를 정리했다.
+- `HARNESS_FLOW_IO.md`, `INITIATOR_VALIDATION.md`는 별도 root 문서 대신 `HARNESS_INITIATOR.md`로 병합했다.
+- 병합 후 root 기준 문서는 아래 네 개만 남긴다:
+  - `README.md`
+  - `AGENTS.md`
+  - `MIGRATION.md`
+  - `HARNESS_INITIATOR.md`
+- 현재 의미 있는 기준선은 `HARNESS_INITIATOR.md`의 `Validation And Flow Summary` 섹션으로 흡수했다.
+
+## 99. Generated Harness Root Docs Consolidation
+
+- generated harness root md도 너무 많아 runtime bundle과 validation artifact가 섞이는 문제가 있었다.
+- generated root 기준 문서를 아래 세 개로 고정했다:
+  - `README.md`
+  - `AGENTS.md`
+  - `GENERATION_SUMMARY.md`
+- 아래 파일은 generated root에서 제거하고 `adapters/<product>/` 아래로 이동했다:
+  - `REVIEW_GENERATED_HARNESS.md`
+  - `REFINEMENT_EVALUATION.md`
+- 이동 대상:
+  - `adapters/ofgw/REVIEW_GENERATED_HARNESS.md`
+  - `adapters/ofgw/REFINEMENT_EVALUATION.md`
+  - `adapters/osd/REVIEW_GENERATED_HARNESS.md`
+  - `adapters/osd/REFINEMENT_EVALUATION.md`
+- 해석:
+  - generated harness root는 runtime-facing draft만 보여준다.
+  - validation/evaluation 문서는 generation/refinement 산출물로 adapter 쪽에 남긴다.
