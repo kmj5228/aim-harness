@@ -1,5 +1,5 @@
 ---
-name: dispatching-parallel-agents-base
+name: dispatching-parallel-agents
 description: Use when facing 2 or more independent tasks that can be investigated or implemented in parallel without shared write scope or sequential dependency
 ---
 
@@ -129,9 +129,9 @@ Parallel completion is not complete until integration verification passes.
 
 ## Integration
 
-**Alternative to:** `subagent-driven-development-base` when the problem is better partitioned by independent domains than by sequential plan tasks
+**Alternative to:** `subagent-driven-development` when the problem is better partitioned by independent domains than by sequential plan tasks
 
 **Pairs with:**
-- **test-driven-development-base** — each agent should preserve behavior with tests
-- **systematic-debugging-base** — for independent investigation tracks
-- **verification-before-completion-base** — integrated verification after parallel work
+- **test-driven-development** — each agent should preserve behavior with tests
+- **systematic-debugging** — for independent investigation tracks
+- **verification-before-completion** — integrated verification after parallel work

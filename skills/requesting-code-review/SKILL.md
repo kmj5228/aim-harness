@@ -1,5 +1,5 @@
 ---
-name: requesting-code-review-base
+name: requesting-code-review
 description: Use when your own implementation is ready for a self-review pass before handoff, merge preparation, or completion claims
 ---
 
@@ -80,10 +80,10 @@ If review findings lead to code changes:
 ## Integration
 
 **Called by:**
-- **finishing-a-development-branch-base** — before review or merge preparation
+- **finishing-a-development-branch** — before review or merge preparation
 
 **Uses:**
-- **code-reviewer-base** — when a structured review workflow is available
+- **code-reviewer** — when a structured review workflow is available
 
 **Feeds into:**
-- **receiving-code-review-base** — if findings need systematic follow-up
+- **receiving-code-review** — if findings need systematic follow-up

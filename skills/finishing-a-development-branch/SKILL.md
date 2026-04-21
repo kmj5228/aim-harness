@@ -1,5 +1,5 @@
 ---
-name: finishing-a-development-branch-base
+name: finishing-a-development-branch
 description: Use when implementation is complete and you need to finalize the branch, prepare review handoff, or decide how to wrap up the current development line
 ---
 
@@ -15,7 +15,7 @@ Guide the final handoff of implementation work: verify, clean up, push or sync t
 
 ### Step 1: Verify Completion
 
-**Required:** Use verification-before-completion-base first.
+**Required:** Use verification-before-completion first.
 
 If required checks fail:
 - Stop
@@ -74,7 +74,7 @@ Use the options that match the repository's actual workflow.
 
 #### Option 4: Self-Review First
 
-- Invoke requesting-code-review-base
+- Invoke requesting-code-review
 - Apply findings before external review if needed
 
 ## Quick Reference
@@ -91,7 +91,7 @@ Use the options that match the repository's actual workflow.
 ### Skipping verification
 
 - Problem: handoff happens with stale or missing evidence
-- Fix: always run verification-before-completion-base first
+- Fix: always run verification-before-completion first
 
 ### Wrong branch or workspace
 
@@ -119,12 +119,12 @@ Use the options that match the repository's actual workflow.
 ## Integration
 
 **Called by:**
-- **subagent-driven-development-base** — after all tasks complete
-- **executing-plans-base** — after inline execution completes
+- **subagent-driven-development** — after all tasks complete
+- **executing-plans** — after inline execution completes
 
 **Feeds into:**
-- **requesting-code-review-base** — when self-review is chosen first
+- **requesting-code-review** — when self-review is chosen first
 - Product-specific completion steps — when the repository has extra release, documentation, or patch workflows
 
 **Pairs with:**
-- **verification-before-completion-base** — verify before finishing
+- **verification-before-completion** — verify before finishing

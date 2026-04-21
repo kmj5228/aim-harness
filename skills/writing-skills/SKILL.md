@@ -1,5 +1,5 @@
 ---
-name: writing-skills-base
+name: writing-skills
 description: Use when creating a new skill, revising an existing skill, or validating whether a skill teaches the intended workflow clearly and reliably
 ---
 
@@ -11,7 +11,7 @@ The point is not to write a clever document. The point is to produce a skill tha
 
 **Core principle:** If you did not observe failure without the skill, you do not yet know what the skill needs to teach.
 
-**Required background:** `test-driven-development-base` explains the RED-GREEN-REFACTOR loop this skill adapts for documentation.
+**Required background:** `test-driven-development` explains the RED-GREEN-REFACTOR loop this skill adapts for documentation.
 
 **Reference:** `anthropic-best-practices.md` contains additional vendor guidance for skill authoring. Use it as supporting material, not as a substitute for testing.
 
@@ -187,7 +187,7 @@ Guidelines:
 Repeat the full TDD loop in every skill.
 
 # Good
-Testing follows `test-driven-development-base`. Reference that skill for the full loop.
+Testing follows `test-driven-development`. Reference that skill for the full loop.
 ```
 
 ## The Iron Law

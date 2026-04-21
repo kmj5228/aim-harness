@@ -1,5 +1,5 @@
 ---
-name: using-feature-branches-base
+name: using-feature-branches
 description: Use when starting implementation work that should be isolated from the main branch, shared branch, or current workspace before coding or committing
 ---
 
@@ -110,7 +110,7 @@ If the repository uses review branches, merge requests, or pull requests, hand o
 | Already on isolated branch | Proceed with work |
 | Need branch name | Follow repo naming rule or use descriptive short form |
 | Ready to push | Push isolated branch, not shared baseline |
-| Ready for review | See finishing-a-development-branch-base |
+| Ready for review | See finishing-a-development-branch |
 
 ## Common Mistakes
 
@@ -141,9 +141,9 @@ Any of these means you should stop and correct the workspace setup first.
 ## Integration
 
 **Called by:**
-- **brainstorming-base** — after design approval, before implementation
-- **executing-plans-base** — before inline execution
-- **subagent-driven-development-base** — before dispatching implementers
+- **brainstorming** — after design approval, before implementation
+- **executing-plans** — before inline execution
+- **subagent-driven-development** — before dispatching implementers
 
 **Pairs with:**
-- **finishing-a-development-branch-base** — push, review, merge preparation, cleanup after work completes
+- **finishing-a-development-branch** — push, review, merge preparation, cleanup after work completes

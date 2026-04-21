@@ -1,5 +1,5 @@
 ---
-name: subagent-driven-development-base
+name: subagent-driven-development
 description: Use when executing an implementation plan with mostly independent tasks and you want a fresh subagent to implement each task with review between tasks
 ---
 
@@ -17,7 +17,7 @@ Execute a plan by dispatching a fresh implementer per task, then reviewing the r
 - Tasks are mostly independent or can be serialized cleanly
 - You want stronger isolation and review than inline execution
 
-**vs. executing-plans-base:** This skill uses fresh subagents per task. `executing-plans-base` executes inline in the current session.
+**vs. executing-plans:** This skill uses fresh subagents per task. `executing-plans` executes inline in the current session.
 
 ## The Process
 
@@ -132,11 +132,11 @@ Do not ignore escalation. Change the inputs before retrying.
 ## Integration
 
 **Required:**
-- **using-feature-branches-base** — when branch or workspace isolation is needed
-- **test-driven-development-base** — implementers should follow TDD
-- **verification-before-completion-base** — final verification before accepting completion
-- **finishing-a-development-branch-base** — after all tasks complete
+- **using-feature-branches** — when branch or workspace isolation is needed
+- **test-driven-development** — implementers should follow TDD
+- **verification-before-completion** — final verification before accepting completion
+- **finishing-a-development-branch** — after all tasks complete
 
 **Alternative / Related:**
-- **executing-plans-base** — inline execution without subagents
-- **dispatching-parallel-agents-base** — for truly independent parallel tasks
+- **executing-plans** — inline execution without subagents
+- **dispatching-parallel-agents** — for truly independent parallel tasks

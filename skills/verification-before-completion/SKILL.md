@@ -1,5 +1,5 @@
 ---
-name: verification-before-completion-base
+name: verification-before-completion
 description: Use when about to claim work is complete, fixed, or passing and you need fresh verification evidence before making that claim
 ---
 
@@ -127,8 +127,8 @@ No shortcuts.
 ## Integration
 
 **Called by:**
-- **executing-plans-base** — before claiming task or plan completion
-- **subagent-driven-development-base** — before implementer completion
-- **systematic-debugging-base** — after a fix
-- **finishing-a-development-branch-base** — before review/merge preparation
-- **dispatching-parallel-agents-base** — after integrating parallel work
+- **executing-plans** — before claiming task or plan completion
+- **subagent-driven-development** — before implementer completion
+- **systematic-debugging** — after a fix
+- **finishing-a-development-branch** — before review/merge preparation
+- **dispatching-parallel-agents** — after integrating parallel work

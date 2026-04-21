@@ -1,5 +1,5 @@
 ---
-name: writing-plans-base
+name: writing-plans
 description: Use when you have an approved design or clear requirements for a multi-step implementation task and need a task-by-task execution plan before coding
 ---
 
@@ -44,7 +44,7 @@ Before defining tasks, map out which files will be created or modified:
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** Use subagent-driven-development-base (recommended) or executing-plans-base to implement this plan task-by-task. Steps use checkbox syntax for tracking.
+> **For agentic workers:** Use subagent-driven-development (recommended) or executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking.
 
 **Goal:** [One sentence]
 
@@ -164,14 +164,14 @@ After saving the plan:
 >
 > Which approach?"
 
-**Subagent-Driven:** Use subagent-driven-development-base
-**Inline:** Use executing-plans-base
+**Subagent-Driven:** Use subagent-driven-development
+**Inline:** Use executing-plans
 
 ## Integration
 
 **Called by:**
-- **brainstorming-base** — after design approval
+- **brainstorming** — after design approval
 
 **Feeds into (user selects):**
-- **subagent-driven-development-base** (recommended) — fresh subagent per task
-- **executing-plans-base** — inline execution
+- **subagent-driven-development** (recommended) — fresh subagent per task
+- **executing-plans** — inline execution

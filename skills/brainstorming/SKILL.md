@@ -1,5 +1,5 @@
 ---
-name: brainstorming-base
+name: brainstorming
 description: "Use when starting feature work, behavior changes, or design-heavy fixes before implementation. Clarifies requirements, constraints, trade-offs, and design approval before planning or coding."
 ---
 
@@ -30,7 +30,7 @@ Complete in order:
 7. **Write design doc** — save the `design_spec` artifact in the current topic artifact workspace and verify
 8. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope
 9. **User reviews written spec** — ask user to review before proceeding
-10. **Transition** — invoke writing-plans-base to create implementation plan
+10. **Transition** — invoke writing-plans to create implementation plan
 
 ## Process Flow
 
@@ -47,7 +47,7 @@ digraph brainstorming {
     "Write design_spec" [shape=box];
     "Spec self-review" [shape=box];
     "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans-base" [shape=doublecircle];
+    "Invoke writing-plans" [shape=doublecircle];
 
     "analysis_report exists?" -> "Use existing analysis" [label="yes"];
     "analysis_report exists?" -> "Explore project context" [label="no"];
@@ -62,11 +62,11 @@ digraph brainstorming {
     "Write design_spec" -> "Spec self-review";
     "Spec self-review" -> "User reviews spec?";
     "User reviews spec?" -> "Write design_spec" [label="changes"];
-    "User reviews spec?" -> "Invoke writing-plans-base" [label="approved"];
+    "User reviews spec?" -> "Invoke writing-plans" [label="approved"];
 }
 ```
 
-**The terminal state is invoking writing-plans-base.** Do NOT invoke any other implementation skill.
+**The terminal state is invoking writing-plans.** Do NOT invoke any other implementation skill.
 
 ## The Process
 
@@ -150,7 +150,7 @@ Save the validated `design_spec` artifact in the current topic artifact workspac
 
 > "The `design_spec` artifact is written in the current topic workspace. Please review it and let me know if you want changes before we proceed to planning."
 
-Wait for user approval. Only then invoke writing-plans-base.
+Wait for user approval. Only then invoke writing-plans.
 
 ## Key Principles
 
@@ -164,7 +164,7 @@ Wait for user approval. Only then invoke writing-plans-base.
 ## Red Flags
 
 - Writing code before design approval
-- Skipping to writing-plans-base without user approving spec
+- Skipping to writing-plans without user approving spec
 - Re-gathering external context when usable prior analysis already exists
 - Proposing only one approach without alternatives
 - Design doc with "TBD" sections
@@ -176,4 +176,4 @@ Wait for user approval. Only then invoke writing-plans-base.
 - direct user entry
 
 **Feeds into:**
-- **writing-plans-base** — after design approval (terminal state)
+- **writing-plans** — after design approval (terminal state)

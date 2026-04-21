@@ -1,5 +1,5 @@
 ---
-name: executing-plans-base
+name: executing-plans
 description: Use when you have a written implementation plan to execute in the current session with build/test gate verification between steps
 ---
 
@@ -9,7 +9,7 @@ description: Use when you have a written implementation plan to execute in the c
 
 Load plan, review critically, execute all tasks with TDD cycle and phase gates, report when complete.
 
-**Note:** If subagents are available, prefer subagent-driven-development-base for higher quality (fresh context per task, review between tasks). Use this skill for inline execution when subagents aren't needed or available.
+**Note:** If subagents are available, prefer subagent-driven-development for higher quality (fresh context per task, review between tasks). Use this skill for inline execution when subagents aren't needed or available.
 
 ## The Process
 
@@ -17,7 +17,7 @@ Load plan, review critically, execute all tasks with TDD cycle and phase gates, 
 
 1. Check the current branch or workspace state if the repository uses branch-based workflow
 2. Confirm the plan file and target files are the ones you intend to change
-3. If branch setup or workspace isolation is required, use using-feature-branches-base before starting
+3. If branch setup or workspace isolation is required, use using-feature-branches before starting
 
 ### Step 1: Load and Review Plan
 
@@ -43,15 +43,15 @@ For each task:
    - Use the repository's commit/checkpoint style
 5. **Mark as completed** (TaskUpdate)
 
-**REQUIRED SUB-SKILL:** Use test-driven-development-base for the TDD cycle within each task.
+**REQUIRED SUB-SKILL:** Use test-driven-development for the TDD cycle within each task.
 
 ### Step 3: Complete Development
 
 After all tasks complete:
 
-1. **Run final verification** using verification-before-completion-base
+1. **Run final verification** using verification-before-completion
 2. **Review repository state** and confirm only intended files changed
-3. **Transition:** Use finishing-a-development-branch-base for branch cleanup, push, review, or merge preparation as appropriate
+3. **Transition:** Use finishing-a-development-branch for branch cleanup, push, review, or merge preparation as appropriate
 
 ## When to Stop and Ask
 
@@ -82,8 +82,8 @@ After all tasks complete:
 ## Integration
 
 **Required workflow skills:**
-- **using-feature-branches-base** — when branch setup or isolated workspace is needed
-- **test-driven-development-base** — TDD cycle for each task
-- **systematic-debugging-base** — when tests fail unexpectedly
-- **verification-before-completion-base** — before claiming complete
-- **finishing-a-development-branch-base** — finalize branch/review workflow after all tasks
+- **using-feature-branches** — when branch setup or isolated workspace is needed
+- **test-driven-development** — TDD cycle for each task
+- **systematic-debugging** — when tests fail unexpectedly
+- **verification-before-completion** — before claiming complete
+- **finishing-a-development-branch** — finalize branch/review workflow after all tasks

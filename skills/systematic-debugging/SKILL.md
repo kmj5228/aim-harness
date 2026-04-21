@@ -1,5 +1,5 @@
 ---
-name: systematic-debugging-base
+name: systematic-debugging
 description: Use when encountering a bug, test failure, build failure, or unexpected behavior and you need to find root cause before proposing fixes
 ---
 
@@ -104,7 +104,7 @@ Do not mix multiple fixes into one experiment.
 4. Run broader verification appropriate to the repository
 5. If 3+ fix attempts fail, stop and question the architecture or assumptions
 
-**Required:** Use test-driven-development-base when the issue should be protected by a regression test.
+**Required:** Use test-driven-development when the issue should be protected by a regression test.
 
 ## Red Flags - Stop and Reset
 
@@ -153,10 +153,10 @@ Available in this directory:
 ## Integration
 
 **Called by:**
-- **executing-plans-base** — when task execution fails
-- **subagent-driven-development-base** — when implementer work hits unexpected failures
-- **dispatching-parallel-agents-base** — when independent investigations are needed
+- **executing-plans** — when task execution fails
+- **subagent-driven-development** — when implementer work hits unexpected failures
+- **dispatching-parallel-agents** — when independent investigations are needed
 
 **Uses:**
-- **test-driven-development-base** — regression test before fix
-- **verification-before-completion-base** — final verification before claiming success
+- **test-driven-development** — regression test before fix
+- **verification-before-completion** — final verification before claiming success

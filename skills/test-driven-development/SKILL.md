@@ -1,5 +1,5 @@
 ---
-name: test-driven-development-base
+name: test-driven-development
 description: Use when implementing a feature, fixing a bug, or changing behavior and you need to drive the work with a failing test before writing production code
 ---
 
@@ -280,7 +280,7 @@ No exceptions without explicit user approval.
 ## Integration
 
 **Called by:**
-- **executing-plans-base** — inline task execution
-- **subagent-driven-development-base** — implementer execution loop
-- **systematic-debugging-base** — regression test before fix
-- **receiving-code-review-base** — feedback-driven behavior changes
+- **executing-plans** — inline task execution
+- **subagent-driven-development** — implementer execution loop
+- **systematic-debugging** — regression test before fix
+- **receiving-code-review** — feedback-driven behavior changes

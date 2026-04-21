@@ -40,43 +40,43 @@ Typical flow:
 
 | Trigger | Skill |
 |---------|-------|
-| New feature, fix, refactor — design first | **brainstorming-base** |
-| Approved design, need task breakdown | **writing-plans-base** |
-| Plan exists, executing inline | **executing-plans-base** |
-| Plan exists, executing with fresh subagents | **subagent-driven-development-base** |
-| Multiple independent tasks can run in parallel | **dispatching-parallel-agents-base** |
-| Implementing behavior with tests first | **test-driven-development-base** |
-| Test failure, bug, or unexpected behavior | **systematic-debugging-base** |
-| About to claim work complete | **verification-before-completion-base** |
-| Need isolated branch/workspace before implementation | **using-feature-branches-base** |
-| Implementation finished, need branch/review handoff | **finishing-a-development-branch-base** |
-| Need structured self-review | **requesting-code-review-base** |
-| Need to process review feedback | **receiving-code-review-base** |
+| New feature, fix, refactor — design first | **brainstorming** |
+| Approved design, need task breakdown | **writing-plans** |
+| Plan exists, executing inline | **executing-plans** |
+| Plan exists, executing with fresh subagents | **subagent-driven-development** |
+| Multiple independent tasks can run in parallel | **dispatching-parallel-agents** |
+| Implementing behavior with tests first | **test-driven-development** |
+| Test failure, bug, or unexpected behavior | **systematic-debugging** |
+| About to claim work complete | **verification-before-completion** |
+| Need isolated branch/workspace before implementation | **using-feature-branches** |
+| Implementation finished, need branch/review handoff | **finishing-a-development-branch** |
+| Need structured self-review | **requesting-code-review** |
+| Need to process review feedback | **receiving-code-review** |
 | Need a structured review workflow | **code-reviewer** |
 | Need to derive a product harness from product-bound source assets | **harness-initiator** |
 | Need to improve an already generated harness | **product-harness-refinement** |
-| Creating or editing skills | **writing-skills-base** |
+| Creating or editing skills | **writing-skills** |
 
 ## Workflow Chain
 
 ```text
-brainstorming-base
-  -> writing-plans-base
-  -> executing-plans-base / subagent-driven-development-base
-     -> test-driven-development-base
-     -> systematic-debugging-base (when needed)
-     -> verification-before-completion-base
-  -> finishing-a-development-branch-base
-     -> requesting-code-review-base
-     -> receiving-code-review-base
+brainstorming
+  -> writing-plans
+  -> executing-plans / subagent-driven-development
+     -> test-driven-development
+     -> systematic-debugging (when needed)
+     -> verification-before-completion
+  -> finishing-a-development-branch
+     -> requesting-code-review
+     -> receiving-code-review
 
 Independent / specialized:
-  dispatching-parallel-agents-base
+  dispatching-parallel-agents
   code-reviewer
   harness-initiator
   product-harness-refinement
-  using-feature-branches-base
-  writing-skills-base
+  using-feature-branches
+  writing-skills
 
 Planned direction for this repository:
   templates/<product>/...
@@ -128,8 +128,8 @@ Do not assume a fixed root such as `../agent/prompt/<topic>/` unless the active 
 
 When multiple skills might apply:
 
-1. **Process skills first** — e.g. `brainstorming-base`, `systematic-debugging-base`
-2. **Execution skills second** — e.g. `test-driven-development-base`, `executing-plans-base`
+1. **Process skills first** — e.g. `brainstorming`, `systematic-debugging`
+2. **Execution skills second** — e.g. `test-driven-development`, `executing-plans`
 3. **Harness generation/refinement skills only when the task is actually about harness work**
 
 ## Common Red Flags

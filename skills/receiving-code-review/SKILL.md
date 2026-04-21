@@ -1,5 +1,5 @@
 ---
-name: receiving-code-review-base
+name: receiving-code-review
 description: Use when receiving code review feedback from self-review, automated review, or human reviewers before implementing the suggested changes
 ---
 
@@ -48,7 +48,7 @@ For multi-item feedback:
    - Behavior or logic changes one at a time
 3. Re-verify after each meaningful fix
 
-**Required:** Use test-driven-development-base for logic fixes or bug-related changes.
+**Required:** Use test-driven-development for logic fixes or bug-related changes.
 
 ## When To Push Back
 
@@ -116,10 +116,10 @@ Verify. Question. Fix. Re-verify.
 ## Integration
 
 **Called by:**
-- **requesting-code-review-base** — after self-review findings
-- **code-reviewer-base** — after structured review output
+- **requesting-code-review** — after self-review findings
+- **code-reviewer** — after structured review output
 - Any human or automated review channel
 
 **Uses:**
-- **test-driven-development-base** — when applying logic fixes
-- **verification-before-completion-base** — after review-driven changes
+- **test-driven-development** — when applying logic fixes
+- **verification-before-completion** — after review-driven changes
