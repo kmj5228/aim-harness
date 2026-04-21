@@ -2114,3 +2114,13 @@ git -C base-harness status --short
 - 해석:
   - generated harness root는 runtime-facing draft만 보여준다.
   - validation/evaluation 문서는 generation/refinement 산출물로 adapter 쪽에 남긴다.
+
+## 100. `.codex` Ignore and `product-specific/` Removal
+
+- root `.gitignore`를 추가하고 `.codex`를 ignore 대상으로 넣었다.
+- `product-specific/`는 이미 active source location이 아니라 deprecated 잔재만 남은 상태라고 확인했다.
+- 남아 있던 `product-specific/README.md`를 제거했다.
+- 현재 기준:
+  - source input은 `templates/`
+  - runtime skill set은 `skills/`
+  - `product-specific/`는 더 이상 live layout 일부로 보지 않는다

@@ -2152,6 +2152,16 @@ Decision:
   - generated harness root는 standalone runtime draft처럼 보이게 유지한다.
   - validation trace는 adapter 산출물로 분리한다.
 
+### Session 53 - `.codex` Ignore and `product-specific/` Removal
+
+- root `.gitignore`에 `.codex`를 추가했다.
+- `product-specific/`는 이미 active source location이 아니고 deprecated 잔재만 남은 상태라고 다시 확인했다.
+- 남아 있던 `product-specific/README.md`를 제거하고, 디렉토리 자체도 정리 대상으로 본다.
+- 해석:
+  - active source는 `templates/`
+  - active runtime skill set은 `skills/`
+  - `product-specific/`는 더 이상 live layout 일부가 아니다
+
 ### Session 51 - OSD Review-Layer Evaluation and Shared `code-reviewer` Fix
 
 - `generated/osd-harness/`를 전반 평가한 결과, 가장 큰 문제는 product-local binding 부족이 아니라 review layer 내부 연결 부족이었다.
