@@ -48,6 +48,7 @@ Codex 기본 진입점은 이 문서와 `skills/`다.
 - `requesting-code-review-base`
 - `receiving-code-review-base`
 - `code-reviewer-base`
+- `harness-initiator`
 - `writing-skills-base`
 
 ## Skill Routing
@@ -67,6 +68,7 @@ Codex 기본 진입점은 이 문서와 `skills/`다.
 | 셀프 리뷰 요청 | `requesting-code-review-base` |
 | 리뷰 피드백 처리 | `receiving-code-review-base` |
 | 타인 변경 리뷰 | `code-reviewer-base` |
+| 제품 하네스 생성/적응 | `harness-initiator` |
 | 스킬 작성/수정 | `writing-skills-base` |
 
 ## Default Workflow

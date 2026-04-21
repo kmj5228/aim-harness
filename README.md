@@ -67,6 +67,7 @@
 ### 메타 및 저작
 
 - `using-base-harness`
+- `harness-initiator`
 - `writing-skills-base`
 
 ## Product Packs
@@ -95,6 +96,7 @@ base-harness/
 │   └── session-start.sh
 ├── skills/
 │   ├── using-base-harness/
+│   ├── harness-initiator/
 │   ├── brainstorming-base/
 │   ├── writing-plans-base/
 │   ├── executing-plans-base/
@@ -141,7 +143,10 @@ base-harness/
 - [AGENTS.md](/home/smj/harness/base-harness/AGENTS.md:1): Codex 기본 런타임 규칙
 - [README.md](/home/smj/harness/base-harness/README.md:1): 구조와 사용법
 - [MIGRATION.md](/home/smj/harness/base-harness/MIGRATION.md:1): 마이그레이션 기록
+- [HARNESS_INITIATOR.md](/home/smj/harness/base-harness/HARNESS_INITIATOR.md:1): initiator 방향, 현재 결정사항, 짧은 작업 세션 계획
 
 ## 참고
 
 현재까지의 추출 과정과 판단 로그는 [MIGRATION.md](/home/smj/harness/base-harness/MIGRATION.md:1)에 유지한다.
+`harness-initiator` 브랜치에서 합의한 생성기 방향과 세션 계획은 [HARNESS_INITIATOR.md](/home/smj/harness/base-harness/HARNESS_INITIATOR.md:1)에 유지한다.
+실제 스킬 초안은 [skills/harness-initiator/SKILL.md](/home/smj/harness/base-harness/skills/harness-initiator/SKILL.md:1)에 있다.

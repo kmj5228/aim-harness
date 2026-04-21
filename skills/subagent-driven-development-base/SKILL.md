@@ -31,7 +31,7 @@ Before dispatching any implementer:
 
 ### Step 1: Load Plan
 
-1. Read `../agent/prompt/<topic>/plan_tasks.md`
+1. Read the `implementation_plan` artifact from the current topic artifact workspace
 2. Extract all task text in executable order
 3. Review critically and raise concerns before starting
 

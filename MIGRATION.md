@@ -876,3 +876,520 @@ git -C base-harness status --short
 - 저장소를 `git pull`하는 것만으로는 사용자 로컬 Codex 런타임에 hook이 자동 적용되지 않는다
 - 하지만 repository source 차원에서는 Codex hook 자산을 함께 버전 관리하는 편이 낫다
 - 따라서 `hooks/`는 소스 위치로 두고, 실제 활성화는 사용자 설치 단계에서 수행하는 구조가 적절하다
+
+### 2026-04-20 39. `harness-initiator` 작업 기준선 기록
+
+수정:
+
+- 작업 브랜치 `harness-initiator`를 생성
+- 현재 합의된 initiator 방향을 `HARNESS_INITIATOR.md`에 기록
+- `README.md`에 initiator 결정 문서 링크를 추가
+
+현재 합의:
+
+- 변환 입력 묶음은 `source-packs/` 대신 `templates/`라는 이름으로 가정
+- 생성 결과는 `generated/<product>-harness/` 아래에 둠
+- 최초 대상 제품은 `ofgw`
+- initiator는 `adapter draft 생성 -> 사용자 확인 -> product harness 생성` 흐름을 담당
+- adapter 포맷은 우선 `product-profile.yaml`, `mappings.yaml` 두 파일만 사용
+- 이번 라운드에서는 실제 구조 개편, 파일 이동, 스킬 구현을 하지 않음
+
+판단:
+
+- 아직 구조를 바꾸기보다 결정사항과 짧은 실행 단위를 먼저 고정하는 편이 안전하다
+- 특히 `product-specific/` 자산의 물리 이동은 initiator 입력/출력 계약이 더 선명해진 뒤 진행하는 편이 낫다
+
+### 2026-04-20 40. Session 2 입력 인벤토리 기록
+
+수정:
+
+- `product-specific/` 자산을 initiator 입력 후보 관점에서 1차 분류
+- 결과를 `HARNESS_INITIATOR.md`에 기록
+
+분류 결과:
+
+- **1차 template 후보**
+  - `issue-analysis-base`
+  - `writing-documents-base`
+  - `writing-documents-base/markdown-guide.md`
+- **분해 후 검토 대상**
+  - `completing-patch-base`
+  - `writing-documents-base/manual-guide.md`
+- **초기 범위 제외**
+  - `writing-documents-base` 하위의 platform guide 다수
+  - `product-specific/code-reviewer-base/*`
+  - `measure_diff_cov.sh`
+
+판단:
+
+- 첫 initiator 시범 범위는 전체 product workflow가 아니라, 템플릿화 가능한 분석/문서 허브 중심으로 좁히는 편이 낫다
+- QA 문서, 수동 운영 절차, 저장소 정책 결합 스크립트는 adapter 이전에 먼저 분해 기준이 필요하다
+
+### 2026-04-20 41. Core Neutrality Audit 추가
+
+수정:
+
+- `skills/*-base`에 대해 stack-specific example, artifact path contract, runtime coupling을 1차 점검
+- 결과를 `HARNESS_INITIATOR.md`에 기록하고 세션 순서를 조정
+
+주요 관찰:
+
+- `brainstorming-base`, `writing-plans-base`, `executing-plans-base`, `subagent-driven-development-base`는 `../agent/prompt/<topic>/...` 경로 계약을 공통 전제로 둔다
+- `writing-plans-base`, `test-driven-development-base`는 `TypeScript`/`pnpm` 예시 편향이 남아 있다
+- `verification-before-completion-base`, `systematic-debugging-base`, `code-reviewer-base`는 상대적으로 기술 스택 중립성이 높다
+- `using-base-harness`와 `writing-skills-base`는 strict core라기보다 runtime/meta 성격이므로 별도 취급이 적절하다
+
+판단:
+
+- initiator가 core skill의 스택 편향까지 보정하는 구조는 좋지 않다
+- path contract와 example neutralization은 base layer에서 먼저 정리하고, initiator는 product adaptation에 집중시키는 편이 맞다
+
+### 2026-04-20 42. Artifact Contract 초안 추가
+
+수정:
+
+- `HARNESS_INITIATOR.md`에 core-neutral artifact contract를 추가
+- micro-session 순서를 갱신하여 initiator phase 설계 전에 artifact contract를 고정
+
+계약 초안:
+
+- core skill은 physical path 대신 logical artifact id를 사용
+- 1차 대상 artifact:
+  - `analysis_report`
+  - `design_spec`
+  - `implementation_plan`
+- 현재 `../agent/prompt/<topic>/...`는 transitional runtime mapping으로만 유지
+
+판단:
+
+- 지금 문제의 본질은 파일명보다 physical root hardcoding이다
+- 따라서 이번 라운드의 최소 목표는 canonical filename을 유지한 채, core skill이 root path를 직접 아는 구조를 끊는 것이다
+
+### 2026-04-20 43. 1차 core skill neutralization 적용
+
+수정:
+
+- `brainstorming-base`, `writing-plans-base`, `executing-plans-base`, `subagent-driven-development-base`, `test-driven-development-base`를 수정
+- artifact 참조를 physical path 대신 logical artifact 중심으로 재서술
+- stack-specific 예시(`TypeScript`, `pnpm`)를 stack-neutral pseudocode로 교체
+
+검증:
+
+- `rg -n '\\.\\./agent/prompt|pnpm|TypeScript|buildResult|validateQueueName' <대상 스킬들>`
+- 관찰: direct path hardcoding과 이전 TS 예시 표현은 제거됨
+
+판단:
+
+- core layer는 이제 artifact identity를 알고, physical path는 runtime mapping이 제공하는 구조로 이동하기 시작했다
+- 아직 canonical filename 설명은 일부 남겨두었지만, 이는 transitional mapping 문맥으로만 유지된다
+
+### 2026-04-20 44. 메타 스킬 및 markdown guide 정렬
+
+수정:
+
+- `using-base-harness`에 transitional product-bound layout과 장기 방향(`templates/`, `adapters/`, `generated/`)을 병기
+- `using-base-harness`에 logical artifact convention을 추가
+- `product-specific/skills/writing-documents-base/markdown-guide.md`를 artifact contract 기준으로 재서술
+
+추가 점검:
+
+- `dispatching-parallel-agents-base`
+- `systematic-debugging-base`
+
+판단:
+
+- 위 두 스킬은 현재 기준으로 path hardcoding이나 stack-specific example이 거의 없어 추가 수정 없이 유지 가능하다
+- 남은 artifact/path 결합은 주로 product-specific 문서군과 후속 템플릿 분해 작업에서 다루면 된다
+
+### 2026-04-20 45. Initiator phase contract 고정
+
+수정:
+
+- `HARNESS_INITIATOR.md`의 Session 5에 initiator phase contract를 추가
+- `analyze -> draft-adapter -> confirm-gaps -> generate-harness` 각 단계의 입력/출력/중단 조건을 명시
+
+핵심 규칙:
+
+- `analyze`는 선택된 template 후보와 target repo만 다룬다
+- `draft-adapter`는 inferred 값과 unresolved 값을 분리한다
+- `confirm-gaps`는 필수 사용자 확인 게이트다
+- `generate-harness`는 confirmed adapter만 입력으로 받는다
+
+판단:
+
+- adapter 초안 생성과 사용자 확인을 분리해야 추정값을 사실처럼 굳히는 오류를 막을 수 있다
+- 생성 단계는 마지막에 두어야 제외 대상과 생성 대상의 경계를 함께 보고할 수 있다
+
+### 2026-04-20 46. 결과물 우선순위 재정렬
+
+수정:
+
+- `HARNESS_INITIATOR.md`에 deliverable priority를 추가
+- micro-session 순서를 `generated/ofgw-harness/` 설계 우선이 아니라 `harness-initiator` 스킬 우선으로 재정렬
+
+새 우선순위:
+
+- 1차 핵심 결과물: `harness-initiator` 스킬
+- 후속 검증 대상: `generated/<product>-harness/`
+
+판단:
+
+- 지금 단계에서는 생성 결과 자체보다 생성기 계약과 스킬 본문을 먼저 고정하는 편이 낫다
+- `generated/ofgw-harness/`는 initiator 품질을 확인하는 첫 validation target으로 다루는 것이 더 자연스럽다
+
+### 2026-04-20 47. `harness-initiator` 스킬 초안 추가
+
+수정:
+
+- `skills/harness-initiator/SKILL.md` 신규 작성
+- `using-base-harness`, `AGENTS.md`, `README.md`에 initiator 스킬 참조 추가
+
+스킬 초안 범위:
+
+- trigger 정의
+- first-run scope
+- `analyze -> draft-adapter -> confirm-gaps -> generate-harness` workflow
+- output contract
+- common mistakes
+
+판단:
+
+- initiator는 이제 메모 문서의 아이디어가 아니라 실제로 호출 가능한 skill 초안이 됐다
+- 다음 라운드에서는 이 skill이 요구하는 adapter schema를 더 구체화하는 편이 자연스럽다
+
+### 2026-04-20 48. Adapter draft contract 정의
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 7에 `product-profile.yaml`, `mappings.yaml` 최소 schema를 추가
+- `skills/harness-initiator/SKILL.md`에 adapter draft contract 요약을 추가
+
+핵심 규칙:
+
+- `product-profile.yaml`은 repo facts와 workflow confirmation fields를 분리한다
+- `mappings.yaml`은 terminology / command / workflow 대응을 담는다
+- unresolved 값은 `confirm` 목록으로 남겨 추정값이 확정값처럼 굳지 않게 한다
+
+`ofgw` 기준 현재 추론 가능 사실:
+
+- build systems: `gradle`, `pnpm`
+- languages: `java`, `kotlin`, `javascript`
+- modules: `ofgwSrc`, `webterminal`, `ofgwAdmin`
+- test/coverage stack: `junit5`, `mockito`, `jacoco`
+
+판단:
+
+- 첫 adapter schema는 작게 시작하는 편이 맞다
+- 반복적인 generation 시도에서 공통 필드가 더 드러날 때만 schema를 확장한다
+
+### 2026-04-20 49. Template boundary 정의
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 8에 `issue-analysis`, `writing-documents`, `markdown-guide`의 boundary 기준을 추가
+- `skills/harness-initiator/SKILL.md`에 mixed-stack target을 template body에 과적합시키지 말라는 규칙을 추가
+
+핵심 경계:
+
+- template body:
+  - reusable workflow skeleton
+  - approval / verdict / document-structure rules
+- binding 또는 product config:
+  - issue system, review channel, docs channel
+  - concrete commands, repo paths, auth, automation choice
+- reference/example:
+  - URL patterns
+  - API call examples
+  - product-specific sub-guides
+
+추가 판단:
+
+- `ofgw`는 adapter draft 사실을 얻는 데 유용하지만, OF 계열 대부분이 C 기반이라는 점을 고려하면 template body를 mixed-stack 기준으로 다시 쓰면 안 된다
+- 따라서 `markdown-guide`는 shared support reference로 두고, main template 후보는 `issue-analysis`, `writing-documents` 중심으로 유지한다
+
+### 2026-04-20 50. Confirmation loop 정의
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 9에 confirmation packet / grouped question / resolution state 규칙을 추가
+- `skills/harness-initiator/SKILL.md`의 confirm-gaps 단계에 동일한 운용 규칙을 추가
+
+핵심 규칙:
+
+- 보고는 `Inferred Facts / Needs Confirmation / Red Flags / Proposed Next Step` 4블록으로 구성
+- 질문은 workflow core / release-manual policy / terminology 묶음으로 제시
+- unresolved 상태는 `confirmed`, `deferred`, `unknown`으로만 관리
+
+판단:
+
+- initiator는 질문을 잘게 쪼개기보다 확인 패킷 형태로 묶어서 보여주는 편이 낫다
+- `unknown` 상태를 남긴 채 생성으로 넘어가면 adapter 초안의 미확정 값이 다시 숨겨지므로, 이 상태는 생성 금지 게이트로 유지한다
+
+### 2026-04-20 51. First validation target 정의
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 10에 첫 `ofgw` validation target의 pass criteria / non-goals / failure signals를 추가
+- `skills/harness-initiator/SKILL.md`에 first validation target 섹션을 추가
+
+핵심 기준:
+
+- 첫 검증의 목표는 완성된 `ofgw-harness`가 아니라 `harness-initiator`가 계약된 흐름을 유지하는지 확인하는 것이다
+- pass 조건은 `analyze -> draft-adapter -> confirm-gaps -> minimal generate-harness`가 끝까지 성립하는지에 둔다
+- 첫 generated scope는 `issue-analysis`, `writing-documents`, `markdown-guide` support reference로 제한한다
+
+실패 신호:
+
+- `unknown` 값이 남아 있는데 generation을 진행함
+- 제외된 asset을 summary 없이 누락함
+- `ofgw` mixed-stack 사실을 template body 규칙으로 승격시킴
+- 첫 검증 범위를 넘어 `completing-patch` 같은 자산까지 암묵적으로 포함함
+
+판단:
+
+- 현재 라운드의 핵심 deliverable은 여전히 생성물보다 생성기다
+- 따라서 validation도 generated harness의 완성도보다, initiator가 범위와 제외 대상을 얼마나 명확히 통제하는지에 맞추는 편이 더 적절하다
+
+### 2026-04-20 52. Generated harness skeleton 최소화
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 11에 first validation pass용 minimal generated skeleton을 추가
+- `skills/harness-initiator/SKILL.md`의 generate 단계에 minimal skeleton 규칙을 추가
+
+최소 skeleton:
+
+- `generated/ofgw-harness/AGENTS.md`
+- `generated/ofgw-harness/README.md`
+- `generated/ofgw-harness/GENERATION_SUMMARY.md`
+- `generated/ofgw-harness/skills/product/issue-analysis/`
+- `generated/ofgw-harness/skills/docs/writing-documents/`
+- `generated/ofgw-harness/references/markdown-guide.md`
+
+명시적 제외 범위:
+
+- `hooks/`
+- `profiles/`
+- `skills/core/`
+- `skills/collab/`
+- `skills/review/`
+- `completing-patch`, manual/release workflow 디렉토리
+
+판단:
+
+- 첫 validation pass는 full harness rollout이 아니라 template selection과 exclusion reporting이 올바른지 검증하는 단계다
+- 따라서 공통 자산 전체를 복제하기보다, selected template scope와 support reference만 담는 작은 skeleton이 더 적절하다
+
+### 2026-04-20 53. First build readiness 점검
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 12에 first build readiness 결과를 추가
+- `skills/harness-initiator/SKILL.md`에 readiness 상태를 짧게 명시
+
+판정:
+
+- `analyze`: ready
+- `draft-adapter`: ready
+- `confirm-gaps`: ready
+- `generate-harness`: confirmed adapter 전까지 not ready
+
+다음 실제 필요 작업:
+
+- 하나의 concrete `ofgw` analysis snapshot 수집
+- 첫 `product-profile.yaml` / `mappings.yaml` draft 작성
+- 첫 confirmation packet 구성
+- unresolved 값 사용자 확인 후 generation 시도
+
+판단:
+
+- 이제 부족한 것은 설계 문서가 아니라 첫 실제 draft 실행이다
+- 따라서 다음 라운드는 설계 확장보다 `ofgw` adapter draft를 실제로 구성해 보는 쪽이 더 적절하다
+
+### 2026-04-20 54. First `ofgw` adapter draft packet 작성
+
+수정:
+
+- `adapters/ofgw/analysis-summary.md` 추가
+- `adapters/ofgw/product-profile.yaml` 추가
+- `adapters/ofgw/mappings.yaml` 추가
+- `adapters/ofgw/confirmation-packet.md` 추가
+- `HARNESS_INITIATOR.md`에 Session 13과 session log를 추가
+
+초안에 반영한 inferred facts:
+
+- build systems: `gradle`, `pnpm`
+- languages: `java`, `kotlin`, `javascript`
+- modules: `ofgwSrc`, `webterminal`, `ofgwAdmin`
+- runtime hints: `jeus`, `servlet`, `websocket`, `jpa`, `querydsl`
+- test stack: `junit5`, `mockito`, `assertj`, `hamcrest`
+- coverage: `jacoco`
+
+초안에서 계속 미확정으로 남긴 값:
+
+- `workflow.issue_tracker`
+- `workflow.review_channel`
+- `workflow.docs_channel`
+- `workflow.manual_workflow_required`
+- terminology fields
+- workflow binding fields
+
+판단:
+
+- 이제 initiator 흐름은 추상 설계가 아니라 실제 draft artifact까지 내려왔다
+- `ofgw`용 YAML은 사용자가 맨땅에서 쓰는 파일이 아니라, initiator가 codebase-derived 사실을 채우고 사람 확인이 필요한 값만 남기는 초안이라는 점을 concrete file로 확인했다
+
+### 2026-04-20 55. Confirmation candidate narrowing
+
+수정:
+
+- `adapters/ofgw/confirmation-packet.md`에 suggested defaults를 추가
+
+추천 후보:
+
+- `workflow.issue_tracker`: `jira`
+- `workflow.review_channel`: `pull_request`
+- `workflow.docs_channel`: `repo_markdown` (low confidence)
+- `workflow.manual_workflow_required`: 계속 미확정
+
+근거:
+
+- root `ofgw/AGENTS.md`에 Jira query guardrail과 `OFV7-1234` 예시가 있다
+- `ofgwAdmin/AGENTS.md`에 PR expectation이 명시돼 있다
+- markdown 문서는 보이지만 Confluence/wiki 강신호는 찾지 못했다
+
+판단:
+
+- 이 단계의 목적은 사용자 확인값을 대신 확정하는 것이 아니라, confirmation 질문을 더 좁히는 것이다
+- 따라서 suggested default는 confirmation packet에만 두고, adapter YAML 자체는 아직 미확정 상태로 유지한다
+
+### 2026-04-20 56. Adapter contract를 access binding 중심으로 재정의
+
+수정:
+
+- `HARNESS_INITIATOR.md` Session 7의 active contract를 workflow/terminology 중심에서 access/integration binding 중심으로 수정
+- `skills/harness-initiator/SKILL.md`의 optional input, confirm-gaps grouping, adapter draft contract 문구를 동일 기준으로 수정
+
+핵심 변화:
+
+- `product-profile.yaml`은 repo facts + workflow defaults + safety note 레이어로 본다
+- `mappings.yaml`은 terminology보다 `access_bindings`를 더 중요한 adaptation 레이어로 본다
+- confirm 우선순위는 `issue/review/docs/notebook/manual access` 쪽으로 이동한다
+
+판단:
+
+- 같은 조직/팀 계열에서는 issue tracker 이름 자체보다, Jira/NotebookLM/manual repo에 어떻게 접근하는지가 실제 product adaptation에 더 중요할 수 있다
+- 따라서 initiator의 핵심 질문도 "무슨 시스템인가"보다 "어떤 mode와 location으로 붙는가"를 먼저 다루는 쪽이 더 맞다
+
+### 2026-04-20 57. `ofgw` draft를 access binding 기준으로 재작성
+
+수정:
+
+- `adapters/ofgw/product-profile.yaml` 수정
+- `adapters/ofgw/mappings.yaml` 수정
+- `adapters/ofgw/confirmation-packet.md` 수정
+
+핵심 변화:
+
+- `workflow.issue_tracker` 등 직접 필드를 `workflow.defaults.*`로 내렸다
+- `workflow_bindings`를 제거하고 `access_bindings.issue_access/review_access/docs_access/notebook_access/manual_access`로 교체했다
+- confirmation packet도 `workflow core`보다 `access bindings`를 먼저 묻도록 바꿨다
+
+판단:
+
+- 이제 `ofgw` 초안은 initiator의 새 active contract와 같은 모델을 사용한다
+- 현재 남은 질문은 시스템 종류 자체보다 `mode`, `location`, `manual/notebook` 관련 binding 쪽에 집중된다
+
+### 2026-04-21 58. `repo` mode naming 정리
+
+수정:
+
+- `HARNESS_INITIATOR.md`, `skills/harness-initiator/SKILL.md`의 mode 예시를 `workspace_file`로 변경
+- `adapters/ofgw/mappings.yaml`, `adapters/ofgw/confirmation-packet.md`의 `docs_access.mode`를 `workspace_file`로 변경
+
+판단:
+
+- `repo`는 mode 이름으로 두면 Git 저장소 자체와 file access 방식을 혼동시키기 쉽다
+- `workspace_file`은 현재 작업 중인 워크스페이스 파일을 직접 읽고 쓴다는 뜻이 더 분명하다
+
+### 2026-04-21 59. Provider registry 구조로 재정의
+
+수정:
+
+- `HARNESS_INITIATOR.md`의 `access_bindings` 예시를 provider registry 형태로 변경
+- `skills/harness-initiator/SKILL.md`의 adapter contract 문구를 provider-style binding 기준으로 수정
+- `adapters/ofgw/mappings.yaml`, `adapters/ofgw/confirmation-packet.md`를 provider registry 기준으로 재작성
+
+핵심 변화:
+
+- `issue_sources`, `spec_sources`, `review_targets`, `docs_targets`, `manual_targets`를 도입
+- `jira`, `ims`, `notebooklm`, `pull_request`, `repo_markdown`, `manual_repo`를 provider entry로 취급
+- 확인 항목을 flat access field 대신 provider별 `enabled/default_mode/location` 중심으로 재배치
+
+판단:
+
+- initiator는 특정 시스템 이름을 고정하는 도구보다, 요청 대상별 provider를 선택하는 라우터에 가까워야 한다
+- 따라서 실제 generate gate도 provider label보다 provider location과 사용 여부 쪽 확인이 더 중요하다
+
+### 2026-04-21 60. Jira/IMS provider 기본값 구체화
+
+수정:
+
+- `adapters/ofgw/mappings.yaml`에서 `jira` provider를 `mcp` 기본 + `api` fallback으로 구체화
+- `adapters/ofgw/mappings.yaml`에서 `ims.enabled`를 `true`로 바꾸고 URL pattern을 채움
+- `adapters/ofgw/confirmation-packet.md`에 Jira MCP setup requirement와 REST API fallback 안내를 추가
+- `HARNESS_INITIATOR.md`에 Session 19를 추가
+
+핵심 변화:
+
+- `jira.location` 기본값을 `atlassian-rovo`로 둠
+- Jira MCP 사용 시 `codex mcp add/login/list/get` 절차를 사용자에게 알려줘야 한다고 명시
+- MCP 실패 시 REST API fallback 정보를 같이 보여주도록 정리
+- IMS는 기존 `issue-analysis-base`의 browser URL pattern을 기본 provider location으로 채움
+
+판단:
+
+- initiator는 provider label만 채우는 것이 아니라, 실제로 그 provider를 사용하기 위해 필요한 bootstrap 정보를 함께 말해줘야 한다
+- `ims`는 이미 기존 스킬에 검증된 접근 패턴이 있으므로 default enabled로 두는 쪽이 더 일관적이다
+
+### 2026-04-21 61. NotebookLM/PR/workspace 기본값 반영
+
+수정:
+
+- `adapters/ofgw/mappings.yaml`에서 `notebooklm` provider를 `enabled: true`, `default_mode: mcp`로 고정
+- `adapters/ofgw/mappings.yaml`에 community NotebookLM MCP source repo를 기록
+- `adapters/ofgw/mappings.yaml`에서 `pull_request.location`을 제품 저장소 URL로 설정
+- `adapters/ofgw/mappings.yaml`에서 `repo_markdown.location`을 `agent/`로 설정
+- `adapters/ofgw/confirmation-packet.md`를 같은 기준으로 갱신
+- `HARNESS_INITIATOR.md`에 Session 20을 추가
+
+핵심 변화:
+
+- NotebookLM에서는 notebook URL만 project-specific confirm 항목으로 남김
+- PR location은 `http://192.168.51.106/openframe/openframe7/ofgw`
+- markdown 산출물 기본 위치는 제품 루트의 `agent/`
+
+판단:
+
+- provider의 종류와 mode가 안정적으로 정해진 경우에는 location만 남겨 confirm 대상을 줄이는 편이 좋다
+- `agent/`를 제품 루트 workspace 디렉토리로 두면 기존 skill들의 하위 문서 구조도 유지하기 쉽다
+
+### 2026-04-21 62. NotebookLM target 확정 및 provider semantics 정리
+
+수정:
+
+- `adapters/ofgw/mappings.yaml`의 `notebooklm.location`을 현재 `ofgw` notebook URL로 채움
+- `adapters/ofgw/mappings.yaml`의 confirm 목록에서 NotebookLM location을 제거
+- `adapters/ofgw/confirmation-packet.md`에서 NotebookLM unresolved 항목을 제거하고 current target URL을 명시
+- `HARNESS_INITIATOR.md`에 provider group semantics 정리 세션을 추가
+
+핵심 변화:
+
+- `review_targets`, `docs_targets`, `issue_sources` 같은 그룹은 "정확히 하나만 true"가 아니라 "동시에 사용 가능한 provider set"으로 본다
+- `manual_targets`는 기존 `manual-guide`/patch completion 연동처럼 manual/release workflow에 접근하는 방법을 담는 자리로 정리
+- `manual_workflow_required`는 해당 workflow를 제품 기본 completion path에 포함할지 결정하는 상위 정책 플래그로 분리
+
+판단:
+
+- initiator는 요청 유형에 따라 provider를 라우팅해야 하므로, group 내부 provider는 상호배타적일 필요가 없다
+- 다만 ambiguous한 생성 결과를 피하려면 각 group에서 우선 provider와 fallback 순서는 계속 명시해야 한다

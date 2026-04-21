@@ -27,7 +27,7 @@ Complete in order:
 4. **Identify affected components** — which modules, services, APIs, schemas, or UX surfaces are impacted
 5. **Propose 2-3 approaches** — with trade-offs and your recommendation
 6. **Present design** — in sections scaled to complexity, get user approval after each section
-7. **Write design doc** — save to `../agent/prompt/<topic>/design_spec.md` and verify
+7. **Write design doc** — save the `design_spec` artifact in the current topic artifact workspace and verify
 8. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition** — invoke writing-plans-base to create implementation plan
@@ -36,7 +36,7 @@ Complete in order:
 
 ```dot
 digraph brainstorming {
-    "analysis_report.md exists?" [shape=diamond];
+    "analysis_report exists?" [shape=diamond];
     "Explore project context" [shape=box];
     "Use existing analysis" [shape=box];
     "Ask clarifying questions" [shape=box];
@@ -44,13 +44,13 @@ digraph brainstorming {
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves?" [shape=diamond];
-    "Write design_spec.md" [shape=box];
+    "Write design_spec" [shape=box];
     "Spec self-review" [shape=box];
     "User reviews spec?" [shape=diamond];
     "Invoke writing-plans-base" [shape=doublecircle];
 
-    "analysis_report.md exists?" -> "Use existing analysis" [label="yes"];
-    "analysis_report.md exists?" -> "Explore project context" [label="no"];
+    "analysis_report exists?" -> "Use existing analysis" [label="yes"];
+    "analysis_report exists?" -> "Explore project context" [label="no"];
     "Use existing analysis" -> "Ask clarifying questions";
     "Explore project context" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Identify affected components";
@@ -58,10 +58,10 @@ digraph brainstorming {
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves?";
     "User approves?" -> "Present design sections" [label="revise"];
-    "User approves?" -> "Write design_spec.md" [label="yes"];
-    "Write design_spec.md" -> "Spec self-review";
+    "User approves?" -> "Write design_spec" [label="yes"];
+    "Write design_spec" -> "Spec self-review";
     "Spec self-review" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design_spec.md" [label="changes"];
+    "User reviews spec?" -> "Write design_spec" [label="changes"];
     "User reviews spec?" -> "Invoke writing-plans-base" [label="approved"];
 }
 ```
@@ -72,7 +72,7 @@ digraph brainstorming {
 
 **Understanding the idea:**
 
-- Check for `../agent/prompt/<topic>/analysis_report.md` or equivalent prior notes — if earlier analysis already exists, use its findings instead of re-gathering
+- Check for an existing `analysis_report` artifact or equivalent prior notes — if earlier analysis already exists, use its findings instead of re-gathering
 - Explore current project state (affected files, interfaces, recent commits, existing patterns)
 - If external systems, tickets, specs, or reference docs matter, gather only the inputs needed for design
 - Ask questions one at a time; prefer multiple choice when possible
@@ -108,7 +108,7 @@ digraph brainstorming {
 
 **Documentation:**
 
-Save validated design to `../agent/prompt/<topic>/design_spec.md`
+Save the validated `design_spec` artifact in the current topic artifact workspace. The current runtime may map this to a concrete path such as `design_spec.md`.
 
 ```markdown
 # Design Spec: <topic>
@@ -148,7 +148,7 @@ Save validated design to `../agent/prompt/<topic>/design_spec.md`
 
 **User Review Gate:**
 
-> "Spec written to `../agent/prompt/<topic>/design_spec.md`. Please review and let me know if you want changes before we proceed to planning."
+> "The `design_spec` artifact is written in the current topic workspace. Please review it and let me know if you want changes before we proceed to planning."
 
 Wait for user approval. Only then invoke writing-plans-base.
 

@@ -53,6 +53,7 @@ Typical flow:
 | Need structured self-review | **requesting-code-review-base** |
 | Need to process review feedback | **receiving-code-review-base** |
 | Need a structured review workflow | **code-reviewer-base** |
+| Need to derive a product harness from product-bound source assets | **harness-initiator** |
 | Creating or editing skills | **writing-skills-base** |
 
 ## Workflow Chain
@@ -71,13 +72,19 @@ brainstorming-base
 Independent / specialized:
   dispatching-parallel-agents-base
   code-reviewer-base
+  harness-initiator
   using-feature-branches-base
   writing-skills-base
 
-Product-specific product packs:
+Current product-bound assets (transitional layout):
   product-specific/skills/issue-analysis-base
   product-specific/skills/completing-patch-base
   product-specific/skills/writing-documents-base
+
+Planned direction for this repository:
+  templates/<product>/...
+  adapters/<product>/...
+  generated/<product>-harness/...
 ```
 
 ## Skill Gap Reporting
@@ -102,6 +109,22 @@ Some product-bound workflows are no longer part of the default `skills/` routing
 - location: `product-specific/skills/`
 - purpose: preserve product-specific product packs without mixing them into the base runtime skill set
 - current packs: issue analysis, patch completion, documentation workflow
+
+This is the current transitional layout, not the long-term target model.
+As the repository evolves, product-bound source assets may move into `templates/`,
+and generated product harnesses may live under `generated/<product>-harness/`.
+Until that migration happens, continue treating `product-specific/skills/` as the live product-bound area.
+
+## Artifact Convention
+
+Core skills may refer to logical artifacts such as:
+
+- `analysis_report`
+- `design_spec`
+- `implementation_plan`
+
+The actual filesystem path for those artifacts is runtime-specific.
+Do not assume a fixed root such as `../agent/prompt/<topic>/` unless the active runtime explicitly defines it.
 
 ## Skill Priority
 

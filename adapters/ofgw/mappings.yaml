@@ -1,0 +1,94 @@
+source_pack: aim-product-specific
+target_product: ofgw
+terminology:
+  issue_item: null
+  review_artifact: null
+  docs_artifact: null
+command_bindings:
+  project_build_command: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:classes --no-daemon
+  project_test_command: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:test --no-daemon
+  coverage_command: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:jacocoTestReport --no-daemon
+access_bindings:
+  issue_sources:
+    jira:
+      enabled: true
+      default_mode: mcp
+      fallback_modes:
+        - api
+      location: atlassian-rovo
+      setup:
+        mcp_server_url: https://mcp.atlassian.com/v1/mcp
+        mcp_server_name: atlassian-rovo
+        setup_steps:
+          - codex mcp add atlassian-rovo --url https://mcp.atlassian.com/v1/mcp
+          - codex mcp login atlassian-rovo
+          - codex mcp list
+          - codex mcp get atlassian-rovo
+        api_fallback:
+          auth_source: ../agent/info/access.md
+          example: |
+            curl -s -u "<EMAIL>:<API_TOKEN>" \
+              "https://tmaxsoft.atlassian.net/rest/api/2/issue/<JIRA_KEY>" | jq '.fields.summary, .fields.description'
+    ims:
+      enabled: true
+      default_mode: browser
+      fallback_modes: []
+      location: https://ims.tmaxsoft.com/tody/ims/issue/issueView.do?issueId=<IMS_NUMBER>
+      notes:
+        - request forms `ims{번호}` and `ims {번호}` should resolve to the URL pattern above
+        - extract symptom description, customer environment, error messages, and reproduction steps
+  spec_sources:
+    notebooklm:
+      enabled: true
+      default_mode: mcp
+      fallback_modes:
+        - browser
+      location: https://notebooklm.google.com/notebook/158fe966-8a78-4a7e-a6c9-40747330edc5
+      setup:
+        provider_type: community_mcp
+        source_repo: https://github.com/jacob-bd/notebooklm-mcp-cli
+        notes:
+          - use the open-source NotebookLM MCP CLI as the default provider
+          - the user only needs to provide the target notebook URL or notebook identifier
+  review_targets:
+    pull_request:
+      enabled: true
+      default_mode: browser
+      fallback_modes:
+        - git
+      location: http://192.168.51.106/openframe/openframe7/ofgw
+    merge_request:
+      enabled: false
+      default_mode: browser
+      fallback_modes: []
+      location: null
+  docs_targets:
+    repo_markdown:
+      enabled: true
+      default_mode: workspace_file
+      fallback_modes: []
+      location: agent/
+    confluence:
+      enabled: false
+      default_mode: browser
+      fallback_modes:
+        - api
+      location: null
+  manual_targets:
+    manual_repo:
+      enabled: null
+      default_mode: null
+      fallback_modes: []
+      location: null
+confirm:
+  - terminology.issue_item
+  - terminology.review_artifact
+  - terminology.docs_artifact
+  - access_bindings.manual_targets.manual_repo.enabled
+  - access_bindings.manual_targets.manual_repo.default_mode
+  - access_bindings.manual_targets.manual_repo.location
+notes:
+  - map AIM-specific channel names only after access binding confirmation
+  - keep markdown-guide as support reference, not as a generated main workflow template
+  - provider defaults are provisional until location and fallback policy are confirmed
+  - `agent/` is treated as a product-root workspace directory for generated markdown artifacts

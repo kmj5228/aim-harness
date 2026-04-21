@@ -11,7 +11,7 @@ Write comprehensive implementation plans assuming the engineer has near-zero con
 
 Assume the implementer is technically strong but unfamiliar with the repository's local structure and conventions.
 
-**Save plans to:** `../agent/prompt/<topic>/plan_tasks.md`
+**Save plans to:** the `implementation_plan` artifact in the current topic artifact workspace. The current runtime may map this to `plan_tasks.md`.
 
 ## Scope Check
 
@@ -61,50 +61,54 @@ Before defining tasks, map out which files will be created or modified:
 ### Task N: [Component Name]
 
 **Files:**
-- Create: `src/components/new-file.ts`
-- Modify: `src/components/existing-file.ts`
-- Modify: `src/contracts/public-api.ts`
-- Test: `tests/components/new-file.test.ts`
+- Create: `src/<component>/new-file.<ext>`
+- Modify: `src/<component>/existing-file.<ext>`
+- Modify: `src/<shared-contract>/public-api.<ext>`
+- Test: `tests/<component>/new-file-test.<ext>`
 
 - [ ] **Step 1: Write the failing test**
 
-```ts
-it("returns a normalized result for valid input", () => {
-  expect(buildResult("valid-input")).toEqual({ ok: true, value: "valid-input" });
-});
+```text
+TEST "returns a normalized result for valid input"
+  EXPECT build_result("valid-input") == { ok: true, value: "valid-input" }
+END
 ```
 
 - [ ] **Step 2: Run the targeted test and verify it fails**
 
-Run: `pnpm test -- build-result.test.ts`
-Expected: FAIL — `buildResult` is missing or incomplete
+Run: `<targeted_test_command_for_this_repository>`
+Expected: FAIL — `build_result` is missing or incomplete
 
 - [ ] **Step 3: Write minimal implementation**
 
-```ts
-export function buildResult(input: string) {
-  if (!input) return { ok: false, reason: "empty-input" };
-  return { ok: true, value: input };
-}
+```text
+FUNCTION build_result(input)
+  IF input is empty
+    RETURN { ok: false, reason: "empty-input" }
+  END
+  RETURN { ok: true, value: input }
+END
 ```
 
 - [ ] **Step 4: Run the targeted test and verify it passes**
 
-Run: `pnpm test -- build-result.test.ts`
+Run: `<targeted_test_command_for_this_repository>`
 Expected: PASS
 
 - [ ] **Step 5: Run the broader verification command**
 
-Run: `pnpm test && pnpm build`
+Run: `<broader_verification_command_for_this_repository>`
 Expected: Tests pass, build succeeds
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/components/new-file.ts src/contracts/public-api.ts tests/components/new-file.test.ts
-git commit -m "feat: add build result normalization"
+git add src/<component>/new-file.<ext> src/<shared-contract>/public-api.<ext> tests/<component>/new-file-test.<ext>
+git commit -m "<repository-appropriate commit message>"
 ```
 ````
+
+The example above is intentionally stack-neutral. Real plans must replace placeholder paths, commands, and commit style with exact repository-specific values after inspecting the codebase.
 
 ## Plan Code는 "스케치"다 — Implementer가 실제 코드 기준으로 교정한다
 
@@ -141,7 +145,7 @@ Every step must contain actual content. These are **plan failures**:
 
 After writing the plan:
 
-1. **Spec coverage:** Skim each requirement in design_spec.md. Can you point to a task? List gaps.
+1. **Spec coverage:** Skim each requirement in the `design_spec` artifact. Can you point to a task? List gaps.
 2. **Placeholder scan:** Search for "TBD", "TODO", vague instructions. Fix them.
 3. **Type consistency:** Do function names, signatures match across tasks?
 4. **Build/test gates:** Does every task end with the right targeted verification and the right broader verification?
@@ -152,7 +156,7 @@ Fix issues inline. If a spec requirement has no task, add the task.
 
 After saving the plan:
 
-> "Plan saved to `../agent/prompt/<topic>/plan_tasks.md`. Execution options:
+> "The `implementation_plan` artifact is written in the current topic workspace. Execution options:
 >
 > **1. Subagent-Driven (recommended)** — fresh subagent per task, review between tasks
 >

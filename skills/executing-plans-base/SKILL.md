@@ -21,7 +21,7 @@ Load plan, review critically, execute all tasks with TDD cycle and phase gates, 
 
 ### Step 1: Load and Review Plan
 
-1. Read `../agent/prompt/<topic>/plan_tasks.md`
+1. Read the `implementation_plan` artifact from the current topic artifact workspace
 2. Review critically — identify questions or concerns
 3. If concerns: Raise with user before starting
 4. If no concerns: Proceed

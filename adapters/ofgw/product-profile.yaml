@@ -1,0 +1,44 @@
+product: ofgw
+repo:
+  build_systems:
+    - gradle
+    - pnpm
+  primary_languages:
+    - java
+    - kotlin
+    - javascript
+  modules:
+    - ofgwSrc
+    - webterminal
+    - ofgwAdmin
+  runtime_hints:
+    - jeus
+    - servlet
+    - websocket
+    - jpa
+    - querydsl
+  test_frameworks:
+    - junit5
+    - mockito
+    - assertj
+    - hamcrest
+  coverage_tool: jacoco
+  commands:
+    build: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:classes --no-daemon
+    test: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:test --no-daemon
+    coverage: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:jacocoTestReport --no-daemon
+workflow:
+  defaults:
+    issue_tracker: jira
+    review_channel: pull_request
+    docs_channel: repo_markdown
+    manual_workflow_required: null
+confirm:
+  - workflow.defaults.issue_tracker
+  - workflow.defaults.review_channel
+  - workflow.defaults.docs_channel
+  - workflow.defaults.manual_workflow_required
+notes:
+  - ofgw is a mixed-stack validation target; generated template bodies must remain stack-agnostic
+  - avoid defaulting to root packaging tasks because jar/war flows can update version files and trigger git commits
+  - workflow defaults are provisional and must not be treated as confirmed access bindings

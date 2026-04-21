@@ -63,10 +63,10 @@ Write one small test that demonstrates the missing behavior.
 
 <Good>
 
-```ts
-it("rejects empty queue names", () => {
-  expect(validateQueueName("")).toEqual({ ok: false, reason: "empty-name" });
-});
+```text
+TEST "rejects empty queue names"
+  EXPECT validate_queue_name("") == { ok: false, reason: "empty-name" }
+END
 ```
 
 Clear behavior, one expectation, obvious failure target.
@@ -75,10 +75,10 @@ Clear behavior, one expectation, obvious failure target.
 
 <Bad>
 
-```ts
-it("test queue logic", () => {
-  expect(validateQueueName("")).toBeDefined();
-});
+```text
+TEST "test queue logic"
+  EXPECT validate_queue_name("") is defined
+END
 ```
 
 Vague name, weak assertion, unclear intent.
@@ -112,11 +112,13 @@ Write the smallest production change that makes the failing test pass.
 
 <Good>
 
-```ts
-export function validateQueueName(name: string) {
-  if (!name) return { ok: false, reason: "empty-name" };
-  return { ok: true };
-}
+```text
+FUNCTION validate_queue_name(name)
+  IF name is empty
+    RETURN { ok: false, reason: "empty-name" }
+  END
+  RETURN { ok: true }
+END
 ```
 
 Just enough to satisfy the test.
@@ -125,15 +127,10 @@ Just enough to satisfy the test.
 
 <Bad>
 
-```ts
-export function validateQueueName(
-  name: string,
-  options?: ValidationOptions,
-  reporter?: Reporter,
-  hooks?: HookSet
-) {
-  // many extra features not required by the failing test
-}
+```text
+FUNCTION validate_queue_name(name, options, reporter, hooks)
+  # many extra features not required by the failing test
+END
 ```
 
 Over-engineered and not test-driven.
