@@ -1,9 +1,9 @@
 ---
-name: product-harness-refinement
+name: harness-refinement
 description: Use when a generated product harness already exists and needs targeted refinement of skill bodies, wording, runtime ergonomics, or product-specific workflow details without changing the core initiator flow
 ---
 
-# Product Harness Refinement
+# Harness Refinement
 
 ## Overview
 
@@ -19,6 +19,7 @@ If the current goal is to validate refinement workflow or refinement schema, sta
 - the remaining work is inside the generated harness rather than in template selection or adapter drafting
 - a skill body needs product-specific semantics, stronger wording, or better runtime ergonomics
 - review findings are no longer about generation correctness, but about harness usability or operational detail
+- bundled support assets need a second-pass check for product fit after initial bundle + port
 
 Do not use for:
 
@@ -43,17 +44,29 @@ Use `harness-initiator` instead when the question is still "what should be gener
 1. Identify whether the requested change belongs to refinement or initiator scope.
 2. Read only the generated skill or runtime doc that needs improvement.
 3. Check whether the requested behavior is already implied by adapters, refinement schema, or generated review findings.
-4. Improve the generated harness asset directly.
-5. Keep template/source history out of the generated runtime unless it is still required for traceability in a root doc.
-6. Re-check the changed generated files for naming, path, and runtime consistency.
-7. Compare the refined result against the initiator-only baseline when that baseline is available.
-8. Record what was refined versus what should move back to initiator or adapter work.
+4. Assume `harness-initiator` and `harness-support-assets` have already materialized the baseline runtime.
+5. Improve the generated harness asset directly.
+6. When bundled support assets exist, check whether they still fit the target product's:
+   - technology stack
+   - module or service boundaries
+   - terminology
+   - review or docs workflow
+   - current runtime contract
+7. Prefer small corrections that make the bundled asset honestly usable in the target product runtime.
+   - if the asset only needs path, command, wording, or example cleanup, keep that work in refinement
+   - if the asset reveals that first-pass stack-aware porting should have handled it already, route that defect back to `harness-support-assets`
+   - if the asset reveals a missing generation rule, route that defect back to `harness-initiator` or `harness-support-assets`
+8. Keep template/source history out of the generated runtime unless it is still required for traceability in a root doc.
+9. Re-check the changed generated files for naming, path, and runtime consistency.
+10. Compare the refined result against the initiator-only baseline when that baseline is available.
+11. Record what was refined versus what should move back to initiator or adapter work.
 
 ## Typical Refinement Targets
 
 - generated `skills/docs/*` wording, audience fit, or output conventions
 - generated `skills/review/*` usability and product-safe review semantics
 - generated `skills/product/*` handoff wording or output shape
+- bundled support assets whose first-pass port is present but still too source-biased for the target product
 - root docs such as generated `README.md` or `AGENTS.md`
 - runtime ergonomics around `agent/`, `generated/manual/`, or hook expectations
 
@@ -65,6 +78,7 @@ This skill may:
 - tighten output contracts inside the generated harness
 - improve wording and operator ergonomics
 - turn already-generated rough product skills into better usable drafts
+- verify that bundled support assets still make sense for the target product's stack and workflow
 
 This skill should not:
 
@@ -74,6 +88,8 @@ This skill should not:
 - treat validation artifacts as runtime assets
 
 If refinement reveals a generator defect, report it and route that change back to `harness-initiator`.
+If refinement reveals that a bundled support asset should actually have been shared carry-over or excluded from first-pass productization, report that boundary issue explicitly.
+If refinement finds a stack mismatch that was already strongly knowable from adapter and repo facts, treat that as a `harness-support-assets` miss first, not as a permanent refinement burden.
 
 ## Outputs
 
@@ -155,4 +171,4 @@ Suggested interpretation:
 ## Decision Test
 
 - "Need to generate, classify, bind, or validate structure" -> `harness-initiator`
-- "Need to improve the generated harness that already exists" -> `product-harness-refinement`
+- "Need to improve the generated harness that already exists" -> `harness-refinement`

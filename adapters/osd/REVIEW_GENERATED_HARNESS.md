@@ -107,6 +107,26 @@ Status: pass
 - the fix belongs in the shared carried-over `code-reviewer` skill, not in `osd`-only schema growth
 - no extra `osd`-specific refinement field was needed to close this gap
 
+### 10. Support-Asset Carry-Over
+
+Status: pass after first validation
+
+- default support-asset bundling materially enriches the generated runtime without introducing a new adapter schema
+- adjacent support assets are useful for:
+  - brainstorming
+  - writing-plans
+  - systematic-debugging
+  - subagent-driven-development
+  - selected review helpers
+  - writing-documents guides
+- support prompts and guides can be ported with existing repo and adapter facts
+- `make`, `make -C test`, and `test/run_coverage.sh` are enough to rewrite many OSD-specific support assets without extra schema
+- `dist/` operational flow can be kept explicit without turning packaging semantics into default runtime verification
+- a second narrow pass also ports:
+  - `condition-based-waiting.md`
+  - `defense-in-depth.md`
+  - `testing-anti-patterns.md`
+
 ## Findings Summary
 
 - The rebuilt generated draft is structurally valid as a standalone-target harness draft.
@@ -116,6 +136,7 @@ Status: pass
 - this is a cleaner target for a true standalone runtime bundle
 - the current generated draft is structurally usable without reintroducing template/source leakage
 - the main maturity gap found in this review was review-layer coherence, and that gap has now been closed through the shared `code-reviewer` workflow rather than product-local schema growth
+- the same three-skill support-asset model validated on `ofgw` also works on `osd`
 
 ## Decision
 

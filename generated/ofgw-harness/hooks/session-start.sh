@@ -19,6 +19,6 @@ escape_for_json() {
 }
 
 agents_escaped=$(escape_for_json "$agents_content")
-session_context="You are in the generated ofgw-harness.\n\nBelow is the full content of AGENTS.md for this harness.\n\n${agents_escaped}"
+session_context="You are in the generated ofgw-harness.\n\nThis startup contract applies on startup, resume, clear, and compact events.\nRead and follow the full AGENTS.md below before improvising workflow.\n\n${agents_escaped}"
 
 printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$session_context"

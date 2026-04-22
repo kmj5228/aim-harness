@@ -50,6 +50,8 @@ If the current harness provides companion review skills, treat them as bound hel
 - `coverage-review`
   - run this when the review mode is full or test-focused, or when the risk profile needs explicit coverage evidence
   - prefer reusing `agent/<topic>/coverage_review.md` when the evidence is still fresh enough for the current patch
+  - if an extra diff-focused hint is useful, the helper at `skills/review/code-reviewer/scripts/measure_diff_cov.sh` may be used after the main JaCoCo report exists
+  - treat that helper as supplemental evidence, not as the primary coverage contract
 
 If the harness does not provide these helpers, continue with the base workflow directly.
 

@@ -1,5 +1,17 @@
 source_pack: aim-template
 target_product: ofgw
+runtime_entry:
+  hook_event: SessionStart
+  matcher: startup|resume|clear|compact
+  inject_artifact: AGENTS.md
+  startup_contract:
+    require_skill_check: true
+    enforce_skill_routing: true
+    require_skill_gap_reporting: true
+    preserve_workflow_chain: true
+    deferred_tail:
+      - completing-patch
+      - external_manual_publish
 terminology:
   issue_item:
     canonical: issue
@@ -45,10 +57,11 @@ generation_assets:
   - source: templates/aim/review/code-reviewer/coverage-analyst-prompt.md
     action: absorb_partial
     target: skills/review/coverage-review/SKILL.md
-    note: absorb product-safe coverage review semantics and replace AIM gcov flow with JaCoCo-based review
-  - source: templates/aim/review/code-reviewer/measure_diff_cov.sh
-    action: stay_in_templates
-    note: keep the AIM-locked coverage helper script in templates only
+    note: absorb product-safe coverage review semantics and replace AIM gcov flow with JaCoCo-based review; treat the source prompt as substantially productized into the active coverage-review skill
+  - source: templates/aim/review/code-reviewer/scripts/measure_diff_cov.sh
+    action: generate
+    target: skills/review/code-reviewer/scripts/measure_diff_cov.sh
+    note: rewrite the legacy AIM helper into an experimental OFGW repo-native diff-coverage helper using git diff plus JaCoCo XML; do not treat it as a mandatory policy gate yet
 refinement_goal:
   purpose: validate harness-refinement skill and refinement schema, not maximize ofgw-harness completeness in one pass
   current_generated_target: generated/ofgw-harness/
@@ -181,6 +194,6 @@ confirm: []
 notes:
   - map AIM-specific channel names only after access binding confirmation
   - support assets next to selected source skills default to bundle-and-port in the generated runtime; generation_assets is for explicit skill generation and true override cases
-  - `writing-skills` is carried as a root shared authoring baseline, while adjacent template support assets under `templates/aim/skills/writing-skills/` are bundled and ported by `harness-support-assets`
+  - `writing-skills` is carried from shared root `skills/writing-skills/` as a whole authoring family; it is no longer a template-side support-asset productization case
   - manual provider follows the AIM-style release/manual flow, but targets a generated workspace path instead of the legacy AIM MANUAL repo
   - `agent/` is treated as a product-root workspace directory for generated markdown artifacts

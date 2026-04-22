@@ -93,6 +93,51 @@ Interpretation:
 - a reduced local `manual-workflow` may still be generated when only reusable gate and draft-first semantics are absorbed
 - diff-aware or policy-heavy coverage automation remains excluded until a product-bound coverage workflow exists
 
+## Runtime Entry Contract
+
+When adapter truth includes `runtime_entry`, treat it as a standard initiator contract rather than an ad hoc product note.
+
+Minimum supported fields:
+
+```yaml
+runtime_entry:
+  hook_event: SessionStart
+  matcher: startup|resume|clear|compact
+  inject_artifact: AGENTS.md
+  startup_contract:
+    require_skill_check: true|false
+    enforce_skill_routing: true|false
+    require_skill_gap_reporting: true|false
+    preserve_workflow_chain: true|false
+    deferred_tail:
+      - <optional workflow item>
+```
+
+Interpretation:
+
+- `hook_event`
+  - the session lifecycle event the generated harness binds to
+- `matcher`
+  - the generated hook trigger pattern
+- `inject_artifact`
+  - the top-level runtime artifact injected on session entry
+- `startup_contract.require_skill_check`
+  - whether the generated runtime must force an explicit skill-first check before ad hoc work
+- `startup_contract.enforce_skill_routing`
+  - whether the generated runtime must route common tasks through the declared harness skills
+- `startup_contract.require_skill_gap_reporting`
+  - whether missing-skill situations must be surfaced explicitly
+- `startup_contract.preserve_workflow_chain`
+  - whether the generated runtime should keep a default ordered workflow chain visible at startup
+- `startup_contract.deferred_tail`
+  - workflow items intentionally left outside the generated base runtime
+
+Generation rule:
+
+- if `AGENTS.template.md` exists, generated `AGENTS.md` should derive its runtime contract from that source plus `runtime_entry`
+- generated `hooks/hooks.json` and `hooks/session-start.sh` must match the same `runtime_entry` truth
+- do not let startup wording, hook matcher, and deferred-tail reporting drift independently
+
 ## Required Inputs
 
 - selected template source pack or template candidates
@@ -264,9 +309,29 @@ Report explicitly:
 Entry and support-asset generation rules:
 
 - if the selected source pack includes `AGENTS.template.md`, generated `AGENTS.md` should be derived from it rather than written as a thin summary from scratch
+- when adapter truth includes `runtime_entry`, use it as the generation contract for:
+  - hook matcher
+  - startup injection artifact
+  - strength of startup rules in generated `AGENTS.md`
 - remove source-runtime-specific wording only when it conflicts with the target runtime contract
   - example: Claude-specific file naming or tool wording
 - preserve startup governance, workflow chain, routing rules, and skill-gap reporting when they are still meaningful in the target runtime
+- generated `AGENTS.md` should read like a runtime constitution, not a layout memo
+- generated `AGENTS.md` should explicitly state:
+  - when the harness must check skills
+  - how skill routing works
+  - what the default workflow chain is
+  - what tail workflows remain deferred
+- generated `AGENTS.md` minimum checklist:
+  - runtime contract
+  - startup rule strength
+  - skill use rules
+  - skill routing
+  - default workflow chain
+  - active skill layout
+  - runtime conventions
+  - access-binding summary only when it materially affects runtime behavior
+  - deferred scope
 - if a template skill contains adjacent support assets, initiator should hand that source scope to `harness-support-assets`
 - keep initiator focused on:
   - selecting which source skills participate in generation
@@ -278,6 +343,7 @@ Long-term target layout:
 
 - root metadata such as `AGENTS.md` and `README.md`
 - `hooks/`
+- `skills/meta/`
 - `skills/core/`
 - `skills/collab/`
 - `skills/authoring/`
@@ -302,20 +368,36 @@ Default base-runtime carry-over policy:
 - treat reusable root `skills/` entries as generator-owned defaults, not as product adapter data
 - bundle `skills/core/` by default when the corresponding base skills have already been neutralized enough for standalone reuse
 - bundle `skills/collab/` by default when the workflow is repository-neutral
-- bundle `skills/authoring/writing-skills/` from root shared `skills/writing-skills/` when the generated harness needs local skill-authoring guidance
+- carry over `skills/authoring/writing-skills/` from root shared `skills/writing-skills/` when the generated harness needs local skill-authoring guidance
 - bundle the base `code-reviewer` workflow by default as the minimum reusable review orchestrator
 - when generated review companions such as `review-context-collector` or `coverage-review` also exist, the carried-over `code-reviewer` must acknowledge them as optional bound helpers rather than leaving the review layer disconnected
 - when carrying these defaults into a generated harness, preserve standalone runtime names and do not reintroduce legacy `*-base` naming
 - do not require `generation_assets` entries for these carry-over defaults
 - use `generation_assets` only for template-derived productization decisions
 - if a product needs to opt out of a default carry-over rule later, add an explicit policy hook then; do not pre-emptively expand adapter schema
-- use root shared `writing-skills/SKILL.md` as the baseline body for generated authoring guidance, then let `harness-support-assets` port adjacent `templates/<pack>/skills/writing-skills/*` support assets into the product runtime
+- once `writing-skills` support assets have been promoted into root shared `skills/writing-skills/`, treat the whole directory as a default carry-over source
+- do not hand shared `writing-skills/` support assets to `harness-support-assets`
+- reserve `harness-support-assets` for template-side adjacent assets that still require product-local productization
+
+Product-local startup meta-skill rule:
+
+- do not promote `using-<product>-harness` into root shared `skills/`
+- treat it as a generated runtime-local meta skill when:
+  - the source pack carries a strong startup contract through `AGENTS.template.md`
+  - adapter truth includes `runtime_entry`
+- generation target:
+  - `generated/<product>-harness/skills/meta/using-<product>-harness/SKILL.md`
+- purpose:
+  - restate the startup contract in skill form
+  - give the generated runtime a first-class "entry skill" closer to original AIM `using-aim-harness`
+  - keep root shared `using-base-harness` reserved for the generator repository itself
 
 For the first validation pass, allow the generated skeleton to stay minimal:
 
 - root metadata such as `AGENTS.md`, `README.md`, and `GENERATION_SUMMARY.md`
 - generated drafts for `skills/product/issue-analysis/` and `skills/docs/writing-documents/`
 - materialized workspace bindings such as `agent/` and `generated/manual/` when their locations are already confirmed
+- `hooks/hooks.json` and `hooks/session-start.sh` that match the current `runtime_entry` contract when runtime entry is already bound
 
 Interpret missing areas carefully:
 

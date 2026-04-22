@@ -1,5 +1,17 @@
 source_pack: aim-template
 target_product: osd
+runtime_entry:
+  hook_event: SessionStart
+  matcher: startup|resume|clear|compact
+  inject_artifact: AGENTS.md
+  startup_contract:
+    require_skill_check: true
+    enforce_skill_routing: true
+    require_skill_gap_reporting: true
+    preserve_workflow_chain: true
+    deferred_tail:
+      - completing-patch
+      - external_manual_publish
 terminology:
   issue_item:
     canonical: issue
@@ -30,11 +42,11 @@ generation_assets:
   - source: templates/aim/skills/writing-documents/markdown-guide.md
     action: absorb
     target: skills/docs/writing-documents/SKILL.md
-    note: fold markdown conventions into the generated docs skill
+    note: keep markdown conventions available in the generated docs skill body; support-asset bundling may still carry adjacent guide files unless a concrete validation problem appears
   - source: templates/aim/skills/writing-documents/manual-guide.md
     action: absorb_partial
     target: skills/docs/manual-workflow/SKILL.md
-    note: absorb need-gate and draft-first semantics only if local manual drafting is confirmed
+    note: absorb need-gate and draft-first semantics into the generated manual workflow; keep upstream publish procedure out of v1 runtime generation
   - source: templates/aim/skills/completing-patch/SKILL.md
     action: defer
     note: patch workflow is strongly tied to patch_osd.sh and operational environment
@@ -49,21 +61,6 @@ generation_assets:
   - source: templates/aim/review/code-reviewer/measure_diff_cov.sh
     action: stay_in_templates
     note: keep the AIM-locked helper script in templates only
-  - source: templates/aim/skills/writing-documents/jira-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/gitlab-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/ims-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/confluence-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/mail-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
 command_bindings:
   project_build_command: make
   project_test_command: make -C test
@@ -144,3 +141,5 @@ notes:
   - repo markdown workspace can likely reuse the same agent/ convention as ofgw
   - review target is inferred from git remote and still needs a product confirmation pass
   - coverage workflow should stay explicit about environment prerequisites if promoted into a generated review skill
+  - support assets next to selected source skills default to bundle-and-port in the generated runtime; generation_assets is for explicit skill generation and true override cases
+  - `writing-skills` is carried from shared root `skills/writing-skills/` as a whole authoring family; it is no longer a template-side support-asset productization case

@@ -164,8 +164,8 @@ templates/aim + target repo
 현재 generated runtime v1는 필요 시 `skills/authoring/`도 포함한다.
 
 - 첫 대상은 `writing-skills`
-- baseline `SKILL.md`는 root shared `skills/writing-skills/SKILL.md`
-- adjacent support asset은 `templates/<pack>/skills/writing-skills/*`에서 읽고 `harness-support-assets`가 product runtime으로 port
+- 현재 `writing-skills`는 shared `skills/writing-skills/` 전체를 generated `skills/authoring/writing-skills/`로 carry-over 하는 쪽으로 본다
+- 따라서 shared로 승격된 `writing-skills` support asset은 더 이상 `harness-support-assets` 대상이 아니다
 
 현재 첫 실증 대상:
 
@@ -2431,6 +2431,229 @@ generated runtime 관점의 누락/생략 해석:
 - 의미:
   - `harness-support-assets`는 support asset의 영구 저장소가 아니라, source 자산을 제품 runtime으로 옮기는 좁은 포터다.
   - 여러 제품에서 포팅 차이가 거의 없으면 그 자산은 shared root skill로 승격하는 편이 맞다.
+  - `writing-skills`는 이제 `SKILL.md`뿐 아니라 shared support asset도 함께 `harness-initiator`가 carry-over 하는 가족으로 본다.
+  - 따라서 `writing-skills`는 더 이상 `harness-support-assets` 실증 대상으로 남겨두지 않는다.
+
+### Session 64 - `harness-refinement` Support-Asset Fit Check
+
+- `harness-support-assets`가 first-pass `bundle + port`를 맡더라도, bundled support asset이 실제 target product에 충분히 맞는지는 후속 확인이 필요하다는 점을 정리했다.
+- 따라서 `harness-refinement`에는 다음 검증 책임을 추가했다:
+  - bundled support asset이 target product의 기술스택에 맞는지
+  - module/service 경계와 terminology에 맞는지
+  - review/docs workflow와 runtime contract에 맞는지
+- 경계:
+  - 작은 path/command/example cleanup은 refinement가 담당
+  - 생성 규칙 자체가 잘못됐다면 initiator 또는 support-assets 쪽 defect로 되돌린다
+
+### Session 65 - OFGW Runtime Entry and `AGENTS.md` Strengthening
+
+- AIM 원본과의 가장 큰 격차 중 하나였던 startup/runtime entry 계약을 OFGW generated runtime에서 한 단계 강화했다.
+- 반영:
+  - `adapters/ofgw/mappings.yaml`에 `runtime_entry` 블록을 추가했다.
+  - `generated/ofgw-harness/hooks/hooks.json` matcher를 `startup|resume|clear|compact`로 확장했다.
+  - `generated/ofgw-harness/AGENTS.md`를 thin summary보다 강한 runtime constitution 형태로 보강했다.
+- 강화된 내용:
+  - startup contract 명시
+  - skill routing table 추가
+  - default workflow chain 보강
+  - bundled support asset을 runtime support로 읽는 규칙 추가
+- 판단:
+  - 이 작업은 단순 generated 문서 polish가 아니라 initiator가 생성해야 할 runtime-entry contract의 수준을 끌어올리는 쪽에 가깝다.
+  - 아직도 AIM의 full tail workflow까지는 아니지만, generated AGENTS/hook 계약은 이전보다 훨씬 원본 AIM의 운영 강도에 가까워졌다.
+
+### Session 66 - OFGW Support-Asset Fit Check on `testing-anti-patterns.md`
+
+- `harness-refinement`의 새 support-asset fit check 책임을 실제로 OFGW에 적용했다.
+- 대상:
+  - `generated/ofgw-harness/skills/core/test-driven-development/testing-anti-patterns.md`
+- 발견:
+  - 문서 구조와 목적은 유효했지만 예시가 여전히 AIM-specific API/상수명에 묶여 있었다.
+  - 이는 first-pass `bundle + port`만으로는 충분하지 않은 전형적인 "still source-biased support asset" 사례였다.
+- 조치:
+  - 예시를 runtime-neutral한 C/GoogleTest anti-pattern 예시로 다시 썼다.
+  - guidance는 유지하고, 제품/원본 종속 naming만 제거했다.
+- 판단:
+  - `harness-support-assets`는 first-pass productization 단계로 충분하다.
+  - 하지만 bundled support asset이 실제 target runtime에 맞는지는 `harness-refinement`가 한 번 더 보는 편이 맞다.
+
+### Session 67 - Stack-Aware Porting Rule Tightening
+
+- `testing-anti-patterns.md` 사례를 다시 보니, 기술스택이 이미 adapter/repo facts로 강하게 확인된 경우에는 first-pass `harness-support-assets`가 더 깊게 포팅했어야 했다는 점이 드러났다.
+- 정리한 기준:
+  - path/command/module/review vocabulary뿐 아니라
+  - language/test framework/build stack도 이미 강하게 확인되면 first-pass porting 대상이다
+- 적용:
+  - `harness-support-assets`에 stack-aware porting 규칙을 추가했다
+  - `harness-refinement`에는 "이 정도는 support-assets miss"라는 판단 기준을 추가했다
+  - OFGW `testing-anti-patterns.md`는 JUnit 5 / Mockito / Kotlin-Java service 기준 anti-pattern guide로 다시 작성했다
+- 의미:
+  - refinement가 stack mismatch를 영구적으로 떠안으면 안 된다
+  - stack이 이미 명확한 자산은 support-assets가 first-pass에서 더 깊게 productize해야 한다
+
+### Session 68 - Support-Asset Interpretation Clarification
+
+- support asset을 단순히 "excluded"로 해석하는 것은 현재 생성기 계약과 맞지 않는다는 점을 명시했다.
+- 현재 기준의 더 정확한 해석:
+  - 일부 자산은 active generated skill에 흡수된다
+  - 일부 자산은 generated helper/guide로 productized된다
+  - 반복적으로 차이가 거의 없는 자산은 root shared `skills/`로 승격된다
+- 따라서 support asset은 기본적으로 "버린다"보다 "적절한 레이어로 옮긴다"가 맞다.
+- 현재 실질적인 제외 후보에 가장 가까운 것은 `measure_diff_cov.sh`처럼 아직도 ops-locked 전제가 강한 helper 정도다.
+- 의미:
+  - `harness-support-assets`와 `harness-refinement`의 기본 방향은 제외가 아니라 productization이다
+  - generated review/docs/authoring/runtime layer에서 이미 다른 형태로 살아 있는 자산은 누락보다는 흡수/승격으로 본다
+
+### Session 69 - OFGW Review Support-Asset Second-Pass Fit Check
+
+- `ofgw` review support asset 3종에 대해 `harness-refinement` 기준의 2차 적합성 점검을 수행했다.
+- 대상:
+  - `generated/ofgw-harness/skills/review/code-reviewer/code-reviewer-prompt.md`
+  - `generated/ofgw-harness/skills/review/code-reviewer/review-synthesizer-prompt.md`
+  - `generated/ofgw-harness/skills/review/code-reviewer/test-reviewer-prompt.md`
+- 발견:
+  - 1차 productization은 되어 있었지만, OFGW의 Kotlin/JPA/QueryDSL/JUnit 5/Mockito/JaCoCo 경계에 맞는 review emphasis가 더 분명할 필요가 있었다.
+  - 특히 test/build/coverage 범위를 `ofgwSrc`에 묶는 설명과, service/repository/config/resource 흐름을 함께 읽는 설명이 보강될 여지가 있었다.
+- 적용:
+  - code reviewer prompt에 Kotlin/JPA/QueryDSL 계층, lazy loading/N+1, test-only seam 점검 항목을 추가했다.
+  - test reviewer prompt에 `JUnit 5`/`Mockito`/`AssertJ`/`JaCoCo`, `:ofgwSrc:test`, `:ofgwSrc:jacocoTestReport` 기준의 범위 설명을 추가했다.
+  - review synthesizer prompt에 touched module보다 넓은 검증 결론 금지와 OFGW service/config/resource 흐름 요약 기준을 보강했다.
+- 판단:
+  - review support asset은 이미 "제외" 대상이 아니라 generated review layer로 productized된 상태였다.
+  - 이번 패스는 source residue 제거보다 product-fit tightening에 가까웠다.
+  - 이 종류의 조정은 first-pass miss라기보다 refinement의 2차 적합성 점검 책임에 더 가깝다.
+
+### Session 70 - `runtime_entry` and Generated `AGENTS.md` Contract Formalization
+
+- review layer 검증도 product harness 완성보다 `harness-*` 스킬 경계를 검증하는 실증이라는 점을 다시 고정했다.
+- 다음 단계는 generated runtime 산출물보다 생성기 계약을 더 명확히 하는 쪽으로 잡았다.
+- 적용:
+  - `harness-initiator`에 `runtime_entry`를 정식 generation contract로 다루는 섹션을 추가했다.
+  - `runtime_entry`의 최소 지원 필드를 `hook_event`, `matcher`, `inject_artifact`, `startup_contract.*`로 명시했다.
+  - generated `AGENTS.md`가 반드시 가져야 할 최소 섹션 체크리스트를 initiator 규칙에 추가했다.
+- 판단:
+  - `runtime_entry`는 더 이상 `ofgw` 예시용 메모가 아니라 generated startup/hook 계약의 표준 입력으로 보는 편이 맞다.
+  - generated `AGENTS.md` 품질도 개별 product polishing보다 initiator contract 명시성이 먼저다.
+
+### Session 71 - Coverage Prompt vs Helper Script Boundary
+
+- `coverage-analyst-prompt.md`와 `measure_diff_cov.sh`를 다시 보니, 둘을 같은 의미의 "제외 자산"으로 묶는 건 부정확하다는 점을 정리했다.
+- 현재 해석:
+  - `coverage-analyst-prompt.md`
+    - 이미 active `skills/review/coverage-review/`로 상당 부분 흡수/제품화된 상태다
+    - 따라서 missing/excluded보다 absorbed/productized로 보는 편이 맞다
+  - `measure_diff_cov.sh`
+    - 아직 AIM의 gcov/diff workflow에 강하게 묶여 있어 generated runtime에는 들어오지 않았다
+    - 다만 이 역시 영구 제외보다 "repo-native diff-coverage helper rewrite candidate"로 보는 편이 더 정확하다
+- 적용:
+  - `harness-support-assets`에 "workflow role은 재사용 가능하지만 구현이 source-only tooling에 묶인 경우 rewrite candidate로 본다"는 해석을 추가했다
+  - `adapters/ofgw/mappings.yaml`의 coverage 관련 note도 같은 방향으로 수정했다
+- 판단:
+  - coverage 계열 자산은 단순 제외보다 흡수/재작성 후보로 보는 것이 현재 3스킬 계약과 더 잘 맞는다
+  - 아직 새 schema는 필요하지 않고, existing `generation_assets` note와 skill boundary 해석만으로 충분하다
+
+### Session 72 - `measure_diff_cov.sh` Rewrite Feasibility for OFGW
+
+- `measure_diff_cov.sh`가 OFGW에서 support asset으로 재작성 가능한지 로컬 repo fact 기준으로 다시 판단했다.
+- 확인된 근거:
+  - `ofgwSrc/build.gradle`은 `jacocoTestReport`와 XML report 생성을 이미 제공한다.
+  - `classDirectories`와 `sourceDirectories`가 `ofgwSrc`의 main source/class 경계를 명시하고 있다.
+  - OFGW 저장소는 일반 git diff 기반 비교가 가능하고, module 경계도 `ofgwSrc`로 충분히 좁혀져 있다.
+- 판단:
+  - 현재 OFGW에서는 legacy `gcov` 스크립트를 그대로 옮길 수는 없지만, 그 역할 자체는 repo-native helper로 재작성 가능하다.
+  - 더 정확한 해석은 "permanent exclusion"이 아니라 "future JaCoCo XML + git diff helper rewrite candidate"다.
+  - 이 판단은 새 schema를 요구하지 않는다.
+  - 필요한 입력은 이미 adapter/repo fact 안에 있다:
+    - coverage command
+    - `ofgwSrc` source boundary
+    - git diff base branch
+- 의미:
+  - 나중에 이 helper를 다시 살리더라도 `harness-support-assets` 범위 안에서 first-pass product helper로 시도할 수 있다.
+  - 그 구현이 과하게 policy-heavy해지면 그때만 refinement 또는 extension으로 넘기면 된다.
+
+### Session 73 - OFGW Experimental Diff-Coverage Helper Materialization
+
+- `measure_diff_cov.sh`를 단순 후보로 남기지 않고, OFGW generated runtime 안에 실제 experimental helper로 materialize했다.
+- 위치:
+  - `generated/ofgw-harness/skills/review/code-reviewer/scripts/measure_diff_cov.sh`
+- 설계:
+  - AIM의 `gcov`/`.c` 기반 로직은 버리고
+  - `git diff` + JaCoCo XML 기반 added-line coverage 추정기로 다시 작성했다
+  - 대상 범위는 `ofgwSrc/src/main/java`, `ofgwSrc/src/main/kotlin`
+  - 출력은 primary contract가 아니라 supplemental review signal로만 해석하도록 명시했다
+- 판단:
+  - 이 실증은 `harness-support-assets`가 ops-locked helper도 repo-native helper로 다시 쓸 수 있는지 검증하는 목적에 맞다
+  - 아직 새 schema는 필요하지 않고, existing `generation_assets`와 adapter/repo fact만으로 materialization 가능했다
+  - 따라서 "workflow role은 재사용 가능하지만 source-only tooling에 묶인 helper"는 `harness-support-assets`의 검증된 패턴으로 올릴 수 있다
+  - 다만 이 패턴을 shared skill 문서에 적을 때는 `measure_diff_cov.sh`나 `JaCoCo` 자체보다 "source-only helper -> repo-native helper rewrite"라는 일반 패턴으로 적는 편이 더 적절하다
+
+### Session 74 - Current Generator Maturity Re-Evaluation
+
+- 현재 생성기를 original `aim-harness`와 다시 비교해 보니, 구조/계약 쪽은 분명히 올라왔고 runtime startup contract도 이전보다 강해졌다.
+- 현재 강점:
+  - `harness-initiator`가 `runtime_entry`와 source-derived `AGENTS.md`를 정식 계약으로 다루기 시작했다
+  - `harness-support-assets`가 prompt/guide뿐 아니라 source-only helper도 repo-native helper로 재작성 가능한 패턴을 확보했다
+  - `harness-refinement`가 support-asset fit check를 통해 residual mismatch와 first-pass miss를 구분할 수 있게 됐다
+  - `writing-skills`는 shared family 승격까지 닫힌 첫 사례가 됐다
+- 원본 AIM 대비 아직 남은 큰 격차:
+  - startup/meta-skill 강도는 올라왔지만 `using-aim-harness` 수준의 일체형 진입 모델까지는 아직 아니다
+  - merge 이후 tail workflow (`completing-patch`, marker-driven manual follow-up, external manual publish)는 아직 generated base runtime 밖에 있다
+  - 일부 generated `AGENTS.md`는 strong runtime constitution으로 가고 있지만, 아직 AIM 원본만큼 운영 체인을 완전히 닫지는 못한다
+- 현재 판단:
+  - 생성기 자체는 internal preview 수준을 넘어, 팀 내부 pilot 배포에는 충분히 가까워졌다
+  - 하지만 public-ready라기보다 "AIM 수준의 운영 완성도에 근접 중인 생성기"로 보는 편이 정확하다
+  - 대략 original AIM 역할 수준의 75~85% 정도까지는 올라온 것으로 본다
+
+### Session 75 - `using-{product}-harness` Placement Decision
+
+- `using-{product}-harness`를 root shared `skills/`에 둘 수 있는지 먼저 검토했다.
+- 결론:
+  - root shared skill로 두는 것은 적절하지 않다.
+  - 이유:
+    - skill name 자체가 product-bound
+    - startup contract, workflow chain, access/review wording이 product runtime truth에 직접 묶인다
+    - root shared `using-base-harness`는 생성기 저장소 자체의 meta-skill로 남는 편이 더 자연스럽다
+- 따라서 `using-{product}-harness`는 generated runtime-local meta skill로 다루기로 했다.
+- OFGW first proof:
+  - `generated/ofgw-harness/skills/meta/using-ofgw-harness/SKILL.md`
+  - generated `AGENTS.md`에도 이 meta skill을 startup entry skill로 추가
+- 판단:
+  - 이것은 OFGW harness polish보다 `harness-initiator`가 source-derived startup contract를 문서 + meta skill 양쪽으로 materialize할 수 있는지 검증하는 목적에 더 가깝다
+
+### Session 76 - OFGW Rebuild Reproducibility Check
+
+- 현재 `generated/ofgw-harness/`를 먼저 백업했다.
+  - `generated/backups/20260422-151321/ofgw-harness-pre-rebuild`
+- 그 다음 현재 3스킬 계약 기준으로 별도 재생성 디렉토리에서 OFGW harness를 다시 materialize했다.
+  - `generated/rebuild-ofgw-harness/`
+- 재생성본과 live `generated/ofgw-harness/`를 비교한 결과, 처음에는 `writing-skills` shared family 3개만 달랐다.
+  - `skills/authoring/writing-skills/testing-skills-with-subagents.md`
+  - `skills/authoring/writing-skills/examples/AGENTS_MD_TESTING.md`
+  - `skills/authoring/writing-skills/graphviz-conventions.dot`
+- 이 차이는 생성기 결함이라기보다, live OFGW harness가 `writing-skills` whole-family shared carry-over 규칙보다 한 단계 뒤처져 있던 흔적이었다.
+- live OFGW harness의 해당 3개 파일을 root shared `skills/writing-skills/` 기준으로 다시 맞춘 뒤, 재생성본과 live OFGW harness는 완전히 일치했다.
+- 판단:
+  - 현재 `ofgw` 생성기 계약은 재현성 측면에서 유효하다.
+  - `using-ofgw-harness`, 강화된 `AGENTS.md`, support asset bundle/port, `measure_diff_cov.sh` helper rewrite까지 현재 계약으로 다시 materialize 가능하다고 봐도 된다.
+  - 이번 재현성 점검에서 드러난 유일한 live drift는 `writing-skills` shared family carry-over 동기화 문제였고, 지금은 정렬됐다.
+
+### Session 77 - OSD Cross-Product Reproducibility Check
+
+- 현재 `generated/osd-harness/`와 `adapters/osd/`를 먼저 백업했다.
+  - `generated/backups/20260422-152010/osd-harness-pre-cross-product`
+  - `adapters/backups/20260422-152010/osd-adapter-pre-cross-product`
+- 그 다음 OFGW에서 검증된 현재 3스킬 계약 패턴을 OSD에도 적용했다.
+  - `runtime_entry`를 `adapters/osd/mappings.yaml`에 추가
+  - generated `AGENTS.md`를 stronger runtime constitution 형태로 재작성
+  - `skills/meta/using-osd-harness/SKILL.md` 추가
+  - shared `skills/writing-skills/` whole-family를 `skills/authoring/writing-skills/`로 carry-over
+  - hook matcher를 `startup|resume|clear|compact`로 확장
+- 별도 재생성 디렉토리에서도 같은 구조를 다시 materialize했다.
+  - `generated/rebuild-osd-harness/`
+- 재생성본과 live `generated/osd-harness/`를 비교한 결과 완전히 일치했다.
+- 판단:
+  - `using-{product}-harness` 패턴은 OFGW 전용 proof가 아니라 cross-product로도 성립한다.
+  - shared `writing-skills` whole-family carry-over도 OSD에서 그대로 재현된다.
+  - `runtime_entry`와 stronger generated `AGENTS.md`는 현재 `harness-initiator` 계약의 cross-product 항목으로 봐도 된다.
 
 ### Session 51 - OSD Review-Layer Evaluation and Shared `code-reviewer` Fix
 

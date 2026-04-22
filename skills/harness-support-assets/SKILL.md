@@ -11,6 +11,7 @@ Carry template-side support assets into a generated product harness without bloa
 
 **Core principle:** support assets from source packs are productized first, not generalized first.
 This skill is not only a copier. It is responsible for bundling support assets and porting obvious source-runtime assumptions to the target product runtime.
+When the target repository's stack is already strongly confirmed, that first-pass port should also cover stack-sensitive examples and framework vocabulary.
 
 Default behavior is simple:
 
@@ -31,7 +32,7 @@ Do not pre-classify ordinary support guides or prompts as exclusions just becaus
 - a source pack such as `templates/aim/` contains prompts, guides, scripts, or helper docs next to `SKILL.md`
 - `harness-initiator` has already identified which source skills should appear in the generated runtime
 - the remaining task is to materialize support assets in the generated runtime with minimal transformation
-- the remaining task is to materialize support assets in the generated runtime with target-product-safe wording, paths, and commands
+- the remaining task is to materialize support assets in the generated runtime with target-product-safe wording, paths, commands, and stack assumptions
 
 Do not use for:
 
@@ -85,6 +86,8 @@ Examples:
    - rewrite command examples to target commands when `command_bindings` already confirm them
    - rewrite module and boundary hints when repo facts already confirm them
    - rewrite review vocabulary such as `MR` to the target product review artifact when terminology or bindings already confirm it
+   - rewrite language or test-stack-specific examples when repo facts already strongly confirm the target stack
+     - example: `C/GoogleTest` examples should not survive unchanged in a `JUnit 5 / Mockito / Kotlin-Java` runtime when the adapter and repo facts already prove that stack
    - if a support guide is tied to a disabled target binding, decide whether it should still travel as a dormant reference
    - keep the source asset recognizable, but remove target-incompatible operational assumptions
 6. Keep filenames and relative grouping stable unless the generated runtime contract clearly requires renaming.
@@ -97,6 +100,8 @@ Examples:
      - bundled in generated runtime
      - obvious runtime assumptions removed or annotated
      - explicit note that deeper rewrite belongs to `harness-refinement` or later shared-skill promotion
+   - if the asset's workflow role is still reusable but its implementation is tied to source-only tooling, treat it as a rewrite candidate rather than a permanent exclusion
+     - example: a legacy diff-coverage script may stay in templates for now, while its purpose is already partially productized into an active coverage skill and may later return as a repo-native helper
 9. If a concrete problem appears during validation, report it back as:
    - keep bundled
    - move to refinement
@@ -120,7 +125,12 @@ Validated common patterns:
 - review vocabulary can be normalized to the target review artifact when terminology already confirms it
 - module and boundary hints can be ported from source assumptions to confirmed target repo surfaces
 - command examples can be rewritten to confirmed target commands when `command_bindings` already provide them
-- authoring support assets can be introduced through a shared root `writing-skills/SKILL.md` baseline plus source-pack support-asset porting under `skills/authoring/`
+- stack-sensitive examples should be ported when the target language, test framework, and build stack are already strongly confirmed
+- source-only helper scripts can be rewritten into repo-native helpers when:
+  - the helper's workflow role is still useful
+  - the target repository already exposes equivalent native inputs
+  - the result is clearly marked as supplemental rather than a hard policy gate
+- once an authoring asset family has been promoted into shared root `skills/`, this skill should stop touching that family and let `harness-initiator` carry it over directly
 
 Validated examples from `ofgw` and `osd`:
 
@@ -130,11 +140,20 @@ Validated examples from `ofgw` and `osd`:
 - `review/code-reviewer/{code-reviewer-prompt,review-synthesizer-prompt,test-reviewer-prompt}.md`
 - `writing-documents/{markdown-guide,jira-guide,gitlab-guide}.md`
 
+Validated helper pattern:
+
+- a source-only review helper script can be rewritten into a repo-native helper when the target repository already exposes equivalent native inputs
+- current concrete example:
+  - `templates/aim/review/code-reviewer/scripts/measure_diff_cov.sh`
+  - rewritten in `ofgw` as an experimental `git diff` + JaCoCo XML helper
+
 Observed product-bound variation:
 
 - a disabled target binding does not automatically force guide exclusion
 - a guide may still be bundled as a dormant reference when support-asset completeness is the current validation priority
 - example: `confluence-guide.md` can stay bundled in `ofgw` even while `docs_targets.confluence.enabled` remains false
+- some source support assets are better understood as "already absorbed into an active generated skill, with helper rewrite still pending" than as plain exclusions
+  - example: a source coverage prompt may already be productized as `coverage-review`, while a legacy helper script remains only as a future repo-native rewrite candidate
 
 Current non-goal:
 
@@ -149,6 +168,7 @@ This skill may:
 - normalize obviously broken paths when needed for runtime consistency
 - respect adapter `generation_assets` overrides instead of bundling every adjacent file blindly
 - rewrite support assets using already confirmed adapter and repo facts
+- rewrite stack-sensitive support assets when the target stack is already explicit in repo facts
 
 This skill should not:
 
@@ -167,4 +187,4 @@ This skill should not:
 - short note of any asset that caused a real validation problem
 - explicit handoff back to:
   - `harness-initiator` if the issue is structural
-  - `harness-refinement` if the issue is generated-runtime wording or ergonomics
+  - `harness-refinement` if the issue is generated-runtime wording, ergonomics, or a residual product-fit cleanup that first-pass stack-aware porting still missed

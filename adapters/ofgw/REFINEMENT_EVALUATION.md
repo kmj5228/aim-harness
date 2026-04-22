@@ -158,6 +158,12 @@ Current judgment:
 - no extra schema is justified yet
 - the same conclusion held after porting `subagent-driven-development`, `code-reviewer`, and selected docs guides
 - the next useful stress case is `skills/authoring/writing-skills/`, where support assets are more generalizable and can start graduating into shared root assets when product-specific drift stays low
+- a later refinement pass also showed that bundled support assets can need a second product-fit cleanup even after initial porting
+- `testing-anti-patterns.md` stayed useful, but its first-pass port still underfit the actual OFGW stack and had to be rewritten into a JUnit 5 / Mockito / Kotlin-Java guide
+- the coverage side also clarified a useful distinction:
+  - `coverage-analyst-prompt.md` is already substantially productized into the active `coverage-review` skill
+  - `measure_diff_cov.sh` is not best read as a permanent exclusion yet; it is a legacy helper whose purpose can return as a repo-native diff-coverage rewrite candidate
+  - the current OFGW pass now materializes that candidate as an experimental helper under `skills/review/code-reviewer/scripts/measure_diff_cov.sh`
 
 ## Decision
 
@@ -179,3 +185,6 @@ Current judgment:
 - the only rule change needed was procedural:
   - exclude source `SKILL.md`
   - respect adapter `generation_assets` overrides before bundling adjacent assets
+- a later clarification also showed that "excluded" is often the wrong interpretation:
+  - many support assets are better described as absorbed, productized, or promoted
+  - only deeply ops-locked helpers remain true exclusion candidates, and even those may later return as rewrite targets

@@ -42,7 +42,7 @@ mock 바이너리 목록은 해당 모듈의 gtest 디렉토리에서 `Makefile_
 ### Step 3: 커버리지 측정
 
 ```bash
-dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer/scripts/measure_diff_cov.sh [BASE_BRANCH]"
+dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh [BASE_BRANCH]"
 ```
 
 - `BASE_BRANCH`는 보통 `rb_73` (기본값)
@@ -74,7 +74,7 @@ dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer/scripts/measure_di
 - 비교 기준: `<BASE_BRANCH>...HEAD`
 - 변경 파일 목록:
   - `<path>` (+X lines)
-- 측정 스크립트: `.claude/skills/code-reviewer/scripts/measure_diff_cov.sh`
+- 측정 스크립트: `.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh`
 
 ## 테스트 실행 결과
 - make gtest 결과: N tests from M suites, PASSED/FAILED

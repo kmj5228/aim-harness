@@ -12,6 +12,7 @@ Current goal:
 - validate that `harness-initiator` can move beyond a docs/product-only skeleton
 - materialize reusable `core`, `collab`, `review`, and docs layers inside the generated harness
 - keep template/source-only carry-over out of the standalone harness
+- allow selected support prompts and guides to live next to generated skills when they make the product harness v1 materially more usable
 
 ## Layout
 
@@ -47,6 +48,11 @@ generated/osd-harness/
   - `agent/`
   - `generated/manual/`
   - `hooks/`
+- bundled support assets:
+  - selected core reviewer prompts
+  - selected subagent dispatch prompts
+  - selected review prompts
+  - selected writing guides
 
 ## Status
 

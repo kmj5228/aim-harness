@@ -54,7 +54,8 @@ Typical flow:
 | Need to process review feedback | **receiving-code-review** |
 | Need a structured review workflow | **code-reviewer** |
 | Need to derive a product harness from product-bound source assets | **harness-initiator** |
-| Need to improve an already generated harness | **product-harness-refinement** |
+| Need to carry source-pack support assets into a generated harness | **harness-support-assets** |
+| Need to improve an already generated harness | **harness-refinement** |
 | Creating or editing skills | **writing-skills** |
 
 ## Workflow Chain
@@ -74,7 +75,8 @@ Independent / specialized:
   dispatching-parallel-agents
   code-reviewer
   harness-initiator
-  product-harness-refinement
+  harness-support-assets
+  harness-refinement
   using-feature-branches
   writing-skills
 
@@ -111,7 +113,8 @@ Interpretation:
 
 - `templates/` is generation input, not default runtime skill space
 - `harness-initiator` owns template selection, adapter drafting, generation, and generated-structure validation
-- `product-harness-refinement` owns post-generation quality improvements inside an already generated harness
+- `harness-support-assets` owns source-pack support-asset carry-over into generated runtime-adjacent locations
+- `harness-refinement` owns post-generation quality improvements inside an already generated harness
 
 ## Artifact Convention
 

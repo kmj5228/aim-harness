@@ -55,6 +55,13 @@ It can reliably report:
 - module-level coverage signals
 - whether changed areas appear weakly protected based on nearby tests and coverage outputs
 
+Optional helper:
+
+- `skills/review/code-reviewer/scripts/measure_diff_cov.sh`
+  - experimental helper that combines git diff with JaCoCo XML to estimate added-line coverage for `ofgwSrc`
+  - use it only as an extra review signal after `:ofgwSrc:jacocoTestReport`
+  - do not turn it into a hard policy gate unless the repository workflow explicitly adopts it
+
 It must not claim:
 
 - exact diff-line coverage unless the repository provides a trustworthy diff-aware report
@@ -149,6 +156,7 @@ Suggested shape:
 
 - Separate report facts from reviewer inference.
 - Do not pretend JaCoCo module coverage is diff-line coverage.
+- If the optional diff helper is used, say explicitly that it is helper output layered on top of JaCoCo XML rather than the primary coverage contract.
 - Do not invent a required percentage threshold unless the product policy is confirmed.
 - If coverage generation fails, report the failure and the likely blocker.
 - If the change is outside `ofgwSrc`, report the coverage boundary explicitly instead of forcing a misleading conclusion.

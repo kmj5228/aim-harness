@@ -4,11 +4,12 @@
 
 This document evaluates whether `osd-harness` needs additional refinement, whether `harness-initiator` applied cleanly, and whether the current refinement boundary is appropriate.
 
-The goal is not to maximize `osd-harness` completeness. The goal is to check whether the current two-skill model is behaving correctly:
+The goal is not to maximize `osd-harness` completeness. The goal is to check whether the current three-skill model is behaving correctly:
 
 1. `harness-initiator` should produce a usable first draft
-2. `product-harness-refinement` should remain narrow
-3. shared problems should move into shared skills before adapter/schema growth is considered
+2. `harness-support-assets` should port adjacent source assets without needing a new schema
+3. `harness-refinement` should remain narrow
+4. shared problems should move into shared skills before adapter/schema growth is considered
 
 It is a validation artifact only. It is not a runtime skill or generation input.
 
@@ -85,6 +86,38 @@ Result: high
 - any generated harness that includes companion review skills benefits from the same change
 - this is the clearest current example of a shared skill evolution triggered by cross-product validation
 
+## Support-Asset Productization Note
+
+The current `osd` pass also validated the third narrow step:
+
+- `harness-support-assets`
+
+Confirmed on `osd`:
+
+- `brainstorming/spec-document-reviewer-prompt.md`
+- `writing-plans/plan-document-reviewer-prompt.md`
+- `systematic-debugging/root-cause-tracing.md`
+- `systematic-debugging/condition-based-waiting.md`
+- `systematic-debugging/defense-in-depth.md`
+- `subagent-driven-development/*.md`
+- `review/code-reviewer/*.md`
+- `test-driven-development/testing-anti-patterns.md`
+- `writing-documents/markdown-guide.md`
+- `writing-documents/jira-guide.md`
+- `writing-documents/gitlab-guide.md`
+
+These were improved with:
+
+- `agent/<topic>/...` runtime paths
+- `src/lib` / `src/server` / `src/tool` / `src/util` / `dist` boundary wording
+- confirmed `make`, `make -C test`, and `test/run_coverage.sh` examples
+
+Current judgment:
+
+- this is still small enough to live inside `harness-support-assets`
+- no extra schema is justified yet
+- the same support-asset model used on `ofgw` carries over to `osd` with different stack facts
+
 ## Judgment
 
 `osd-harness` is a usable first draft.
@@ -93,15 +126,16 @@ Additional `osd`-specific refinement is not mandatory before treating the curren
 
 The main improvement found in this evaluation was not "make `osd` more custom." It was "make the shared review orchestrator actually use generated companion review skills."
 
-That means the current two-skill boundary is still correct:
+That means the current three-skill boundary is still correct:
 
 - generation and structural validation stay with `harness-initiator`
-- narrow generated-harness improvement stays with `product-harness-refinement`
+- adjacent support-asset bundle + port stays with `harness-support-assets`
+- narrow generated-harness improvement stays with `harness-refinement`
 - shared recurring gaps should still be fixed in shared skills before adapter/schema complexity grows
 
 ## Decision
 
-- keep the current two-skill model
+- keep the current three-skill model
 - keep the refinement schema small
 - treat the current `code-reviewer` orchestration fix as a shared improvement, not an `osd`-local refinement rule
 - only expand `osd`-specific refinement later if real repo usage shows a product-local gap that shared skill evolution cannot close

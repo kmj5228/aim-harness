@@ -36,10 +36,14 @@ Status: pass
 - `ofgw` coverage review is now productized as `skills/review/coverage-review/`
 - template/source-only carry-over is no longer copied into the generated harness
 - current split is acceptable for this pass
+- the AIM coverage-analyst prompt is better understood as already absorbed into `skills/review/coverage-review/`, not as a missing asset
+- the legacy `measure_diff_cov.sh` role is now materially represented as an experimental repo-native helper under `skills/review/code-reviewer/scripts/`
 
 Follow-up:
 
 - keep diff-aware coverage gating deferred until `ofgw` has a trustworthy repository-supported method
+- treat `measure_diff_cov.sh` as a future repo-native helper rewrite candidate, not as a permanent exclusion by default
+- in the current pass that helper is generated as supplemental evidence layered on top of JaCoCo XML, not as a hard gate
 - keep external manual publish behavior deferred while local drafting stays under `skills/docs/manual-workflow/`
 
 ### 3. Source-Pack Path Leakage
@@ -144,6 +148,8 @@ Fixed in this review:
   - `writing-skills` can be carried as a shared baseline plus productized support assets
   - highly reusable authoring assets can graduate into shared root `skills/writing-skills/` after low-diff validation across products
   - the first concrete graduation was replacing the vendor-heavy `anthropic-best-practices.md` carry-over with shared `best-practices.md`
+- refinement also proved useful for bundled support assets that were still too source-biased after first-pass porting:
+  - `testing-anti-patterns.md` needed a second pass to remove AIM-specific API and constant examples while preserving the same testing guidance
 
 ## Findings Summary
 

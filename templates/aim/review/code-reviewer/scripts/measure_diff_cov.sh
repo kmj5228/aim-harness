@@ -1,7 +1,7 @@
 #!/bin/bash
 # measure_diff_cov.sh — diff 기반 추가 코드 커버리지 측정
-# 위치: .claude/skills/code-reviewer/scripts/measure_diff_cov.sh
-# 용도: code-reviewer 스킬의 aim-coverage-analyst 에이전트가 사용
+# 위치: .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh
+# 용도: code-reviewer-aim 스킬의 aim-coverage-analyst 에이전트가 사용
 #
 # 사용법:
 #   bash measure_diff_cov.sh [BASE_BRANCH]
