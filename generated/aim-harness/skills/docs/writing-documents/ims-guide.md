@@ -142,7 +142,7 @@ Turn 3: fileUpload() + confirm 우회
 - **QA 관점**: 상수명/함수명/코드 레벨 설명 금지
 - **5개 섹션**: Reason for change, Change content, Defining Change History, Verification Items, Impact Analysis
 - **HTML**: X-Free Editor v5 호환 (h1~h6 금지, th 금지, CSS class 금지, inline style만)
-- **Best practice**: `agent/msgrcv_sum#2.html`, `agent/msgrcv_verification#5.html`
+- **Best practice**: `../agent/prompt/msgrcv_sum#2.html`, `../agent/prompt/msgrcv_verification#5.html`
 - **등록**: `popupPatchVerification()` → iframe DOM 수정 → `doRndSave()` + confirm 우회
 
 상세는 completing-patch SKILL.md 전체를 참조할 것.

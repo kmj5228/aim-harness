@@ -1,123 +1,134 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing - requires running verification commands and confirming output before making any success claims
+description: Use when about to claim work is complete, fixed, or passing and you need fresh verification evidence before making that claim
 ---
 
 # Verification Before Completion
 
 ## Overview
 
-Claiming work is complete without verification is dishonesty, not efficiency.
+Claiming success without fresh verification is not efficiency. It is an unsupported assertion.
 
-**Core principle:** Evidence before claims, always.
-
-**Violating the letter of this rule is violating the spirit of this rule.**
+**Core principle:** Evidence before claims.
 
 ## The Iron Law
 
-```
+```text
 NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 ```
 
-If you haven't run the verification command in this message, you cannot claim it passes.
+If you did not run the verification now, you cannot honestly claim success now.
 
 ## The Gate Function
 
-```
-BEFORE claiming any status:
+Before claiming any status:
 
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
-3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
+1. Identify what evidence proves the claim
+2. Run the required verification commands
+3. Read the full output and exit status
+4. Compare the actual result to the claim
+5. Only then report status
 
-Skip any step = lying, not verifying
-```
+Skip any step and the claim is unverified.
 
-## AIM Verification Commands
+## Verification Categories
 
-| Claim | Command | Evidence Required |
-|-------|---------|-------------------|
-| Tests pass | `dx tmdown -y && dx make gtest` | Output: 0 failures |
-| Build succeeds | `dx make` | Output: exit 0, no errors |
-| Coverage meets 80% | `dx bash -c "cd /root/ofsrc/aim && bash skills/review/code-reviewer/scripts/measure_diff_cov.sh"` | Output: >= 80% |
-| Code formatted | `clang-format -i <files>` then `dx git diff` | No diff |
-| Bug fixed | Failing gtest now passes | RED→GREEN verified |
+| Claim | Evidence Needed |
+|-------|-----------------|
+| Tests pass | Relevant test command completed successfully |
+| Build succeeds | Build/compile command completed successfully |
+| Bug is fixed | Reproduction no longer fails and regression protection exists |
+| Formatting is correct | Formatter or diff check confirms expected state |
+| Ready for review/merge | Required repository-level checks all passed |
 
-**전체 `dx make gtest`는 이 스킬에서 1회만 수행한다.** 각 태스크 중간에 반복 실행하지 말 것 — 모듈 전체 재컴파일이 누적되어 전체 소요 시간의 40% 이상을 차지한다. 태스크 중간 검증은 test-driven-development 가이드에 따라 해당 모듈 테스트만 실행한다.
+## What To Run
 
-**`dx tmdown -y` 필수:** 실행 중인 서버 바이너리가 `Text file busy` 에러를 유발한다. `tmdown -s <server>` 개별 종료는 의존 서버가 많아 불완전하므로 `-y`(전체)를 사용한다.
+Use the current repository's real verification commands, not guessed ones.
 
-**미커버 라인 식별:** `gcov`를 직접 `grep`/`awk`로 파싱하지 말 것 (메타데이터 5줄만 출력되는 재현성 있는 현상). `measure_diff_cov.sh` 출력 + `dx git diff --unified=0 <base>..HEAD` 조합으로 확인한다.
+Typical categories:
+- Targeted test verification for the changed area
+- Broader regression verification required by the repository
+- Build or compile verification
+- Lint/format/type-check verification when relevant
+- Coverage or policy gates only if the repository actually requires them
+
+## Full Verification Sequence
+
+Before claiming work complete:
+
+1. Run targeted verification for the changed behavior
+2. Run broader verification appropriate to the change scope
+3. Run build/compile verification if the repository has one
+4. Run policy gates required by the repository
+5. Confirm only intended files changed
+
+All required checks must pass. Partial verification is not completion.
 
 ## Common Failures
 
 | Claim | Not Sufficient |
 |-------|----------------|
-| "Tests pass" | Previous run, "should pass" |
-| "Build clean" | Tests passing (tests != build) |
-| "Bug fixed" | Code changed, assumed fixed |
-| "Coverage OK" | "I added enough tests" without measuring |
-| "Ready for MR" | Tests pass but coverage not checked |
+| "Tests pass" | A previous run or a guess |
+| "Build is clean" | Tests passing without a build check |
+| "Bug is fixed" | Code changed without re-running reproduction |
+| "Ready for review" | Some checks passed but required gates were skipped |
+| "Coverage is fine" | Assuming enough tests were added without measuring |
 
-## Red Flags - STOP
+## Red Flags - Stop
 
-- Using "should", "probably", "seems to"
-- Expressing satisfaction before verification ("Done!", "Perfect!")
-- About to commit/push without verification
-- Relying on partial verification
-- Thinking "just this once"
-- **ANY wording implying success without having run verification**
+- Using words like "should", "probably", "seems"
+- Celebrating completion before verification
+- Relying on partial checks
+- Reusing stale command output
+- Skipping a required repository gate
+
+Any of these means the work is not yet verified.
 
 ## Rationalization Prevention
 
 | Excuse | Reality |
 |--------|---------|
-| "Should work now" | RUN the verification |
-| "I'm confident" | Confidence != evidence |
-| "Just this once" | No exceptions |
-| "Tests passed, build must be fine" | Tests != build. Run both. |
-| "I added tests, coverage is fine" | Measure it. Don't guess. |
+| "It should work now" | Run the verification. |
+| "I am confident" | Confidence is not evidence. |
+| "Just this once" | Verification is not optional. |
+| "Targeted tests passed, that is enough" | Only if the repository requires nothing broader. |
+| "I added more tests, coverage must be fine" | Measure it if coverage is a real gate. |
 
-## Full Verification Sequence
+## Reporting Rule
 
-Before claiming ANY work complete (모든 태스크 완료 후 1회):
+When reporting results:
 
-```bash
-# 0. 실행 중인 서버 종료 (Text file busy 방지)
-dx tmdown -y
+- State the command or category of verification run
+- State whether it passed or failed
+- State the important evidence
+- If it failed, report actual status instead of the desired status
 
-# 1. All tests pass (전체 회귀는 여기서 1회)
-dx make gtest
+Good:
 
-# 2. Production build clean
-dx make
-
-# 3. Coverage meets threshold (if new code added)
-dx bash -c "cd /root/ofsrc/aim && bash skills/review/code-reviewer/scripts/measure_diff_cov.sh"
-
-# 4. Code formatted
-# (verify no unformatted changes)
+```text
+Verification
+- Targeted tests: passed
+- Build: passed
+- Regression suite: failed in auth/session timeout scenario
 ```
 
-**All 3 (or 4) must pass. Partial is not complete.**
+Bad:
 
-## The Bottom Line
+```text
+Done, everything looks good.
+```
 
-**No shortcuts for verification.**
+## Bottom Line
 
-Run the command. Read the output. THEN claim the result.
+Run the command. Read the output. Then make the claim.
 
-This is non-negotiable.
+No shortcuts.
 
 ## Integration
 
 **Called by:**
-- **executing-plans** — 태스크 완료 주장 전
-- **subagent-driven-development** — implementer 서브에이전트 내부 완료 전
-- **systematic-debugging** — 수정 완료 전
-- **finishing-a-development-branch** — 브랜치 완료 전 gate
-- **dispatching-parallel-agents** — 에이전트 완료 후 통합 검증
+- **executing-plans** — before claiming task or plan completion
+- **subagent-driven-development** — before implementer completion
+- **systematic-debugging** — after a fix
+- **finishing-a-development-branch** — before review/merge preparation
+- **dispatching-parallel-agents** — after integrating parallel work

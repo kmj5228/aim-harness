@@ -13,17 +13,15 @@ Load plan, review critically, execute all tasks with TDD cycle and phase gates, 
 
 ## The Process
 
-### Step 0: Verify Branch
+### Step 0: Verify Working Context
 
-```bash
-dx git branch --show-current
-```
-
-If on `rb_73`, STOP. Create feature branch first (see using-feature-branches).
+1. Check the current branch or workspace state if the repository uses branch-based workflow
+2. Confirm the plan file and target files are the ones you intend to change
+3. If branch setup or workspace isolation is required, use using-feature-branches before starting
 
 ### Step 1: Load and Review Plan
 
-1. Read `agent/<topic>/plan_tasks.md`
+1. Read the `implementation_plan` artifact from the current topic artifact workspace
 2. Review critically — identify questions or concerns
 3. If concerns: Raise with user before starting
 4. If no concerns: Proceed
@@ -33,18 +31,16 @@ If on `rb_73`, STOP. Create feature branch first (see using-feature-branches).
 For each task:
 
 1. **Mark as in_progress** (TaskUpdate)
-2. **Follow TDD cycle exactly** (빌드 스코프는 test-driven-development 가이드에 따라 해당 모듈 테스트만 실행):
-   - RED: Write failing gtest → 해당 테스트 바이너리만 빌드/실행 (verify fails correctly)
-   - GREEN: Write minimal C code → 해당 모듈 테스트만 빌드/실행 (verify passes)
-   - REFACTOR: Clean up → 해당 모듈 테스트 재실행 (still green)
+2. **Follow TDD cycle exactly**:
+   - RED: Write or enable a failing test that proves the behavior gap
+   - GREEN: Write the minimal implementation to pass
+   - REFACTOR: Clean up while keeping tests green
 3. **Phase gate (태스크 단위):**
-   - 해당 모듈 gtest 통과 — 전체 `dx make gtest` 금지 (최종 gate에서 1회)
-   - `dx make` — production build clean
-4. **Commit:**
-   ```bash
-   dx git add <specific-files>
-   dx git commit -F /tmp/commit_msg.txt
-   ```
+   - Run targeted verification for the files or component changed in the task
+   - Run the broader verification command required by the repository for task-level confidence
+4. **Checkpoint or commit:**
+   - Stage only the files relevant to the task
+   - Use the repository's commit/checkpoint style
 5. **Mark as completed** (TaskUpdate)
 
 **REQUIRED SUB-SKILL:** Use test-driven-development for the TDD cycle within each task.
@@ -53,19 +49,9 @@ For each task:
 
 After all tasks complete:
 
-1. **Verify everything** (전체 회귀는 여기서 1회):
-   ```bash
-   dx tmdown -y     # Text file busy 방지 (필수)
-   dx make gtest    # 전체 회귀 테스트
-   dx make          # clean build
-   ```
-2. **Check coverage:**
-   ```bash
-   dx bash -c "cd /root/ofsrc/aim && bash skills/review/code-reviewer/scripts/measure_diff_cov.sh"
-   ```
-   Must be >= 80% on added code.
-
-3. **Transition:** Use finishing-a-development-branch to push, create MR.
+1. **Run final verification** using verification-before-completion
+2. **Review repository state** and confirm only intended files changed
+3. **Transition:** Use finishing-a-development-branch for branch cleanup, push, review, or merge preparation as appropriate
 
 ## When to Stop and Ask
 
@@ -89,16 +75,15 @@ After all tasks complete:
 - Review plan critically first
 - Follow plan steps exactly (TDD: RED → GREEN → REFACTOR)
 - **Plan TDD 위반 검사**: 실행 전에 plan을 검토하여 구현과 테스트가 별도 Task로 분리되어 있으면 사용자에게 경고하고 plan 수정을 제안한다. 구현/테스트 분리 plan을 그대로 실행하지 않는다.
-- Don't skip phase gates (`dx make gtest` + `dx make`)
+- Don't skip phase gates
 - Stop when blocked, don't guess
-- Never commit to `rb_73`
-- Korean commit messages via file (-F)
+- Use repository-specific branch and commit rules, not assumptions
 
 ## Integration
 
 **Required workflow skills:**
-- **using-feature-branches** — create branch before starting
+- **using-feature-branches** — when branch setup or isolated workspace is needed
 - **test-driven-development** — TDD cycle for each task
 - **systematic-debugging** — when tests fail unexpectedly
 - **verification-before-completion** — before claiming complete
-- **finishing-a-development-branch** — push, MR after all tasks
+- **finishing-a-development-branch** — finalize branch/review workflow after all tasks

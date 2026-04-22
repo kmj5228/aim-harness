@@ -23,10 +23,20 @@
 - **내부 기술 문서** (analysis, design, plan): 간결체 ("~한다", "~이다") 허용
 - **공유/보고 문서** (report, 회의록): 격식체 권장
 
-### 산출물 경로
+### 산출물 계약
 
-- 모든 산출물: `agent/<topic>/`
-- prefix로 출처 구분:
+- 문서는 현재 topic의 artifact workspace에 저장한다.
+- core/base skill은 physical path를 직접 가정하지 않는다.
+- 현재 runtime이 특정 경로를 제공할 수는 있지만, 그것은 runtime mapping이며 문서 규칙 자체는 아니다.
+- logical artifact와 canonical filename은 아래처럼 본다:
+
+| logical artifact | canonical filename | typical producer |
+|------------------|--------------------|------------------|
+| `analysis_report` | `analysis_report.md` | issue-analysis |
+| `design_spec` | `design_spec.md` | brainstorming |
+| `implementation_plan` | `plan_tasks.md` | writing-plans |
+
+- 아래 prefix는 문서군을 구분하는 관습으로만 본다:
 
 | prefix | 스킬 |
 |--------|------|
@@ -40,11 +50,9 @@
 | `review_` | code-reviewer |
 | `patch_` | completing-patch |
 
----
-
 ## 문서 유형별 구조
 
-### 분석 보고서 (analysis_report.md)
+### 분석 보고서 (`analysis_report`)
 
 ```markdown
 # Issue Analysis: <topic>
@@ -73,7 +81,7 @@ XSP 스펙 참조 결과 (해당 시)
 
 **독자:** 같은 팀 개발자. 코드 수준 상세 허용.
 
-### 설계 문서 (design_spec.md)
+### 설계 문서 (`design_spec`)
 
 Confluence 기술 설계 문서와 동일 구조 사용:
 
@@ -110,7 +118,7 @@ Confluence 기술 설계 문서와 동일 구조 사용:
 **독자:** 같은 팀 개발자. 코드 블록, 구조체, 테이블 허용.
 **분량:** 제한 없음. 길면 목차 필수.
 
-### 실행 계획 (plan_tasks.md)
+### 실행 계획 (`implementation_plan`)
 
 ```markdown
 # [Feature] Implementation Plan

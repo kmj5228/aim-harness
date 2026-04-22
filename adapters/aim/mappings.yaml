@@ -1,5 +1,17 @@
 source_pack: aim-template
 target_product: aim
+runtime_entry:
+  hook_event: SessionStart
+  matcher: startup|resume|clear|compact
+  inject_artifact: AGENTS.md
+  startup_contract:
+    require_skill_check: true
+    enforce_skill_routing: true
+    require_skill_gap_reporting: true
+    preserve_workflow_chain: true
+    deferred_tail:
+      - completing-patch
+      - external_manual_publish
 terminology:
   issue_item:
     canonical: issue
@@ -101,3 +113,4 @@ notes:
   - original AIM semantics use MR, not PR, as the canonical review artifact term
   - current schema can represent local manual drafting but not the full upstream MANUAL repository push flow as first-class truth
   - current generated layout can preserve review prompt assets, but Claude-era orchestration instructions still need a later Codex-specific normalization pass
+  - `writing-skills` is carried from shared root `skills/writing-skills/` as a whole authoring family; it is no longer a template-side support-asset productization case

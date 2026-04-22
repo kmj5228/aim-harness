@@ -2688,3 +2688,48 @@ git -C base-harness status --short
 - 판단:
   - `using-{product}-harness` 패턴은 OFGW-specific proof가 아니라 cross-product로도 재현 가능하다.
   - stronger generated `AGENTS.md`, `runtime_entry`, shared authoring-family carry-over까지 현재 `harness-initiator` 계약으로 cross-product 재현 가능함을 확인했다.
+
+## 134. Root 문서 역할 정리
+
+- root `README.md`를 사람용 개요 문서로 다시 정리했다.
+- root `AGENTS.md`는 generated harness source와 분리해서, `of-harness` generator repo를 다루는 AI agent contract로 다시 정의했다.
+- 명시한 핵심:
+  - generated runtime `AGENTS.md`의 source는 root `AGENTS.md`가 아니라 `templates/<pack>/AGENTS.template.md`와 adapter truth다
+  - root `AGENTS.md`는 generator repo maintenance contract다
+  - root 문서 역할 분담은 다음과 같이 고정한다:
+    - `README.md`: 사람용 개요
+    - `AGENTS.md`: AI 작업 계약
+    - `HARNESS_INITIATOR.md`: 생성기 계약과 검증 기준
+    - `MIGRATION.md`: 변경 로그와 연속 기록
+
+## 135. AIM 최종 생성기 실증
+
+- `aim`을 마지막 source-heavy 실증 대상으로 다시 검증했다.
+- 먼저 현재 dirty `generated/aim-harness/`와 `adapters/aim/`를 백업했다.
+  - `generated/backups/20260422-155539/aim-harness-pre-final-validation`
+  - `adapters/backups/20260422-155539/aim-adapter-pre-final-validation`
+- 그 다음 current 3스킬 계약을 `aim`에도 적용했다.
+  - `runtime_entry` 추가
+  - stronger generated `AGENTS.md`
+  - generated runtime-local `using-aim-harness`
+  - shared `writing-skills` whole-family carry-over
+  - template support asset bundle 복원
+  - hook matcher를 `startup|resume|clear|compact`로 정렬
+- 별도 재생성 디렉토리에서도 같은 구조를 다시 조립했다.
+  - `generated/rebuild-aim-harness/`
+- 재생성본과 live `generated/aim-harness/`는 완전히 일치했다.
+- 원본 `aim-harness`와의 basename 비교에서 generated에 없는 주요 파일은:
+  - `coverage-analyst-prompt.md`
+  - `info-collector-prompt.md`
+  - `manual-guide.md`
+  - `anthropic-best-practices.md`
+  - `CLAUDE_MD_TESTING.md`
+- 해석:
+  - `coverage-analyst-prompt.md` -> `coverage-review` productization
+  - `info-collector-prompt.md` -> `review-context-collector` productization
+  - `manual-guide.md` -> local `manual-workflow` partial absorb
+  - `anthropic-best-practices.md` -> shared `best-practices.md`
+  - `CLAUDE_MD_TESTING.md` -> `AGENTS_MD_TESTING.md`
+- 판단:
+  - current 3스킬 생성기는 `aim`에서도 startup/meta-skill, support asset, shared authoring family까지 재현 가능하다.
+  - 남은 핵심 gap은 여전히 `completing-patch`와 external manual publish 같은 advanced tail workflow다.

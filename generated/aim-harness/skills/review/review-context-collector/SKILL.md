@@ -1,99 +1,181 @@
 ---
 name: review-context-collector
-description: Use when gathering AIM issue, MR, git, and design context before running a structured code review
+description: Use when gathering issue, MR, diff, and design context before running a structured aim code review
 ---
 
 # Review Context Collector
 
 Collect the review context before judging the patch.
 
-This generated skill is the explicit AIM productization of the original info-collector pattern. It makes the hidden Phase B responsibility visible as its own active runtime skill.
+This skill is the `aim`-safe productized counterpart of the AIM info-collector pattern. It keeps the reusable context-gathering role, but removes fixed topic naming and legacy output assumptions.
 
 ## When to Use
 
-- before a full AIM review
-- before a self-review handoff
-- when review needs IMS, Jira, MR, and git context in one place
-- when a previous review needs a refreshed context snapshot
+- Before a full review of an `aim` change
+- Before a self-review handoff
+- When a review needs issue context plus repo diff context
+- When a prior review needs a refreshed context snapshot
 
 ## Bound Sources
 
 ### Issue Sources
 
-- Jira:
-  - default mode: `api`
-  - location: `https://tmaxsoft.atlassian.net/rest/api/2/issue/<JIRA_KEY>`
-- IMS:
+- Jira
+  - default mode: `mcp`
+  - fallback: `api`
+  - location: `atlassian-rovo`
+- IMS
   - default mode: `browser`
-  - location: `https://ims.tmaxsoft.com/tody/ims/issue/issueView.do?issueId=<IMS_NUMBER>`
+  - location pattern: `https://ims.tmaxsoft.com/tody/ims/issue/issueView.do?issueId=<IMS_NUMBER>`
 
 ### Review Target
 
-- MR:
-  - default mode: `api`
-  - fallback: `browser`, `git`
-  - location: `http://192.168.51.106/api/v4/projects/211/merge_requests`
+- MR
+  - default mode: `browser`
+  - fallback: `git`
+  - location: `http://192.168.51.106/openframe/openframe7/aim`
 
 ### Repo Context
 
-- local `dx git log`
-- local `dx git diff`
-- existing topic artifacts under `agent/<topic>/`
+- local git history and diff
+- local design notes if they exist under `agent/<topic>/`
+
+## Inputs
+
+Collect whatever is available:
+
+- topic or review identifier
+- MR URL or branch name
+- base branch if known
+- Jira key if known
+- IMS number if known
+- optional design note or issue summary already prepared in `agent/<topic>/`
+
+Do not block on every input. Continue with partial context and mark what is missing.
 
 ## Workflow
 
-1. Normalize identifiers:
-   - topic
-   - IMS
-   - Jira
-   - MR IID
-   - branch/base branch
-2. Gather issue context from Jira and IMS when available.
-3. Gather MR metadata:
-   - source and target branch
-   - description summary
-   - discussions or open review concerns
-4. Gather git context with `dx`:
-   - commits in scope
-   - changed files
-   - production vs test split
-5. Reuse any existing local artifacts:
-   - `analysis_report.md`
-   - `design_spec.md`
-   - prior review notes
-6. Write `agent/<topic>/review_context.md`
+### Step 1: Normalize Inputs
 
-## Output Contract
+- identify the review artifact
+- identify the comparison base if known
+- normalize issue identifiers
 
-Write:
+### Step 2: Gather Issue Context
+
+Try in this order:
+
+1. Jira via MCP
+2. Jira via API fallback if configured
+3. IMS via browser when an IMS number exists
+
+Collect only review-relevant context:
+
+- summary
+- status
+- description or problem statement
+- reproduction or environment notes when visible
+- known user-facing impact
+
+If one provider is unavailable, continue and record the gap.
+
+### Step 3: Gather Review Target Context
+
+Collect:
+
+- MR or branch identifier
+- source and target branch if available
+- description summary
+- changed files
+- notable discussions or open concerns if visible
+
+If the browser target is unavailable, fall back to local git context.
+
+### Step 4: Gather Repo Diff Context
+
+Use git to capture:
+
+- commit list in scope
+- diff summary
+- changed file groups
+- obvious risk-heavy files or modules
+
+For `aim`, call out whether the change is mainly in:
+
+- `src/lib`, `src/common`, or `src/ulib`
+- `src/server`
+- `src/tool` or `src/util`
+- `errcode` or `msgcode`
+- `config` or `resource`
+- `test/unit/gtest` or `test/ivp`
+- `script/` or other non-runtime support paths
+
+Prefer concise facts over long raw output dumps.
+
+### Step 5: Reuse Existing Local Context
+
+If the topic workspace already contains:
+
+- `analysis_report.md`
+- `design_spec.md`
+- prior review notes
+
+reuse them instead of re-deriving the same context.
+
+### Step 6: Write Review Context
+
+Write the collected result to:
 
 - `agent/<topic>/review_context.md`
 
-Suggested sections:
+Suggested shape:
 
-- `Review Target`
-- `Issue Context`
-- `Change Scope`
-- `Existing Design Context`
-- `Missing Context`
+```markdown
+# Review Context
+
+## Review Target
+- artifact:
+- branch or diff base:
+
+## Issue Context
+- Jira:
+- IMS:
+
+## Change Scope
+- commits:
+- changed files:
+- high-risk areas:
+
+## Existing Design Context
+- linked docs:
+
+## Missing Context
+- unresolved identifiers:
+- unavailable providers:
+```
 
 ## Rules
 
 - Gather context before evaluation.
-- Keep provider facts and local-git facts separate.
-- Do not require both IMS and Jira when only one exists.
-- Prefer concise normalized context over raw dumps.
-- Keep AIM-specific truths explicit:
-  - project ID `211`
-  - merge-request review flow
-  - `dx` git usage
+- Keep evidence and inference separate.
+- Do not claim issue details that you could not verify.
+- Do not require both Jira and IMS; use what exists.
+- Do not assume fixed topic naming or that an MR IID equals an issue identifier.
+
+## Error Handling
+
+| Case | Action |
+|------|--------|
+| Jira unavailable | continue with repo context and mark missing Jira details |
+| IMS unavailable | continue and mark IMS as not reviewed |
+| MR page unavailable | fall back to branch + git diff context |
+| missing topic workspace | create only the review context artifact path you need |
 
 ## Integration
 
 **Called by:**
-- **code-reviewer**
-- direct review requests
+- **code-reviewer** — when the review needs a dedicated context pass first
+- Direct review requests — when issue and diff context must be gathered before analysis
 
 **Feeds into:**
-- `agent/<topic>/review_context.md`
-- downstream review, coverage, and synthesis steps
+- **code-reviewer** — as the prepared context layer for review execution

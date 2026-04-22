@@ -1,186 +1,149 @@
 ---
 name: using-feature-branches
-description: Use when starting feature work that needs a new branch, before executing implementation plans, or when on rb_73 and about to commit
+description: Use when starting implementation work that should be isolated from the main branch, shared branch, or current workspace before coding or committing
 ---
 
 # Using Feature Branches
 
 ## Overview
 
-All AIM development happens on feature branches. Never commit to `rb_73` directly.
+Implementation work should happen in an isolated branch or workspace when the repository relies on branch-based collaboration.
 
-**Core principle:** `rb_73` is the release branch. Feature branches isolate work until it's reviewed and ready.
+**Core principle:** Do not commit directly to the branch that other people treat as the shared baseline.
 
 ## When to Use
 
-- Starting new feature, fix, or refactoring
-- About to commit but currently on `rb_73`
+- Starting a new feature, fix, or refactor
+- About to commit while still on a shared branch
 - Need to isolate experimental work
-- Before executing any implementation plan
+- Before executing an implementation plan
 
 ## The Rule
 
-```
-NEVER COMMIT TO rb_73
-```
-
-If you're on `rb_73`, create a feature branch BEFORE any commit.
-
-**No exceptions:**
-- Not for "just a small fix"
-- Not for "I'll merge right away"
-- Not for "it's already tested"
-
-## Branch Creation
-
-### Step 0: Verify Current Branch
-
-```bash
-dx git branch --show-current
+```text
+DO NOT COMMIT DIRECTLY TO THE SHARED BASELINE BRANCH
 ```
 
-If NOT `rb_73`, you already have a feature branch — proceed with work.
+If the repository has a protected branch, release branch, default branch, or team-shared integration branch, create an isolated branch first.
 
-If `rb_73`, continue to Step 1.
+## Branch / Workspace Setup
 
-### Step 1: Create Branch
+### Step 0: Verify Current Context
 
-**Naming convention:** `<keyword>_<IMS>_<Jira>`
+Check:
+- Current branch name
+- Whether the branch is shared or protected
+- Whether the repository uses branch-based isolation or another workspace model
 
-```bash
-# Examples:
-dx git checkout -b msgrcv_335342_6293
-dx git checkout -b acsapi_351005_6293
-dx git checkout -b smqn_recovery_335342
-```
+If you are already in an isolated working branch or equivalent workspace, proceed with work.
 
-Components:
-- `keyword`: Short description of the work (module name or feature)
-- `IMS`: IMS issue number (if applicable)
-- `Jira`: Jira ticket number (if applicable)
-- Omit IMS/Jira if not applicable, but include at least keyword
+If you are on the shared baseline branch, continue to Step 1.
 
-### Step 2: Verify
+### Step 1: Create an Isolated Branch
 
-```bash
-dx git branch --show-current
-# Should show your new branch, NOT rb_73
-```
+Use the repository's naming convention.
 
-### Step 3: Work
+Good branch names are:
+- Descriptive
+- Short enough to scan
+- Traceable to the work item when the repository uses ticket IDs
 
-Now safe to commit:
+Common patterns:
+- `<area>/<short-description>`
+- `<type>/<ticket-id>-<short-description>`
+- `<short-description>`
 
-```bash
-dx git add <specific-files>
-# 한글 커밋: 파일(-F)로 전달 (dx가 한글을 이중 이스케이프하여 깨뜨림)
-cat > /tmp/commit_msg.txt << 'EOF'
-<feat> 기능 설명
+Examples:
+- `feature/auth-timeout-handling`
+- `fix/1234-empty-queue-name`
+- `refactor/build-pipeline-cleanup`
 
-    - 변경사항
+### Step 2: Verify Isolation
 
- #OFV7-XXXX
-EOF
-dx bash -c "git commit -F /tmp/commit_msg.txt"
-```
+Confirm that:
+- The new branch or workspace is active
+- You are no longer on the shared baseline branch
+- The upcoming commits will land only in the isolated work context
 
-**Remember:** `git add .` / `git add -A` prohibited. Always specify files.
+### Step 3: Work Safely
 
-## Commit Message Format
+While working:
+- Stage only files relevant to the task
+- Follow the repository's commit message rules
+- Avoid broad staging commands if they are likely to capture unrelated files
 
-**일반 commit** (feature branch 작업 중):
-```
-<type> 한글 설명
+## Naming Guidance
 
-    - 변경사항 1
-    - 변경사항 2
+If the repository has a documented naming rule, follow it exactly.
 
- #OFV7-XXXX
-```
+If not, prefer:
+- A short work descriptor
+- Optional ticket or issue ID
+- Stable separators such as `/` or `-`
 
-**merge commit** (MR squash 시, `repository git message template` 전체 포맷):
-```
-IMS#XXXXXX:<type> summary
+Bad names:
+- `fix_bug`
+- `temp`
+- `work`
 
-    - described
+Good names:
+- `fix/session-timeout`
+- `feature/4821-bulk-import`
+- `refactor/query-builder-cleanup`
 
-    * module: module_name
-    * version: 7.3.0()
+## Push Guidance
 
- #OFV7-XXXX
-```
+Use the repository's normal push flow for isolated branches.
 
-- type: `<>` 괄호로 감싸며, 콜론 없음
-- 영문 type: `feat`, `fix`, `test`, `docs`, `refactor`, `style`, `chore`
-- 설명은 한글
-- Jira 티켓: `#OFV7-XXXX` (브랜치명의 Jira 번호 참조)
+Before pushing:
+- Confirm the target branch or upstream is correct
+- Confirm you are not pushing to the shared baseline branch
+- Confirm only intended commits are included
 
-```bash
-# 예시 (한글은 파일로 전달):
-cat > /tmp/commit_msg.txt << 'EOF'
-<fix> SMQN recovery 판정 로직 수정
-
-    - mqn recovery 테이블 검사 누락 수정
-    - smqn만 확인하던 로직에 mqn 추가
-
- #OFV7-6293
-EOF
-dx bash -c "git commit -F /tmp/commit_msg.txt"
-```
-
-## Push
-
-```bash
-dx git push -u origin <branch-name>
-```
-
-If `could not read Username` error (Docker has no interactive terminal):
-```bash
-dx bash -c "git push http://oauth2:<TOKEN>@192.168.51.106/openframe/openframe7/aim.git HEAD:<branch-name>"
-```
-Token: see `agent/info/access.md`
+If the repository uses review branches, merge requests, or pull requests, hand off to the completion/review skill after push preparation.
 
 ## Quick Reference
 
 | Situation | Action |
 |-----------|--------|
-| On `rb_73`, about to commit | Create feature branch first |
-| Already on feature branch | Proceed with work |
-| Need branch name, have IMS/Jira | `<keyword>_<IMS>_<Jira>` |
-| Need branch name, no ticket | `<keyword>_<brief_desc>` |
-| Ready to push | `dx git push -u origin <branch>` |
-| Need MR | See finishing-a-development-branch |
+| On shared baseline branch, about to commit | Create isolated branch first |
+| Already on isolated branch | Proceed with work |
+| Need branch name | Follow repo naming rule or use descriptive short form |
+| Ready to push | Push isolated branch, not shared baseline |
+| Ready for review | See finishing-a-development-branch |
 
 ## Common Mistakes
 
-### Committing to rb_73
+### Committing on the shared branch
 
-- **Problem:** Direct commits to release branch bypass review
-- **Fix:** Always check `dx git branch --show-current` before committing
+- Problem: bypasses isolation and increases integration risk
+- Fix: check branch/workspace before the first commit
 
 ### Vague branch names
 
-- **Problem:** `fix_bug` tells nothing about the work
-- **Fix:** Include module name and ticket numbers: `msgrcv_335342_6293`
+- Problem: branch purpose is unclear in history and review tools
+- Fix: include a clear work descriptor and ticket ID if appropriate
 
-### Using `git add .`
+### Over-broad staging
 
-- **Problem:** Stages unintended files (local configs, build artifacts)
-- **Fix:** Always `dx git add <specific-files>`
+- Problem: unintended files get included
+- Fix: stage explicit files whenever practical
 
 ## Red Flags
 
-- About to `git commit` on `rb_73` — STOP, create branch
-- Branch name with no keyword — add descriptive prefix
-- Using `git add .` or `git add -A` — specify files explicitly
-- Pushing to `rb_73` — STOP, you should be on a feature branch
+- About to commit on the shared baseline branch
+- Branch name provides no clue about the work
+- Staging unrelated files together with the task
+- Pushing directly to the shared baseline branch
+
+Any of these means you should stop and correct the workspace setup first.
 
 ## Integration
 
 **Called by:**
-- **brainstorming** — after design approved, before implementation
-- **executing-plans** — before executing any tasks
+- **brainstorming** — after design approval, before implementation
+- **executing-plans** — before inline execution
 - **subagent-driven-development** — before dispatching implementers
 
 **Pairs with:**
-- **finishing-a-development-branch** — push, MR, cleanup after work complete
+- **finishing-a-development-branch** — push, review, merge preparation, cleanup after work completes

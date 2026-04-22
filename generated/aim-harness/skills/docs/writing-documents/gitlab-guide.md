@@ -4,7 +4,7 @@
 
 MR description은 **finishing-a-development-branch** 스킬이 담당한다.
 
-핵심 규칙 요약 (`repository merge-request template` 기반):
+핵심 규칙 요약 (`.gitlab/merge_request_templates/default.md` 기반):
 
 ### 섹션별 상세 (default.md 원문 기준)
 
@@ -59,7 +59,7 @@ MR description은 **finishing-a-development-branch** 스킬이 담당한다.
 ```
 IMS#X:<X> X
 
-    -
+    - 
 
     * module: X
     * version: X

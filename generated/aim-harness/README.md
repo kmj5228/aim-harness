@@ -1,19 +1,17 @@
 # aim-harness
 
-This directory is the regenerated standalone-target draft for `aim`.
+This directory is the current standalone-target draft for `aim`.
 
 It was produced from:
 
 - source pack: `templates/aim/`
-- adapter inputs:
-  - `adapters/aim/product-profile.yaml`
-  - `adapters/aim/mappings.yaml`
+- adapter inputs: `adapters/aim/product-profile.yaml`, `adapters/aim/mappings.yaml`
 
 Current goal:
 
-- test how closely the current initiator/refinement system can reconstruct the original `aim-harness`
-- preserve AIM workflow meaning while using the current layered generated layout
-- keep the original `/home/woosuk_jung/harness/aim-harness` untouched
+- validate that `harness-initiator` can materialize a usable AIM-bound standalone harness
+- materialize reusable `core`, `collab`, `review`, and docs layers inside the generated harness
+- keep template/source-only carry-over out of the standalone harness
 
 ## Layout
 
@@ -35,14 +33,13 @@ generated/aim-harness/
 
 ## Included Now
 
-- regenerated base/runtime loop:
+- base-runtime carry-over:
   - `skills/core/*`
   - `skills/collab/*`
-- regenerated review layer:
   - `skills/review/code-reviewer/`
   - `skills/review/review-context-collector/`
   - `skills/review/coverage-review/`
-- regenerated docs/product layer:
+- product-bound generated layer:
   - `skills/product/issue-analysis/`
   - `skills/docs/writing-documents/`
   - `skills/docs/manual-workflow/`
@@ -53,14 +50,11 @@ generated/aim-harness/
 
 ## Status
 
-- semantic reconstruction: meaningful
-- generated runtime: usable comparison draft
-- strongest preserved areas:
-  - issue triage
-  - design/plan/execute loop
-  - AIM-style review semantics
-  - document authoring hub
-- still missing as first-class generated runtime:
-  - `completing-patch`
-  - full external MANUAL repo publication
-  - original `using-aim-harness` startup model
+- standalone target: materially usable first draft
+- current tree: generated from the current initiator contract
+- generated bindings: reviewed and traceable to adapter inputs plus initiator default carry-over
+- review workflow is merge-request aware
+- coverage review workflow is generated around `make gtest`
+- local manual draft workflow is generated
+- external manual publish workflow is not generated yet
+- full completion/patch workflow is not generated yet

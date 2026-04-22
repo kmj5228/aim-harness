@@ -1,75 +1,89 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks or before merging to self-review your own AIM code using code-reviewer Phase A~E
+description: Use when your own implementation is ready for a self-review pass before handoff, merge preparation, or completion claims
 ---
 
 # Requesting Code Review
 
-Dispatch code-reviewer in `--auto` mode (Phase A~E only) to catch issues in your own code before MR.
+Run a structured self-review before handing work to other reviewers or calling it complete.
 
-**Core principle:** Review early, review often. Self-review catches issues before they reach human reviewers.
+**Core principle:** Review your own patch while you still have time to fix it cheaply.
 
 ## When to Request
 
-**Mandatory:**
-- Before creating MR (finishing-a-development-branch Option 4)
-- After completing major feature
+**Recommended:**
+- Before asking others to review the change
+- Before merge or completion preparation
+- After a major feature or risky refactor
+- After fixing a subtle bug
 
-**Optional but valuable:**
-- When stuck (fresh perspective)
-- After fixing complex bug
-- Before large refactoring
+**Especially valuable when:**
+- The change touched multiple files
+- The fix involved control-flow or fallback logic
+- The patch was built incrementally over several steps
 
-## How to Request
+## The Review Loop
 
-### 1. Get git info
+### 1. Define Review Scope
 
-```bash
-dx git log --oneline rb_73..HEAD    # commits to review
-dx git diff rb_73..HEAD --stat      # files changed
-```
+Collect the actual change set you want reviewed:
+- Commits in scope
+- Files changed
+- Key behavior changes
+- Known risks or open questions
 
-### 2. Invoke code-reviewer
+### 2. Invoke the Review Path
 
-Invoke the `code-reviewer` skill with `--auto` flag:
+Use the repository's review mechanism for self-review.
 
-```
-/code-reviewer --auto
-Topic: <topic>
-MR: (none — self-review, use branch diff)
-Source branch: <feature-branch>
-Target branch: rb_73
-```
+That may be:
+- A dedicated review skill
+- A review prompt
+- A structured checklist
+- A patch review command
 
-**`--auto` mode:**
-- Runs Phase A~E only (info collect → code review → test review → coverage → synthesis)
-- Skips Phase F~I (GitLab registration, standby, verification, final judgment)
-- Results saved to `agent/<topic>/review_*` files
+The goal is the same: get a fresh, critical pass over your own work before external review.
 
-### 3. Act on feedback
+### 3. Triage Findings
 
 | Priority | Action |
 |----------|--------|
 | Critical | Fix immediately |
-| Important | Fix before MR |
-| Minor | Fix or document rationale for skipping |
+| Important | Fix before handoff unless you have a strong documented reason |
+| Minor | Fix now or document why not |
 
-Push back with technical reasoning if reviewer is wrong.
+Push back only with technical evidence.
+
+### 4. Re-verify After Fixes
+
+If review findings lead to code changes:
+- Re-run the necessary verification
+- Re-run review if the patch changed materially
+
+## What Good Self-Review Catches
+
+- Requirement drift
+- Missing tests
+- Incorrect control flow
+- Weak fallback behavior
+- Unclear naming
+- Unintended file changes
+- Compatibility or integration risks
+
+## Red Flags
+
+- Skipping self-review because the change feels simple
+- Ignoring serious findings without evidence
+- Treating self-review as a formality
+- Asking for external review before your own patch is coherent
 
 ## Integration
 
 **Called by:**
-- **finishing-a-development-branch** (Option 4) — self-review before MR
+- **finishing-a-development-branch** — before review or merge preparation
 
 **Uses:**
-- **code-reviewer** — Phase A~E in `--auto` mode
+- **code-reviewer** — when a structured review workflow is available
 
 **Feeds into:**
-- **receiving-code-review** — if review findings need systematic processing
-
-## Red Flags
-
-- Skip review because "it's simple"
-- Ignore Critical issues
-- Proceed with unfixed Important issues
-- Argue with valid technical feedback without evidence
+- **receiving-code-review** — if findings need systematic follow-up

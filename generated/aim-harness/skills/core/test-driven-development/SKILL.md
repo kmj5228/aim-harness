@@ -1,441 +1,286 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix in AIM, before writing implementation code
+description: Use when implementing a feature, fixing a bug, or changing behavior and you need to drive the work with a failing test before writing production code
 ---
 
-# Test-Driven Development (TDD)
+# Test-Driven Development
 
 ## Overview
 
-Write the test first. Watch it fail. Write minimal code to pass.
+Write the test first. Watch it fail for the right reason. Write the minimum code to pass. Then refactor without changing behavior.
 
-**Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
-
-**Violating the letter of the rules is violating the spirit of the rules.**
+**Core principle:** If you did not see the test fail before implementation, you do not know whether the test actually protects the behavior you care about.
 
 ## When to Use
 
 **Always:**
 - New features
 - Bug fixes
-- Refactoring
+- Refactoring with behavior protection
 - Behavior changes
 
-**Exceptions (ask user):**
+**Exceptions (ask the user first):**
 - Throwaway prototypes
-- Generated code (lex/yacc output)
-- Configuration files
-
-Thinking "skip TDD just this once"? Stop. That's rationalization.
+- Generated code
+- Pure configuration changes
 
 ## The Iron Law
 
-```
+```text
 NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
 ```
 
-Write code before the test? Delete it. Start over.
-
-**No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
-
-Implement fresh from tests. Period.
+If you wrote production code before the test, discard it and restart from the test.
 
 ## Red-Green-Refactor
 
 ```dot
 digraph tdd_cycle {
     rankdir=LR;
-    red [label="RED\nWrite failing gtest", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="dx make gtest\nfails correctly?", shape=diamond];
-    green [label="GREEN\nMinimal C code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="dx make gtest\nall pass?", shape=diamond];
-    refactor [label="REFACTOR\nClean + dx make", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
+    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
+    verify_red [label="Fails for the\nright reason?", shape=diamond];
+    green [label="GREEN\nWrite minimal code", shape=box, style=filled, fillcolor="#ccffcc"];
+    verify_green [label="Targeted tests\npass?", shape=diamond];
+    refactor [label="REFACTOR\nClean up safely", shape=box, style=filled, fillcolor="#ccccff"];
+    verify_refactor [label="Still green?", shape=diamond];
+    next [label="Next behavior", shape=ellipse];
 
     red -> verify_red;
     verify_red -> green [label="yes"];
-    verify_red -> red [label="wrong\nfailure"];
+    verify_red -> red [label="no"];
     green -> verify_green;
     verify_green -> refactor [label="yes"];
     verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
-    next -> red;
+    refactor -> verify_refactor;
+    verify_refactor -> next [label="yes"];
+    verify_refactor -> refactor [label="fix"];
 }
 ```
 
-### RED - Write Failing Test
+## RED - Write the Failing Test
 
-Write one minimal GoogleTest showing what should happen.
+Write one small test that demonstrates the missing behavior.
 
 <Good>
-```cpp
-TEST(AimRetry, RetriesFailedOperations3Times) {
-    int attempts = 0;
-    int rc = aim_retry_operation(&attempts, 3);
 
-    EXPECT_EQ(rc, AIM_OK);
-    EXPECT_EQ(attempts, 3);
-}
+```text
+TEST "rejects empty queue names"
+  EXPECT validate_queue_name("") == { ok: false, reason: "empty-name" }
+END
 ```
-Clear name, tests real behavior, one thing
+
+Clear behavior, one expectation, obvious failure target.
+
 </Good>
 
 <Bad>
-```cpp
-TEST(AimRetry, TestRetry) {
-    // just calls the function and checks return
-    EXPECT_EQ(aim_retry_operation(NULL, 0), 0);
-}
+
+```text
+TEST "test queue logic"
+  EXPECT validate_queue_name("") is defined
+END
 ```
-Vague name, doesn't verify actual retry count
+
+Vague name, weak assertion, unclear intent.
+
 </Bad>
 
 **Requirements:**
 - One behavior per test
-- Clear descriptive name (TestSuite, TestName)
-- Real code (avoid mocking unless unavoidable)
+- Clear descriptive name
+- Assertions that prove behavior, not just execution
+- Prefer real behavior over excessive mocking
 
-### Verify RED - Watch It Fail
+## Verify RED - Watch It Fail
 
-**MANDATORY. Never skip.**
+**Mandatory. Never skip.**
 
-**빌드 스코프 최소화 (시간 절약):** RED 단계에서는 **방금 추가한 테스트 바이너리만** 빌드/실행한다. 전체 `dx make gtest`는 금지 — 불필요한 전체 재컴파일로 빌드 4회가 누적되어 태스크당 20분 이상 낭비된다.
-
-```bash
-# gtest 실행 전 서버 종료 (Text file busy 방지)
-dx tmdown -y
-
-# 방금 추가한 테스트 바이너리만 빌드/실행
-dx bash -c "cd /root/ofsrc/aim/test/unit/gtest/src/<zone>/<module> && make -f Makefile_<target> && ./gtest_<module>_<target>"
-```
+Run the narrowest test command that exercises the new test.
 
 Confirm:
-- Test fails (not build errors)
-- Failure message is expected
-- Fails because feature missing (not typos or link errors)
+- The test fails
+- It fails for the expected reason
+- It fails because the behavior is missing, not because of typos, wiring mistakes, or broken setup
 
-**Test passes?** You're testing existing behavior. Fix test.
+**If the test passes immediately:** you are testing existing behavior or the wrong thing. Fix the test.
 
-**Build error?** Fix build error first, re-run until it fails correctly.
+**If the failure is unrelated:** fix the test/setup until the failure proves the intended gap.
 
-### GREEN - Minimal Code
+## GREEN - Write the Minimum Code
 
-Write simplest C code to pass the test.
+Write the smallest production change that makes the failing test pass.
 
 <Good>
-```c
-int aim_retry_operation(int *attempts, int max_retries) {
-    for (int i = 0; i < max_retries; i++) {
-        (*attempts)++;
-        int rc = _do_operation();
-        if (rc == AIM_OK) return AIM_OK;
-    }
-    return AIM_ERR_RETRY_EXHAUSTED;
-}
+
+```text
+FUNCTION validate_queue_name(name)
+  IF name is empty
+    RETURN { ok: false, reason: "empty-name" }
+  END
+  RETURN { ok: true }
+END
 ```
-Just enough to pass
+
+Just enough to satisfy the test.
+
 </Good>
 
 <Bad>
-```c
-int aim_retry_operation(int *attempts, int max_retries,
-                        int backoff_ms, int (*callback)(int),
-                        aim_retry_opts_t *opts) {
-    // YAGNI - over-engineered
-}
+
+```text
+FUNCTION validate_queue_name(name, options, reporter, hooks)
+  # many extra features not required by the failing test
+END
 ```
-Over-engineered
+
+Over-engineered and not test-driven.
+
 </Bad>
 
-Don't add features, refactor other code, or "improve" beyond the test.
+Do not add speculative features, unrelated cleanup, or convenience abstractions during GREEN.
 
-### Verify GREEN - Watch It Pass
+## Verify GREEN - Watch It Pass
 
-**MANDATORY.**
-
-**빌드 스코프 최소화:** 태스크 중간에는 **수정한 모듈의 테스트만** 실행한다. 전체 `dx make gtest`(전 모듈 회귀)는 **모든 태스크 완료 후 1회만** 수행 (verification-before-completion에서 처리).
-
-```bash
-# 서버 종료 후 해당 모듈 테스트만 재빌드/실행
-dx tmdown -y
-dx bash -c "cd /root/ofsrc/aim/test/unit/gtest/src/<zone>/<module> && make && ./gtest_<module>_<target>"
-```
+Run:
+- The targeted test you just added
+- Nearby tests that protect the same component or behavior
+- The smallest broader verification command that gives confidence the task is still valid
 
 Confirm:
-- Test passes
-- Modified module's other tests still pass
-- No warnings or errors in output
+- The new test passes
+- Related tests stay green
+- No new warnings or obvious regressions appear
 
-Then verify production build:
-```bash
-dx make
-```
+If GREEN fails, fix the production code, not the test intent.
 
-**Test fails?** Fix code, not test.
+## REFACTOR - Clean Up Safely
 
-**Build fails?** Fix now.
+Only refactor after GREEN.
 
-### REFACTOR - Clean Up
-
-After green only:
+Allowed refactors:
 - Remove duplication
 - Improve names
 - Extract helpers
-- Run `clang-format -i` on changed files
+- Simplify control flow
+- Clarify test fixtures
 
-Keep tests green. Don't add behavior.
+After each meaningful refactor:
+- Re-run the targeted test
+- Re-run nearby tests as needed
 
-```bash
-dx make gtest   # still green after refactor
-dx make         # production build still clean
-```
+Refactoring must not change behavior.
 
-### Repeat
+## Repeat
 
-Next failing test for next feature.
+Move to the next missing behavior by writing the next failing test.
 
-## AIM-Specific Testing Patterns
+Do not batch multiple new behaviors behind one oversized implementation step.
 
-### Static Function Testing
+## Test Scope Rules
 
-Static functions that need testing must be promoted:
+- Prefer the narrowest test that proves the behavior
+- Prefer targeted verification during task execution
+- Defer full regression suites to the repository's completion/verification gate unless the change is high-risk
+- Keep feedback loops short
 
-1. Remove `static` keyword
-2. Keep underscore prefix (`_helper_func`)
-3. Declare in `{SOURCE FILE}.h` with block comment:
-
-```c
-/******************************************************************************
- *                          Static Function                                   *
- *Although it is a static function, it is declared as follows for unit testing*
- ******************************************************************************/
-int _aim_parse_header(const char *buf, aim_header_t *hdr);
-```
-
-4. Remove forward declaration from `.c` file
-5. Include `{SOURCE FILE}.h` in the `.c` file
-
-### Test File Organization
-
-소스 트리와 테스트 트리가 1:1 대응한다:
-
-```
-src/<zone>/<module>/<source>.c
-  → test/unit/gtest/src/<zone>/<module>/gtest_<module>_<function>.cpp
-```
-
-예시:
-```
-src/lib/acp/acp_parser.c
-  → test/unit/gtest/src/lib/acp/gtest_acp_acp_parser.cpp
-```
-
-- 네이밍: `gtest_<module>_<function>.cpp` — 함수 1개당 cpp 1개 권장
-- 예외: 함수 간 결합이 강한 경우(연속 호출/동일 워크플로우)는 1개 cpp 허용
-- 디렉토리: `test/unit/gtest/src/<zone>/<module>/`
-
-### Test Authoring Rules
-
-핵심 규칙 (`test/unit/gtest/AGENTS.override.md` 전체 기준 적용):
-
-- 구조: setup / exercise / verify / cleanup
-- 주석: 영어로 작성
-  - Test Fixture class 위: 테스트 suite 목적, 대상 함수, mock 대상 기술
-  - 각 TEST_F 위: 검증 내용 간략 기술, 정상/오류 경로 명시
-- **신규 테스트는 최소 정상 경로 1개 + 오류 경로 1개** 포함
-- 테스트 내부에서 구조체/상수/extern 재정의 금지 — 실제 헤더를 include
-
-### Mocking Rules
-
-- 외부 호출 검증: gmock (`EXPECT_CALL`, `Times`) 우선
-- mock 필요한 cpp만 `Makefile_<target>`으로 분리. mock 불필요 테스트는 기본 `Makefile`의 `SOURCES`에 추가
-- 제품 코드(`.c`, `.h`)에 테스트 전용 함수 추가 금지 — static 승격 또는 symbol 가로채기로 해결
-- symbol 가로채기(mock wrapper): `extern "C"` 직접 감싸지 않고, 원본 헤더의 `extern "C"` guard에 의존
-
-### Coverage Requirement
-
-커버리지 측정 시 **반드시 `make clean && make gtest`** 실행. `make gtest-run`만 하면 소스 `.o`가 커버리지 플래그 없이 빌드된 캐시가 남아 `.gcda`가 생성되지 않음 (커버리지 0%).
-
-**gtest 실행 전 `dx tmdown -y` 필수** — 실행 중인 서버 바이너리가 `Text file busy`를 유발하여 `cp aimdcms` 등에서 실패한다. 개별 `tmdown -s <server>`는 의존 서버(aimidcm 등)가 많아 불완전하므로 전체 종료를 사용한다.
-
-```bash
-dx tmdown -y
-dx bash -c "cd /root/ofsrc/aim && make clean && make gtest"
-dx bash -c "cd /root/ofsrc/aim && bash skills/review/code-reviewer/scripts/measure_diff_cov.sh"
-```
-
-**미커버 라인 식별:** `gcov`를 직접 `grep`/`awk`로 파싱하지 말 것. gcov 출력이 메타데이터 5줄만 나오는 재현성 있는 현상이 관찰됨. `measure_diff_cov.sh` 출력 + `dx git diff --unified=0 <base>..HEAD` 조합으로 추가 라인을 직접 확인한다.
-
-mock 바이너리가 있는 경우 빌드하지 않고 **실행만** 추가 (빌드하면 gcda 리셋):
-```bash
-dx bash -c "cd /root/ofsrc/aim/test/unit/gtest/src/<zone>/<module> && ./gtest_<module>_<target>"
-```
-
-**80% added-code line coverage required.** If below, write more tests.
-
-## Good Tests
+## Good Test Qualities
 
 | Quality | Good | Bad |
 |---------|------|-----|
-| **Minimal** | One thing. "and" in name? Split it. | `TEST(Aim, ValidatesEmailAndDomainAndWhitespace)` |
-| **Clear** | Name describes behavior | `TEST(Aim, Test1)` |
-| **Shows intent** | Demonstrates desired API | Obscures what code should do |
+| Minimal | One behavior per test | Multiple unrelated expectations |
+| Clear | Name states behavior | Generic names like `Test1` |
+| Behavioral | Asserts outcomes and contracts | Asserts implementation trivia |
+| Repeatable | Deterministic input/output | Time/order/environment fragile |
 
 ## Why Order Matters
 
-**"I'll write tests after to verify it works"**
+**"I'll write tests after."**
 
-Tests written after code pass immediately. Passing immediately proves nothing:
-- Might test wrong thing
-- Might test implementation, not behavior
-- Might miss edge cases you forgot
-- You never saw it catch the bug
+Tests written after code often validate what you already built, not what was actually required.
 
-**"I already manually tested all the edge cases"**
+**"I manually tested it already."**
 
-Manual testing is ad-hoc:
-- No record of what you tested
-- Can't re-run when code changes
-- Easy to forget cases under pressure
-- "It worked when I tried it" != comprehensive
+Manual testing is not a durable regression safety net.
 
-**"Deleting X hours of work is wasteful"**
+**"This change is too small for TDD."**
 
-Sunk cost fallacy. The time is already gone. Working code without real tests is technical debt.
-
-**"TDD is dogmatic, being pragmatic means adapting"**
-
-TDD IS pragmatic: finds bugs before commit, prevents regressions, documents behavior, enables refactoring. "Pragmatic" shortcuts = debugging in production = slower.
+Small changes are exactly where unchecked assumptions slip through.
 
 ## Common Rationalizations
 
 | Excuse | Reality |
 |--------|---------|
-| "Too simple to test" | Simple code breaks. gtest takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
-| "Already manually tested" | Ad-hoc != systematic. No record, can't re-run. |
-| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
-| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
-| "Need to explore first" | Fine. Throw away exploration, start with TDD. |
-| "Test hard = design unclear" | Listen to test. Hard to test = hard to use. |
-| "Static function can't be tested" | Promote to header. See AIM-Specific Testing Patterns. |
-| "Existing code has no tests" | You're improving it. Add tests for your changes. |
+| "Too simple to test" | Simple code still breaks. |
+| "I'll test after" | Tests-after do not prove the design was driven by behavior. |
+| "I already explored the solution" | Exploration is fine, but implementation still starts from a failing test. |
+| "This bug is obvious" | Reproducible bugs still need regression tests. |
+| "The test is hard to write" | Hard-to-test code often signals design problems. |
+| "Existing code has no tests" | That is a reason to improve the area, not copy the weakness. |
 
-## Red Flags - STOP and Start Over
+## Red Flags - Stop and Restart
 
-- Code before test
-- Test after implementation
+- Production code before test
+- Test added after implementation
 - Test passes immediately
-- Can't explain why test failed
-- Tests added "later"
-- Rationalizing "just this once"
-- "I already manually tested it"
-- "Tests after achieve the same purpose"
-- "It's about spirit not ritual"
-- "Keep as reference" or "adapt existing code"
-- "Already spent X hours, deleting is wasteful"
-- "Static function, can't test it" (promote it!)
-- "This is different because..."
+- You cannot explain why the test failed
+- You changed the test to match broken behavior without approval
+- You are using "just this once" reasoning
 
-**All of these mean: Delete code. Start over with TDD.**
-
-## Example: Bug Fix (C/GoogleTest)
-
-**Bug:** Empty message queue name accepted
-
-**RED**
-```cpp
-TEST(AimMqn, RejectsEmptyQueueName) {
-    int rc = aim_mqn_validate("");
-    EXPECT_EQ(rc, AIM_ERR_INVALID_PARAM);
-}
-```
-
-**Verify RED**
-```bash
-$ dx make gtest
-[ FAILED ] AimMqn.RejectsEmptyQueueName
-  Expected: AIM_ERR_INVALID_PARAM
-  Actual: AIM_OK
-```
-
-**GREEN**
-```c
-int aim_mqn_validate(const char *mqn) {
-    if (mqn == NULL || mqn[0] == '\0') {
-        return AIM_ERR_INVALID_PARAM;
-    }
-    // existing validation...
-}
-```
-
-**Verify GREEN**
-```bash
-$ dx make gtest
-[  PASSED  ] AimMqn.RejectsEmptyQueueName
-$ dx make
-Build complete.
-```
-
-**REFACTOR**
-Extract validation for reuse if needed. `clang-format -i` on changed files.
+All of these mean the TDD loop has been broken.
 
 ## Verification Checklist
 
-Before marking work complete:
+Before claiming the task is done:
 
-- [ ] Every new function has a gtest
-- [ ] Watched each test fail before implementing
-- [ ] Each test failed for expected reason (feature missing, not build error)
-- [ ] Wrote minimal code to pass each test
-- [ ] All tests pass (`dx make gtest`)
-- [ ] Production build clean (`dx make`)
-- [ ] Coverage >= 80% on added code
-- [ ] `clang-format -i` applied
+- [ ] Every behavior change has a protecting test
+- [ ] Each test was seen failing before implementation
+- [ ] Each failure was for the expected reason
+- [ ] Minimal code was written to pass
+- [ ] Targeted tests are green
+- [ ] Broader task-level verification was run
+- [ ] Refactors were done only after GREEN
 
-Can't check all boxes? You skipped TDD. Start over.
+If you cannot check these boxes honestly, you did not complete the TDD loop.
 
 ## When Stuck
 
-| Problem | Solution |
+| Problem | Response |
 |---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. |
-| Test too complicated | Design too complicated. Simplify interface. |
-| External dependency | Use link-time substitution or wrapper function. |
-| Test setup huge | Extract test fixtures. Still complex? Simplify design. |
+| Don't know how to test | Write the desired API or observable behavior first. |
+| Test setup is huge | Simplify the design or extract fixtures/helpers. |
+| External dependency is hard to control | Add a seam, wrapper, fake, or controlled test double. |
+| The failing test is unclear | Tighten the assertion until the behavior gap is explicit. |
 
 ## Debugging Integration
 
-Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
+When fixing a bug:
 
-Never fix bugs without a test.
+1. Reproduce it with a failing test
+2. Make the test pass with minimal code
+3. Keep the test as regression protection
+
+Never treat bug fixing as separate from TDD.
 
 ## Testing Anti-Patterns
 
-When adding test utilities or isolating dependencies, read @testing-anti-patterns.md to avoid common pitfalls:
-- Testing stub behavior instead of real behavior
-- Adding test-only methods to production code
-- Over-isolating without understanding dependencies
+When adding test utilities or isolating dependencies, read `testing-anti-patterns.md` to avoid:
+- Testing the stub instead of behavior
+- Adding test-only escape hatches to production code
+- Over-isolating without understanding real dependencies
 
 ## Final Rule
 
-```
-Production code -> test exists and failed first
+```text
+Production code -> test existed and failed first
 Otherwise -> not TDD
 ```
 
-No exceptions without user's explicit permission.
+No exceptions without explicit user approval.
 
 ## Integration
 
 **Called by:**
-- **executing-plans** — 각 태스크 실행 시
-- **subagent-driven-development** — implementer 서브에이전트 내부
-- **systematic-debugging** Phase 4 — 수정 검증 테스트 작성 시
-- **receiving-code-review** — 리뷰 피드백 기반 로직 수정 시
+- **executing-plans** — inline task execution
+- **subagent-driven-development** — implementer execution loop
+- **systematic-debugging** — regression test before fix
+- **receiving-code-review** — feedback-driven behavior changes

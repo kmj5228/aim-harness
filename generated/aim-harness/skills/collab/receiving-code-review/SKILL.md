@@ -1,121 +1,125 @@
 ---
 name: receiving-code-review
-description: Use when receiving code review feedback from code-reviewer or human reviewers, before implementing suggestions - requires technical verification, not performative agreement
+description: Use when receiving code review feedback from self-review, automated review, or human reviewers before implementing the suggested changes
 ---
 
 # Receiving Code Review
 
 ## Overview
 
-Code review requires technical evaluation, not emotional performance.
+Code review feedback should be evaluated technically, not performed socially.
 
-**Core principle:** Verify before implementing. Ask before assuming. Technical correctness over social comfort.
+**Core principle:** Verify feedback before implementing it. Technical correctness comes before agreement theater.
 
 ## The Response Pattern
 
-```
+```text
 WHEN receiving review feedback:
 
-1. READ: Complete feedback without reacting
-2. UNDERSTAND: Restate requirement in own words (or ask)
-3. VERIFY: Check against codebase reality
-4. EVALUATE: Technically sound for AIM codebase?
-5. RESPOND: Technical acknowledgment or reasoned pushback
-6. IMPLEMENT: One item at a time, TDD for each fix
+1. READ: consume the full feedback
+2. UNDERSTAND: restate the requirement or concern
+3. VERIFY: compare it with code and intended behavior
+4. EVALUATE: is the feedback technically correct?
+5. RESPOND: acknowledge, question, or push back with evidence
+6. IMPLEMENT: fix one meaningful item at a time
 ```
 
 ## Forbidden Responses
 
-**NEVER:**
-- "You're absolutely right!"
-- "Great point!" / "Excellent feedback!"
-- "Let me implement that now" (before verification)
+Do not:
+- Agree performatively before checking
+- Promise a fix before understanding the issue
+- Treat reviewer comments as automatically correct
 
-**INSTEAD:**
-- Restate the technical requirement
-- Ask clarifying questions
-- Push back with technical reasoning if wrong
-- Just start working (actions > words)
+Instead:
+- Restate the technical concern
+- Ask clarifying questions when needed
+- Push back with evidence when needed
+- Prefer action over empty acknowledgment
 
 ## Implementation Order
 
 For multi-item feedback:
 
-1. **Clarify** anything unclear FIRST
-2. **Then implement in order:**
-   - Critical/security issues → immediate
-   - Simple fixes (typos, formatting) → quick batch
-   - Logic changes → one at a time with TDD
-3. **Test each fix:** `dx make gtest`
-4. **Verify no regressions:** `dx make`
+1. Clarify unclear items first
+2. Triage by severity
+   - Critical or correctness issues first
+   - Small mechanical fixes next
+   - Behavior or logic changes one at a time
+3. Re-verify after each meaningful fix
 
-**REQUIRED:** Use test-driven-development for each logic fix.
-
-## GitLab MR Discussion Replies
-
-When feedback comes from GitLab MR:
-
-```bash
-# Reply to specific discussion (Mac curl, not dx)
-curl -s --request POST \
-  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  --header "Content-Type: application/json" \
-  --data '{"body": "<response>"}' \
-  "http://192.168.51.106/api/v4/projects/211/merge_requests/<MR_IID>/discussions/<DISCUSSION_ID>/notes"
-```
-
-Reply in the discussion thread, not as top-level MR comment.
+**Required:** Use test-driven-development for logic fixes or bug-related changes.
 
 ## When To Push Back
 
 Push back when:
-- Suggestion breaks existing functionality
-- Reviewer lacks full context
-- Violates YAGNI (unused feature)
-- Technically incorrect for AIM/C
-- Legacy/compatibility reasons exist
-- Conflicts with user's architectural decisions
+- The suggestion breaks intended behavior
+- The reviewer missed important context
+- The suggestion conflicts with explicit design decisions
+- The suggestion adds unnecessary scope
+- The suggestion is technically incorrect
 
-**How to push back:**
-- Technical reasoning, not defensiveness
-- Reference working tests/code
-- Show evidence from AIM codebase
+## How To Push Back
+
+- Use technical reasoning
+- Reference evidence
+- Show the relevant code path, test behavior, or requirement
+- Stay concise and factual
 
 ## Acknowledging Correct Feedback
 
-```
-GOOD: "Fixed. [Brief description]"
-GOOD: "Good catch - [issue]. Fixed in [file:line]."
-GOOD: [Just fix it and show the diff]
+Good:
 
-BAD: "You're absolutely right!"
-BAD: "Thanks for catching that!"
+```text
+Fixed. Updated validation flow and re-ran tests.
 ```
 
-Actions speak. Just fix it.
+```text
+Confirmed. The fallback path was wrong; corrected and re-verified.
+```
+
+Bad:
+
+```text
+You're absolutely right!
+```
+
+```text
+Great catch, amazing feedback!
+```
+
+## Review Channel Guidance
+
+If feedback comes through a specific platform:
+- Reply in the repository's normal review channel
+- Keep the reply attached to the original review context when possible
+- Prefer concise technical updates over status noise
+
+The exact reply mechanism is repository-specific and should follow local review workflow.
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| Performative agreement | State requirement or just act |
-| Blind implementation | Verify against codebase first |
-| Batch without testing | One at a time, test each |
-| Assuming reviewer is right | Check if breaks things |
-| Avoiding pushback | Technical correctness > comfort |
+| Performative agreement | State the technical issue or act on it |
+| Blind implementation | Verify against code and intent first |
+| Large batch fixes without feedback loop | Fix in small verified increments |
+| Avoiding pushback when reviewer is wrong | Respond with evidence |
+| Treating review as social approval | Treat review as technical quality control |
 
-## The Bottom Line
+## Bottom Line
 
-**Review feedback = suggestions to evaluate, not orders to follow.**
+Review feedback is input to evaluate, not an order to obey blindly.
 
-Verify. Question. Then implement with TDD.
+Verify. Question. Fix. Re-verify.
 
 ## Integration
 
 **Called by:**
-- **requesting-code-review** — 셀프 리뷰 후 피드백 처리
-- **code-reviewer Phase H** — 타인 리뷰 반영 검증 시
-- GitLab MR 피드백 직접 수신
+- **requesting-code-review** — after self-review findings
+- **code-reviewer** — after structured review output
+- Any human or automated review channel
 
 **Uses:**
-- **test-driven-development** — 로직 수정 시 TDD
+- **test-driven-development** — when applying logic fixes
+- **verification-before-completion** — after review-driven changes

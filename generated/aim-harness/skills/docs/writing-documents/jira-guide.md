@@ -79,7 +79,7 @@ curl -s -u "$(JIRA_EMAIL):$(JIRA_TOKEN)" \
 ```
 
 - 인증: Basic Auth (email + API Token)
-- 인증 정보: `agent/info/access.md` 참조
+- 인증 정보: `../agent/info/access.md` 참조
 - Base URL: `https://tmaxsoft.atlassian.net`
 - Mac에서 직접 실행 (dx 경유 불필요)
 

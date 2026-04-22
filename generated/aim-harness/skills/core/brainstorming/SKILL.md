@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work in AIM - creating features, building components, adding functionality, or modifying behavior. Explores requirements and design before implementation."
+description: "Use when starting feature work, behavior changes, or design-heavy fixes before implementation. Clarifies requirements, constraints, trade-offs, and design approval before planning or coding."
 ---
 
 # Brainstorming Ideas Into Designs
@@ -21,13 +21,13 @@ Every project goes through this process. A single-function utility, a config cha
 
 Complete in order:
 
-1. **Check for analysis_report.md** — if issue-analysis already ran, skip to step 3 using its findings
-2. **Explore project context** — check files, recent commits, 외부 시스템(IMS/Jira/NotebookLM)은 issue-analysis 참조
+1. **Check for prior analysis** — if an existing analysis or investigation doc exists, reuse it instead of restarting discovery
+2. **Explore project context** — check files, recent commits, architecture boundaries, and any relevant external references
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-4. **Identify affected modules** — which AIM modules (lib/svr/tool/util) are impacted
+4. **Identify affected components** — which modules, services, APIs, schemas, or UX surfaces are impacted
 5. **Propose 2-3 approaches** — with trade-offs and your recommendation
 6. **Present design** — in sections scaled to complexity, get user approval after each section
-7. **Write design doc** — save to `agent/<topic>/design_spec.md` and verify
+7. **Write design doc** — save the `design_spec` artifact in the current topic artifact workspace and verify
 8. **Spec self-review** — check for placeholders, contradictions, ambiguity, scope
 9. **User reviews written spec** — ask user to review before proceeding
 10. **Transition** — invoke writing-plans to create implementation plan
@@ -36,32 +36,32 @@ Complete in order:
 
 ```dot
 digraph brainstorming {
-    "analysis_report.md exists?" [shape=diamond];
+    "analysis_report exists?" [shape=diamond];
     "Explore project context" [shape=box];
     "Use existing analysis" [shape=box];
     "Ask clarifying questions" [shape=box];
-    "Identify affected modules" [shape=box];
+    "Identify affected components" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves?" [shape=diamond];
-    "Write design_spec.md" [shape=box];
+    "Write design_spec" [shape=box];
     "Spec self-review" [shape=box];
     "User reviews spec?" [shape=diamond];
     "Invoke writing-plans" [shape=doublecircle];
 
-    "analysis_report.md exists?" -> "Use existing analysis" [label="yes"];
-    "analysis_report.md exists?" -> "Explore project context" [label="no"];
+    "analysis_report exists?" -> "Use existing analysis" [label="yes"];
+    "analysis_report exists?" -> "Explore project context" [label="no"];
     "Use existing analysis" -> "Ask clarifying questions";
     "Explore project context" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Identify affected modules";
-    "Identify affected modules" -> "Propose 2-3 approaches";
+    "Ask clarifying questions" -> "Identify affected components";
+    "Identify affected components" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves?";
     "User approves?" -> "Present design sections" [label="revise"];
-    "User approves?" -> "Write design_spec.md" [label="yes"];
-    "Write design_spec.md" -> "Spec self-review";
+    "User approves?" -> "Write design_spec" [label="yes"];
+    "Write design_spec" -> "Spec self-review";
     "Spec self-review" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design_spec.md" [label="changes"];
+    "User reviews spec?" -> "Write design_spec" [label="changes"];
     "User reviews spec?" -> "Invoke writing-plans" [label="approved"];
 }
 ```
@@ -72,17 +72,17 @@ digraph brainstorming {
 
 **Understanding the idea:**
 
-- Check for `agent/<topic>/analysis_report.md` — if issue-analysis already ran, use its findings (symptom, root cause, verdict) instead of re-gathering
-- Explore current AIM project state (affected source files, headers, recent commits)
-- IMS/Jira/NotebookLM XSP 접근은 **issue-analysis**의 Information Gathering 섹션을 참조 (IMS: Chrome, Jira: REST API, NotebookLM: 필수+재인증)
+- Check for an existing `analysis_report` artifact or equivalent prior notes — if earlier analysis already exists, use its findings instead of re-gathering
+- Explore current project state (affected files, interfaces, recent commits, existing patterns)
+- If external systems, tickets, specs, or reference docs matter, gather only the inputs needed for design
 - Ask questions one at a time; prefer multiple choice when possible
 - Focus on: purpose, constraints, success criteria, affected interfaces
 
-**Identifying affected modules:**
+**Identifying affected components:**
 
-- Which AIM modules are impacted: `lib`, `svr`, `tool`, `util`
-- Which headers change: `include/{MODULE}.h` (external), `{MODULE}_inner.h` (internal), `{SOURCE}.h` (source-local)
-- Which errcode/msgcode files need updates
+- Which modules, packages, services, database objects, APIs, or UI surfaces are impacted
+- Which public interfaces or contracts change
+- Which config, schema, validation, or error-handling paths need updates
 - Impact on existing tests
 
 **Exploring approaches:**
@@ -95,12 +95,12 @@ digraph brainstorming {
 
 - Scale each section to its complexity
 - Ask after each section whether it looks right
-- Cover: architecture, affected modules, interface changes, error handling, testing strategy
+- Cover: architecture, affected components, interface changes, error handling, testing strategy
 - Be ready to go back and clarify
 
 **Working in existing codebase:**
 
-- Explore current AIM structure before proposing changes. Follow existing patterns.
+- Explore current project structure before proposing changes. Follow existing patterns.
 - Where existing code has problems that affect the work, include targeted improvements as part of the design
 - Don't propose unrelated refactoring. Stay focused.
 
@@ -108,13 +108,13 @@ digraph brainstorming {
 
 **Documentation:**
 
-Save validated design to `agent/<topic>/design_spec.md`
+Save the validated `design_spec` artifact in the current topic artifact workspace. The current runtime may map this to a concrete path such as `design_spec.md`.
 
 ```markdown
 # Design Spec: <topic>
 
 ## Background
-<IMS/Jira reference, problem statement>
+<problem statement, prior analysis, relevant references>
 
 ## AS-IS
 <current behavior, affected code paths>
@@ -122,19 +122,19 @@ Save validated design to `agent/<topic>/design_spec.md`
 ## TO-BE
 <proposed behavior, approach>
 
-## Affected Modules
-| Module | Type | Changes |
-|--------|------|---------|
-| ... | lib/svr/tool/util | ... |
+## Affected Components
+| Component | Type | Changes |
+|-----------|------|---------|
+| ... | module/service/api/ui/schema | ... |
 
 ## Interface Changes
-<header changes, new/modified functions>
+<API, schema, config, function, or UX changes>
 
 ## Error Handling
-<new errcode/msgcode if needed>
+<validation, fallback, and failure behavior>
 
 ## Testing Strategy
-<gtest plan, coverage targets>
+<unit/integration/manual verification plan>
 
 ## Risks / Open Questions
 ```
@@ -148,7 +148,7 @@ Save validated design to `agent/<topic>/design_spec.md`
 
 **User Review Gate:**
 
-> "Spec written to `agent/<topic>/design_spec.md`. Please review and let me know if you want changes before we proceed to planning."
+> "The `design_spec` artifact is written in the current topic workspace. Please review it and let me know if you want changes before we proceed to planning."
 
 Wait for user approval. Only then invoke writing-plans.
 
@@ -159,21 +159,21 @@ Wait for user approval. Only then invoke writing-plans.
 - **YAGNI ruthlessly** — remove unnecessary features
 - **Explore alternatives** — always 2-3 approaches before settling
 - **Incremental validation** — present, get approval, move on
-- **Reuse analysis** — if issue-analysis ran, don't re-gather
+- **Reuse prior analysis** — if a valid investigation already exists, don't re-gather
 
 ## Red Flags
 
 - Writing code before design approval
 - Skipping to writing-plans without user approving spec
-- Re-gathering IMS/Jira info when analysis_report.md exists
+- Re-gathering external context when usable prior analysis already exists
 - Proposing only one approach without alternatives
 - Design doc with "TBD" sections
 
 ## Integration
 
 **Called by:**
-- **issue-analysis** — Bug/기능 필요 verdict 시 (analysis_report.md 전달)
-- 직접 호출 (사용자 진입점)
+- product-specific `issue-analysis` — when prior analysis already exists and should feed design
+- direct user entry
 
 **Feeds into:**
-- **writing-plans** — 설계 승인 후 (terminal state)
+- **writing-plans** — after design approval (terminal state)

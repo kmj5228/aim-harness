@@ -37,18 +37,19 @@ Status: mixed
 
 ### 3. Runtime Entry Consistency
 
-Status: pass with expected difference
+Status: pass
 
-- generated runtime uses:
+- generated runtime now uses:
   - `AGENTS.md`
   - `hooks/`
   - `agent/<topic>/`
+  - `skills/meta/using-aim-harness`
 - original runtime used:
   - `CLAUDE.md`
   - `settings.json`
   - `using-aim-harness` injection
 
-This is an expected model difference, not a generation defect.
+This is still a Codex-shaped runtime, but it now preserves the startup meta-skill concept as a generated runtime-local asset.
 
 ### 4. Review Layer Materialization
 
@@ -70,15 +71,16 @@ This is the main remaining contract-level gap.
 
 ### 6. Hook Consistency
 
-Status: pass after root-doc rewrite
+Status: pass
 
 - generated `hooks/session-start.sh` reads generated `AGENTS.md`
+- generated `hooks/hooks.json` now covers `startup|resume|clear|compact`
 - generated hook files stay inside the regenerated tree
 
 ## Decision
 
 - Structural regeneration: acceptable
-- Semantic fidelity: meaningful but incomplete
+- Semantic fidelity: strong but incomplete
 - Main blocker to stronger equivalence:
   - missing first-class support for post-merge patch/manual workflow
   - no first-class schema for external manual repo truth

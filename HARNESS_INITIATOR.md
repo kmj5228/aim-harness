@@ -2655,6 +2655,56 @@ generated runtime 관점의 누락/생략 해석:
   - shared `writing-skills` whole-family carry-over도 OSD에서 그대로 재현된다.
   - `runtime_entry`와 stronger generated `AGENTS.md`는 현재 `harness-initiator` 계약의 cross-product 항목으로 봐도 된다.
 
+### Session 78 - Root Documentation Role Cleanup
+
+- root `README.md`는 사람용 개요 문서로 다시 정리했다.
+- root `AGENTS.md`는 generated harness source가 아니라, `of-harness` generator repo 자체를 다루는 AI agent contract로 다시 정의했다.
+- 명시한 핵심:
+  - generated `AGENTS.md`의 source는 `templates/<pack>/AGENTS.template.md`와 adapter truth다
+  - root `AGENTS.md`는 generator repo maintenance contract다
+  - root 문서 역할 분담:
+    - `README.md`: 사람용 개요
+    - `AGENTS.md`: AI 작업 계약
+    - `HARNESS_INITIATOR.md`: 생성기 계약과 검증 기준
+    - `MIGRATION.md`: 연속 로그
+
+### Session 79 - AIM Final Generator Validation
+
+- `aim`을 마지막 source-heavy 실증 대상으로 다시 다뤘다.
+- 현재 dirty `generated/aim-harness/`와 `adapters/aim/`를 먼저 백업했다.
+  - `generated/backups/20260422-155539/aim-harness-pre-final-validation`
+  - `adapters/backups/20260422-155539/aim-adapter-pre-final-validation`
+- 그 다음 current 3스킬 계약 기준으로 `aim`에도 아래 패턴을 적용했다.
+  - `adapters/aim/mappings.yaml`에 `runtime_entry` 추가
+  - generated `AGENTS.md`를 stronger runtime constitution으로 재작성
+  - generated runtime-local meta skill `skills/meta/using-aim-harness/SKILL.md` 추가
+  - shared `skills/writing-skills/` whole-family를 `skills/authoring/writing-skills/`로 carry-over
+  - template-side support assets를 source-fidelity 기준으로 다시 bundle
+  - `hooks/hooks.json` matcher를 `startup|resume|clear|compact`로 정렬
+- 별도 재생성 디렉토리에서도 같은 구조를 다시 materialize했다.
+  - `generated/rebuild-aim-harness/`
+- 재생성본과 live `generated/aim-harness/`는 완전히 일치했다.
+- 원본 `aim-harness`와의 support-asset basename 비교 결과:
+  - original only:
+    - `coverage-analyst-prompt.md`
+    - `info-collector-prompt.md`
+    - `manual-guide.md`
+    - `anthropic-best-practices.md`
+    - `CLAUDE_MD_TESTING.md`
+  - generated only:
+    - `best-practices.md`
+    - `AGENTS_MD_TESTING.md`
+- 해석:
+  - `coverage-analyst-prompt.md`는 `coverage-review`로 productized/absorbed
+  - `info-collector-prompt.md`는 `review-context-collector`로 productized/absorbed
+  - `manual-guide.md`는 local `manual-workflow`로 partial absorb
+  - `anthropic-best-practices.md`는 shared runtime-neutral `best-practices.md`로 승격/치환
+  - `CLAUDE_MD_TESTING.md`는 current runtime contract에 맞게 `AGENTS_MD_TESTING.md`로 치환
+- 판단:
+  - `aim`에서도 현재 3스킬 계약은 재현 가능하다.
+  - startup/meta-skill, support asset, shared authoring family까지 current generator가 원본 AIM 구조를 꽤 잘 끌어온다.
+  - 남은 큰 격차는 `completing-patch`와 external manual publish 같은 advanced tail workflow다.
+
 ### Session 51 - OSD Review-Layer Evaluation and Shared `code-reviewer` Fix
 
 - `generated/osd-harness/`를 전반 평가한 결과, 가장 큰 문제는 product-local binding 부족이 아니라 review layer 내부 연결 부족이었다.

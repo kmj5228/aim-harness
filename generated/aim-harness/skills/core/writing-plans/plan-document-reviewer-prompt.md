@@ -4,7 +4,7 @@ Use this template when dispatching a plan document reviewer subagent.
 
 **Purpose:** Verify the plan is complete, matches the spec, and has proper task decomposition.
 
-**Dispatch after:** The complete plan is written to `agent/<topic>/plan_tasks.md`
+**Dispatch after:** The complete plan is written to `../agent/prompt/<topic>/plan_tasks.md`
 
 ```
 Agent tool (general-purpose):

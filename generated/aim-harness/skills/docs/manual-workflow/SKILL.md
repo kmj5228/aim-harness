@@ -1,29 +1,21 @@
 ---
 name: manual-workflow
-description: Use when AIM work may require manual follow-up and a local draft must be prepared under the generated manual workspace
+description: Use when aim work may require manual follow-up and a draft must be prepared under the generated manual workspace
 ---
 
 # Manual Workflow
 
-Run the AIM manual follow-up flow as a local-first drafting workflow.
+Run the `aim` manual follow-up flow as a local drafting workflow.
 
-This generated skill preserves the AIM gate semantics:
-
-- decide whether a manual update is needed
-- gather verified context first
-- draft before any publish action
-
-But it stops before the original upstream publish path.
+This generated skill keeps the useful gate and safety semantics from the AIM manual process, but does not carry over the AIM-specific repo, branch, Antora, or publish procedure.
 
 ## Core Policy
 
-- manual follow-up stays in the default completion path
-- writable draft workspace: `generated/manual/`
-- prefer a topic-scoped draft directory
-- upstream truth still exists:
-  - original manual repo: `/Users/mjkang/company/MANUAL/openFrame_aim`
-  - original branch: `7.3_main`
-- current generated runtime does not automate that publish step
+- manual follow-up is part of the default completion path
+- writable workspace: `generated/manual/`
+- this skill drafts local manual artifacts only
+- prefer a topic-scoped manual draft directory when the topic is known
+- external publish, sync, or release integration is still out of scope
 
 <HARD-GATE>
 Do not publish, sync, submit, or treat the manual as complete in the same turn as drafting. Draft first, show it, then wait for explicit approval.
@@ -36,14 +28,15 @@ Check for user-visible change such as:
 - command usage or option changes
 - config key changes
 - output or message changes
-- operational procedure changes
-- user-facing behavior change
+- operating procedure changes
+- setup or runtime behavior that users must learn
 
 Usually not needed for:
 
 - internal refactors
 - test-only changes
 - invisible cleanup
+- implementation details with no user-facing effect
 
 If manual follow-up is not needed, say so with the reason and stop.
 
@@ -57,18 +50,14 @@ Reuse what already exists:
 - `agent/<topic>/plan_tasks.md`
 - user-provided notes or issue context
 
-If the original AIM-style upstream manual workflow matters for the task, consult the carried-over reference:
-
-- `skills/docs/writing-documents/manual-guide.md`
-
-Treat that file as source reference, not as proof that the full publish path is active here.
+Do not restate details you cannot verify.
 
 ## Step 3: Draft Manual Content
 
-Write the local draft under:
+Write the draft under:
 
 - preferred: `generated/manual/<topic>/manual_draft.md`
-- fallback: `generated/manual/manual_draft.md`
+- fallback when no stable topic exists yet: `generated/manual/manual_draft.md`
 
 Suggested shape:
 
@@ -84,33 +73,47 @@ Approval: Pending
 
 ## Change Summary
 
-## Procedure Or Usage
+## Before
+
+## After
+
+## Procedure or Usage
 
 ## Verification Notes
-
-## Upstream Publish Notes
 
 ## Open Questions
 ```
 
+Use plain markdown unless a later pass defines a richer target format.
+
 ## Step 4: Review Before Any Publish Action
 
 - show the draft to the user
-- separate verified text from provisional wording
-- call out that upstream MANUAL repo publication is still out of active generated scope
+- call out assumptions
+- call out which parts are verified versus still provisional
+- wait for approval before any save/send/publish step beyond the local workspace
+
+## Rules
+
+- Keep the draft user-facing and operational.
+- Prefer exact verified wording for commands, options, and outputs.
+- Separate verified facts from provisional wording.
+- Keep the draft status explicit until the user approves a next step.
+- If the product has multiple runtime surfaces, state which surface changed and which remain out of scope.
+- Do not invent an external manual repo workflow that has not been generated yet.
 
 ## Current Limits
 
-- no generated external MANUAL repo sync
-- no generated Antora/AsciiDoc conversion
-- no generated post-merge marker automation
-- no active generated `completing-patch`
+- no generated external manual repo sync
+- no generated format conversion to Antora/AsciiDoc
+- no generated release marker automation
+- no auto-trigger implementation
 
 ## Integration
 
 **Called by:**
-- **writing-documents**
-- completion review when user-facing behavior changed
+- **writing-documents** — when completion includes manual follow-up
+- Completion review — when user-facing behavior changed
 
 **Feeds into:**
-- local draft review under `generated/manual/`
+- local manual draft review under `generated/manual/`
