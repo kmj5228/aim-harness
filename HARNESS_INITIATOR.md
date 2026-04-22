@@ -186,6 +186,40 @@ templates/aim + target repo
 - adapter `generation_assets`에 이미 `absorb`, `absorb_partial`, `defer`, `stay_in_templates`로 기록된 source asset은 support-asset 기본 bundle보다 우선한다.
 - support-asset 단계는 단순 복사가 아니라, 이미 확인된 command/path/module/runtime truth를 이용한 `bundle + port` 단계로 본다.
 
+### Downstream Install Contract
+
+generated harness는 검증 가능한 standalone runtime v1.x 이지만, 실제 프로젝트 Codex layout으로는 한 번 더 설치 변환이 필요할 수 있다.
+
+현재 downstream install skill:
+
+1. `harness-installer`
+   - generated harness를 real repo의 `.agents/skills`, `.codex`, runtime workspace로 변환
+
+현재 install contract:
+
+- skills:
+  - `generated/<product>-harness/skills/<layer>/<skill>/`
+  - -> `<repo>/.agents/skills/<skill>/`
+- startup contract:
+  - root `AGENTS.md`가 없으면 `<repo>/AGENTS.md`
+  - root `AGENTS.md`가 이미 있으면 `<repo>/.codex/<product>-harness/AGENTS.md`
+- hooks:
+  - `generated/<product>-harness/hooks/*`
+  - -> `<repo>/.codex/hooks/*`
+  - 설치 시 command path와 startup contract path를 project-local 경로로 다시 맞춘다
+- runtime workspace:
+  - `generated/<product>-harness/agent/`
+  - `generated/<product>-harness/generated/manual/`
+  - -> `<repo>/agent/`
+  - -> `<repo>/generated/manual/`
+
+추가 규칙:
+
+- repo root `AGENTS.md`는 installer가 함부로 덮어쓰지 않는다.
+- root `AGENTS.md` 충돌이 있으면 installer는 반드시 사용자에게 알린다.
+- `agent/`와 `generated/manual/`는 generated runtime contract가 이미 참조하는 workspace 경로이므로, installer가 새로 추측하지 않고 그대로 유지한다.
+- `ofgw`, `osd` install proof 기준으로, install contract의 핵심은 layered generated skills flatten, startup contract branch selection, hook path rewrite였다.
+
 ## Validation And Flow Summary
 
 ### Complete Assembly

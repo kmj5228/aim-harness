@@ -52,6 +52,11 @@
 
 를 나눈 뒤에 수정한다.
 
+설치 단계는 별도 downstream skill로 본다.
+
+- `harness-installer`
+  - generated harness를 project-local `.agents/skills` / `.codex` / runtime workspace로 변환
+
 ## Responsibility Boundary
 
 ### `harness-initiator`
@@ -147,6 +152,7 @@ Live adapter를 수정할 때는 최소 상태 메타를 유지한다.
 현재 기준으로는:
 
 - generated harness는 standalone runtime v1.x
+- generated harness 설치는 project-local `.agents/skills`, `.codex`, `agent/`, `generated/manual/`로 변환되는 별도 단계다
 - original `aim-harness` 대비 운영 완성도는 아직 약간 부족
 - 하지만 `ofgw`, `osd`에서 cross-product 재현성은 확보됨
 
