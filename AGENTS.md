@@ -108,6 +108,27 @@
   - generator 계약에서 재현 가능한지
   - 아니면 아직 manual proof인지
   를 먼저 구분한다.
+- `generated/`를 다음 generation pass의 truth source처럼 사용하지 않는다.
+
+## Fresh vs Rebuild Rule
+
+이 저장소를 다룰 때는 항상 아래를 먼저 판단한다.
+
+- fresh generation
+  - 기존 `adapters/<product>/`와 `generated/<product>-harness/`가 있어도 자동 신뢰하지 않는다.
+  - 기존 adapter 값은 suggestion일 수 있지만, confirmed truth로 간주하지 않는다.
+  - 필요한 확인값은 다시 사용자에게 닫는다.
+- rebuild validation
+  - 이미 accepted 된 adapter truth를 재사용해 parity를 확인한다.
+  - 이 경우 기존 adapter는 canonical input으로 재사용 가능하다.
+  - 기존 generated harness는 comparison target일 뿐 generation input은 아니다.
+
+Live adapter를 수정할 때는 최소 상태 메타를 유지한다.
+
+- `adapter_status.confirmation_level`
+- `adapter_status.reuse_policy`
+
+이 메타는 fresh generation에서 자동 신뢰를 막고, rebuild validation에서만 canonical reuse가 가능하다는 현재 계약을 드러내기 위한 것이다.
 
 ## Skill-First Rule
 

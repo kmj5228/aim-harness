@@ -2733,3 +2733,19 @@ git -C base-harness status --short
 - 판단:
   - current 3스킬 생성기는 `aim`에서도 startup/meta-skill, support asset, shared authoring family까지 재현 가능하다.
   - 남은 핵심 gap은 여전히 `completing-patch`와 external manual publish 같은 advanced tail workflow다.
+
+## 136. Fresh generation 과 rebuild validation 정책 명시
+
+- `generated/`는 live runtime draft이자 validation target이지만, 새 generation pass의 truth source는 아니다.
+- `adapters/<product>/`는 canonical truth 저장 위치이지만, fresh generation에서는 자동으로 confirmed input으로 간주하지 않는다.
+- fresh generation에서는 기존 adapter 값을 suggestion/context로만 취급하고, unresolved 값과 draft default는 다시 사용자 확인 대상으로 올린다.
+- rebuild validation에서만 이미 accepted 된 adapter truth reuse를 허용한다.
+
+## 137. Adapter 상태 메타와 confirmation report 형식 강화
+
+- live adapter에는 최소 `adapter_status` 메타를 둔다.
+  - `confirmation_level`
+  - `reuse_policy`
+- 이 메타의 현재 기본 해석은 `confirmed + rebuild_validation_only`다.
+- `harness-initiator`의 confirmation/report 형식에는 `Reused Confirmed Truth` 블록을 추가한다.
+- rebuild validation에서는 accepted adapter reuse를 이 블록에 명시적으로 드러내고, fresh generation에서는 자동 reuse를 피한다.

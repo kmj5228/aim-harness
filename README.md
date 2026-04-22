@@ -74,6 +74,13 @@ of-harness/
 - `generated/<product>-harness/`
   - 실제 생성된 product runtime
 
+중요:
+
+- `adapters/`는 제품 truth를 담는 canonical 위치이지만, 새 제품 생성에서 자동으로 신뢰되는 defaults 저장소는 아니다.
+- `generated/`는 live runtime draft이자 validation target이지만, 새 생성의 입력 source는 아니다.
+- 새 제품 생성에서는 기존 adapter/generated 결과가 있어도 사용자 확인이 우선이고, 재생성 검증일 때만 기존 adapter truth를 그대로 재사용할 수 있다.
+- live adapter에는 최소한 현재 확인 상태를 나타내는 `adapter_status` 메타가 들어갈 수 있다.
+
 ## 문서 역할
 
 - `README.md`

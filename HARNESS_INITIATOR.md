@@ -47,6 +47,12 @@ templates/aim + target repo
 -> generated/ofgw-harness/
 ```
 
+추가 규칙:
+
+- `fresh generation`에서는 기존 `adapters/<product>/`를 자동으로 confirmed truth로 재사용하지 않는다.
+- `fresh generation`에서는 기존 `generated/<product>-harness/`를 generation input으로 쓰지 않는다. 이건 reference-only comparison target이다.
+- `rebuild validation`에서만 이미 accepted 된 adapter truth reuse를 허용한다.
+
 ### Deliverable Priority
 
 - 1차 핵심 결과물은 `generated/ofgw-harness/` 자체가 아니라 `harness-initiator` 스킬이다.
@@ -910,16 +916,19 @@ Loop goal:
 
 ### Confirmation Packet
 
-`confirm-gaps`는 아래 4개 블록으로 보고한다.
+`confirm-gaps`는 아래 5개 블록으로 보고한다.
 
-1. **Inferred Facts**
+1. **Reused Confirmed Truth**
+   - 기존 accepted adapter에서 그대로 재사용하는 값
+   - rebuild validation에서는 이 블록을 명시적으로 보여준다
+2. **Inferred Facts**
    - 코드베이스에서 추론한 값
    - 사용자가 바꾸지 않으면 그대로 adapter에 반영
-2. **Needs Confirmation**
+3. **Needs Confirmation**
    - 운영 정책/채널/용어처럼 사람 확인이 필요한 값
-3. **Red Flags**
+4. **Red Flags**
    - template 적용 범위가 애매하거나 ops-locked asset이 남아 있는 경우
-4. **Proposed Next Step**
+5. **Proposed Next Step**
    - 확인 후 바로 생성 가능한지, 아니면 추가 분해가 필요한지
 
 ### Confirmation Report Format
@@ -950,6 +959,11 @@ Loop goal:
 - Confirm the unresolved workflow and terminology values
 - Then generate the first `ofgw-harness` draft from the selected templates
 ```
+
+추가 규칙:
+
+- fresh generation에서는 `Reused Confirmed Truth` 블록이 비어 있거나 매우 작아야 자연스럽다.
+- rebuild validation에서는 기존 accepted adapter reuse가 있으면 이 블록을 생략하지 않는다.
 
 ### Grouping Rule
 

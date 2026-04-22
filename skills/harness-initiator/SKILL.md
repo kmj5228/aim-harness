@@ -163,6 +163,30 @@ Recommended three-skill sequence:
 3. `harness-refinement`
    - improve wording, ergonomics, or product-local usability only after the bundled runtime exists
 
+## Fresh Generation vs Rebuild Validation
+
+Treat fresh generation and rebuild validation as different modes.
+
+- fresh generation
+  - a new product or a new product setup pass where adapter truth is not yet fully confirmed
+  - existing `adapters/<product>/` content may be read as context, but it must not be silently treated as confirmed input
+  - existing `generated/<product>-harness/` content is reference-only for comparison and must not be used as generation input
+  - unresolved or draft-default values still require explicit user confirmation before generation
+- rebuild validation
+  - a reproducibility check for an already accepted adapter truth
+  - existing `adapters/<product>/` content may be reused as canonical input when the goal is to verify parity or regeneration quality
+  - existing `generated/<product>-harness/` content may be used only as a validation target or diff target, never as the source pack
+
+Generation rule:
+
+- do not silently reuse adapter values just because files already exist under `adapters/`
+- do not treat `generated/` as authoritative truth for the next generation pass
+- when in doubt, show the user:
+  - reused confirmed truth
+  - inferred facts
+  - needs confirmation
+- when reusing existing adapter truth during rebuild validation, make that reuse explicit in the confirmation/report output
+
 ### Phase 1: Analyze
 
 Goal:
@@ -255,11 +279,18 @@ Hard gate:
 
 Preferred report shape:
 
+- `Reused Confirmed Truth`
 - `Inferred Facts`
 - `Needs Confirmation`
 - `Fill Now`
 - `Red Flags`
 - `Proposed Next Step`
+
+`Reused Confirmed Truth` rule:
+
+- include this block whenever an existing accepted adapter contributes values to the current pass
+- list only values that are being treated as canonical reuse
+- do not mix reused values into `Inferred Facts`
 
 `Fill Now` rule:
 

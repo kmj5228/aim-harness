@@ -1,3 +1,7 @@
+adapter_status:
+  confirmation_level: confirmed
+  reuse_policy: rebuild_validation_only
+
 source_pack: aim-template
 target_product: ofgw
 runtime_entry:

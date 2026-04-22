@@ -1,3 +1,7 @@
+adapter_status:
+  confirmation_level: confirmed
+  reuse_policy: rebuild_validation_only
+
 product: ofgw
 repo:
   build_systems:
