@@ -2749,3 +2749,10 @@ git -C base-harness status --short
 - 이 메타의 현재 기본 해석은 `confirmed + rebuild_validation_only`다.
 - `harness-initiator`의 confirmation/report 형식에는 `Reused Confirmed Truth` 블록을 추가한다.
 - rebuild validation에서는 accepted adapter reuse를 이 블록에 명시적으로 드러내고, fresh generation에서는 자동 reuse를 피한다.
+
+## 138. Installer contract 를 initiator 문서로 통합
+
+- generated harness 설치 계약은 별도 `HARNESS_INSTALLER.md` 대신 `HARNESS_INITIATOR.md` 안의 downstream install contract로 통합했다.
+- `README.md`에는 generated harness가 install transform 이전 산출물이라는 점과 project-local install layout을 추가했다.
+- `AGENTS.md`에는 downstream install skill `harness-installer`와 project-local install 해석을 추가했다.
+- `harness-installer` skill은 별도 문서 대신 `HARNESS_INITIATOR.md`의 install contract를 참조하도록 정리했다.

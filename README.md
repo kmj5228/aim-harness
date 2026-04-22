@@ -46,6 +46,8 @@
 
 현재 generated harness는 “최종 완성품”보다 **standalone runtime v1.x**로 보는 게 맞다.
 
+또한 generated harness는 필요하면 실제 프로젝트의 Codex layout으로 한 번 더 설치 변환된다.
+
 ## 디렉토리 역할
 
 ```text
@@ -114,6 +116,24 @@ of-harness/
 - `adapters/osd/`
 
 백업/임시 rebuild 산출물은 기본적으로 유지하지 않는다. 필요하면 검증 후 제거한다.
+
+## 설치 해석
+
+generated harness는 install 이전 산출물이다. 실제 프로젝트 사용 시에는 보통 아래 layout으로 변환된다.
+
+- skills:
+  - `<repo>/.agents/skills/<skill>/`
+- startup contract:
+  - `<repo>/AGENTS.md`
+  - 또는 `<repo>/.codex/<product>-harness/AGENTS.md`
+- project-local config and hooks:
+  - `<repo>/.codex/config.toml`
+  - `<repo>/.codex/hooks/*`
+- runtime workspace:
+  - `<repo>/agent/`
+  - `<repo>/generated/manual/`
+
+즉 생성과 설치는 분리된 단계다.
 
 ## 다음 관심사
 
