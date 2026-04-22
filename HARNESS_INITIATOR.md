@@ -2414,6 +2414,24 @@ generated runtime 관점의 누락/생략 해석:
   - 새 schema는 여전히 필요하지 않다
   - 대신 `harness-support-assets`와 `harness-refinement`의 경계를 문서상으로 더 분명히 유지해야 한다
 
+### Session 63 - `writing-skills` Shared Promotion Check
+
+- `writing-skills` support asset은 reviewer/debugging/docs guide보다 shared 승격 가능성이 높다는 초기 판단을 다시 확인했다.
+- OFGW authoring pass 이후 판단:
+  - `best-practices.md`
+  - `testing-skills-with-subagents.md`
+  - `examples/AGENTS_MD_TESTING.md`
+  - `persuasion-principles.md`
+  - `graphviz-conventions.dot`
+  - `render-graphs.js`
+  는 root shared `skills/writing-skills/`에 두는 편이 더 적절하다.
+- 반영:
+  - vendor-heavy `anthropic-best-practices.md`는 shared root에서 제거했다.
+  - shared root에는 runtime-neutral `best-practices.md`를 두고, generated OFGW authoring layer도 그 기준으로 맞췄다.
+- 의미:
+  - `harness-support-assets`는 support asset의 영구 저장소가 아니라, source 자산을 제품 runtime으로 옮기는 좁은 포터다.
+  - 여러 제품에서 포팅 차이가 거의 없으면 그 자산은 shared root skill로 승격하는 편이 맞다.
+
 ### Session 51 - OSD Review-Layer Evaluation and Shared `code-reviewer` Fix
 
 - `generated/osd-harness/`를 전반 평가한 결과, 가장 큰 문제는 product-local binding 부족이 아니라 review layer 내부 연결 부족이었다.

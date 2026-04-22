@@ -13,7 +13,7 @@ The point is not to write a clever document. The point is to produce a skill tha
 
 **Required background:** `test-driven-development` explains the RED-GREEN-REFACTOR loop this skill adapts for documentation.
 
-**Reference:** `anthropic-best-practices.md` contains additional vendor guidance for skill authoring. Use it as supporting material, not as a substitute for testing.
+**Reference:** `best-practices.md` contains shared authoring guidance for skill design. Use it as supporting material, not as a substitute for testing.
 
 ## What a Skill Is
 

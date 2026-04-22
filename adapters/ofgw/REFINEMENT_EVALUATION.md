@@ -157,7 +157,7 @@ Current judgment:
 - this is still small enough to live inside `harness-support-assets`
 - no extra schema is justified yet
 - the same conclusion held after porting `subagent-driven-development`, `code-reviewer`, and selected docs guides
-- the next useful stress case is `skills/authoring/writing-skills/`, where support assets are more generalizable but one large vendor-heavy reference may still need refinement rather than pure support-asset rules
+- the next useful stress case is `skills/authoring/writing-skills/`, where support assets are more generalizable and can start graduating into shared root assets when product-specific drift stays low
 
 ## Decision
 

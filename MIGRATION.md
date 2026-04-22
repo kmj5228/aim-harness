@@ -2437,3 +2437,23 @@ git -C base-harness status --short
 - 결과:
   - 아직도 새 schema는 추가하지 않았다
   - 현재 병목은 schema보다는 `harness-support-assets`와 `harness-refinement`의 경계 정의에 가깝다
+
+## 119. `writing-skills` Shared Promotion Check
+
+- OFGW authoring pass 이후 `writing-skills` support asset의 shared 승격 가능성을 다시 검토했다.
+- 결론:
+  - 다음 자산은 product-local보다 shared root `skills/writing-skills/`에 두는 편이 적절하다.
+    - `best-practices.md`
+    - `testing-skills-with-subagents.md`
+    - `examples/AGENTS_MD_TESTING.md`
+    - `persuasion-principles.md`
+    - `graphviz-conventions.dot`
+    - `render-graphs.js`
+- 적용:
+  - vendor-heavy `anthropic-best-practices.md`는 shared root에서 제거했다.
+  - shared root에는 runtime-neutral `best-practices.md`를 추가했다.
+  - OFGW generated authoring layer도 `anthropic-best-practices.md` 대신 `best-practices.md`를 기준으로 맞췄다.
+- 판단:
+  - `writing-skills`는 support-asset productization 실험을 거친 뒤 shared 승격까지 연결할 수 있는 첫 사례다.
+  - 이는 새 schema 필요성을 높이지 않는다.
+  - 오히려 `harness-support-assets`의 역할이 "bundle + port"이고, repeated low-diff 자산은 shared root로 승격해야 한다는 점을 더 분명히 보여준다.

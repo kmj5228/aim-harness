@@ -140,9 +140,10 @@ Fixed in this review:
   - `mail-guide.md`
 - disabled target bindings do not have to block bundling:
   - `confluence-guide.md` is now carried as a dormant support reference even though `docs_targets.confluence.enabled` remains false
-- authoring assets expose a useful new limit case:
+- authoring assets expose a useful shared-promotion path:
   - `writing-skills` can be carried as a shared baseline plus productized support assets
-  - very large vendor-locked references such as `anthropic-best-practices.md` can still be bundled, but deeper editorial rewrite should move to `harness-refinement` or future shared-skill cleanup rather than bloating `harness-support-assets`
+  - highly reusable authoring assets can graduate into shared root `skills/writing-skills/` after low-diff validation across products
+  - the first concrete graduation was replacing the vendor-heavy `anthropic-best-practices.md` carry-over with shared `best-practices.md`
 
 ## Findings Summary
 

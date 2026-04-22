@@ -44,6 +44,8 @@ Do not use for:
 Use `harness-initiator` when the question is still "what should be generated?"
 Use `harness-refinement` when the generated harness already exists and the question is "how should this generated runtime be improved?"
 
+If repeated low-diff validations show that a support asset no longer needs meaningful productization, treat that as a promotion signal for root shared `skills/`, not as a reason to bloat this skill's porting rules.
+
 ## Inputs
 
 - selected source pack under `templates/<pack>/`

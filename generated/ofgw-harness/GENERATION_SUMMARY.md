@@ -58,7 +58,7 @@ Generated:
   - `skills/docs/writing-documents/ims-guide.md`
   - `skills/docs/writing-documents/mail-guide.md`
   - `skills/docs/writing-documents/confluence-guide.md`
-  - `skills/authoring/writing-skills/anthropic-best-practices.md`
+  - `skills/authoring/writing-skills/best-practices.md`
   - `skills/authoring/writing-skills/persuasion-principles.md`
   - `skills/authoring/writing-skills/testing-skills-with-subagents.md`
   - `skills/authoring/writing-skills/graphviz-conventions.dot`
@@ -93,6 +93,7 @@ Generated:
 - manual follow-up now has a local draft workflow under `skills/docs/manual-workflow/`
 - `writing-documents` keeps generated markdown rules in the main skill while also bundling selected docs guides for runtime reference
 - `writing-skills` is now carried as a shared authoring baseline under `skills/authoring/`, while its source-pack support assets are ported into the product runtime
+- after the first OFGW pass, the old vendor-heavy `anthropic-best-practices.md` reference was replaced with shared `best-practices.md`
 - support assets are copied into the standalone harness next to their generated skills by default
 - adapter-explicit `generation_assets` exceptions override default support-asset bundling
 - a first narrow porting pass was applied to selected support assets:
@@ -113,8 +114,8 @@ Generated:
   using `ofgw` module boundaries, artifact paths, and confirmed Gradle commands
   - `confluence-guide.md`
   while keeping `docs_targets.confluence.enabled: false`; disabled target bindings no longer force guide exclusion when support-asset completeness is the current validation priority
-  - `anthropic-best-practices.md`
-  while keeping the historical filename for compatibility with the shared baseline `SKILL.md`; deeper vendor-doc rewriting remains a likely `harness-refinement` or shared-skill follow-up rather than a first-pass support-asset rule
+  - `best-practices.md`
+  after promoting the large vendor-heavy reference into a shared runtime-neutral authoring guide; future changes here should happen in shared `skills/writing-skills/` rather than by product-local carry-over
 
 ## Remaining Exclusions
 
