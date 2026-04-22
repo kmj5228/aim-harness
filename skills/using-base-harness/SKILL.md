@@ -40,46 +40,45 @@ Typical flow:
 
 | Trigger | Skill |
 |---------|-------|
-| New feature, fix, refactor — design first | **brainstorming-base** |
-| Approved design, need task breakdown | **writing-plans-base** |
-| Plan exists, executing inline | **executing-plans-base** |
-| Plan exists, executing with fresh subagents | **subagent-driven-development-base** |
-| Multiple independent tasks can run in parallel | **dispatching-parallel-agents-base** |
-| Implementing behavior with tests first | **test-driven-development-base** |
-| Test failure, bug, or unexpected behavior | **systematic-debugging-base** |
-| About to claim work complete | **verification-before-completion-base** |
-| Need isolated branch/workspace before implementation | **using-feature-branches-base** |
-| Implementation finished, need branch/review handoff | **finishing-a-development-branch-base** |
-| Need structured self-review | **requesting-code-review-base** |
-| Need to process review feedback | **receiving-code-review-base** |
-| Need a structured review workflow | **code-reviewer-base** |
+| New feature, fix, refactor — design first | **brainstorming** |
+| Approved design, need task breakdown | **writing-plans** |
+| Plan exists, executing inline | **executing-plans** |
+| Plan exists, executing with fresh subagents | **subagent-driven-development** |
+| Multiple independent tasks can run in parallel | **dispatching-parallel-agents** |
+| Implementing behavior with tests first | **test-driven-development** |
+| Test failure, bug, or unexpected behavior | **systematic-debugging** |
+| About to claim work complete | **verification-before-completion** |
+| Need isolated branch/workspace before implementation | **using-feature-branches** |
+| Implementation finished, need branch/review handoff | **finishing-a-development-branch** |
+| Need structured self-review | **requesting-code-review** |
+| Need to process review feedback | **receiving-code-review** |
+| Need a structured review workflow | **code-reviewer** |
 | Need to derive a product harness from product-bound source assets | **harness-initiator** |
-| Creating or editing skills | **writing-skills-base** |
+| Need to carry source-pack support assets into a generated harness | **harness-support-assets** |
+| Need to improve an already generated harness | **harness-refinement** |
+| Creating or editing skills | **writing-skills** |
 
 ## Workflow Chain
 
 ```text
-brainstorming-base
-  -> writing-plans-base
-  -> executing-plans-base / subagent-driven-development-base
-     -> test-driven-development-base
-     -> systematic-debugging-base (when needed)
-     -> verification-before-completion-base
-  -> finishing-a-development-branch-base
-     -> requesting-code-review-base
-     -> receiving-code-review-base
+brainstorming
+  -> writing-plans
+  -> executing-plans / subagent-driven-development
+     -> test-driven-development
+     -> systematic-debugging (when needed)
+     -> verification-before-completion
+  -> finishing-a-development-branch
+     -> requesting-code-review
+     -> receiving-code-review
 
 Independent / specialized:
-  dispatching-parallel-agents-base
-  code-reviewer-base
+  dispatching-parallel-agents
+  code-reviewer
   harness-initiator
-  using-feature-branches-base
-  writing-skills-base
-
-Current product-bound assets (transitional layout):
-  product-specific/skills/issue-analysis-base
-  product-specific/skills/completing-patch-base
-  product-specific/skills/writing-documents-base
+  harness-support-assets
+  harness-refinement
+  using-feature-branches
+  writing-skills
 
 Planned direction for this repository:
   templates/<product>/...
@@ -102,18 +101,20 @@ Proposal: <specific improvement>
 
 Report the gap. Do not silently rewrite the skill without approval.
 
-## Product-Specific Product Packs
+## Template And Generated Boundary
 
-Some product-bound workflows are no longer part of the default `skills/` routing set.
+Product-bound source assets are no longer part of the default `skills/` routing set.
 
-- location: `product-specific/skills/`
-- purpose: preserve product-specific product packs without mixing them into the base runtime skill set
-- current packs: issue analysis, patch completion, documentation workflow
+- source pack location: `templates/<pack>/`
+- adapter drafts: `adapters/<product>/`
+- generated runtime target: `generated/<product>-harness/`
 
-This is the current transitional layout, not the long-term target model.
-As the repository evolves, product-bound source assets may move into `templates/`,
-and generated product harnesses may live under `generated/<product>-harness/`.
-Until that migration happens, continue treating `product-specific/skills/` as the live product-bound area.
+Interpretation:
+
+- `templates/` is generation input, not default runtime skill space
+- `harness-initiator` owns template selection, adapter drafting, generation, and generated-structure validation
+- `harness-support-assets` owns source-pack support-asset carry-over into generated runtime-adjacent locations
+- `harness-refinement` owns post-generation quality improvements inside an already generated harness
 
 ## Artifact Convention
 
@@ -130,8 +131,9 @@ Do not assume a fixed root such as `../agent/prompt/<topic>/` unless the active 
 
 When multiple skills might apply:
 
-1. **Process skills first** — e.g. `brainstorming-base`, `systematic-debugging-base`
-2. **Execution skills second** — e.g. `test-driven-development-base`, `executing-plans-base`
+1. **Process skills first** — e.g. `brainstorming`, `systematic-debugging`
+2. **Execution skills second** — e.g. `test-driven-development`, `executing-plans`
+3. **Harness generation/refinement skills only when the task is actually about harness work**
 
 ## Common Red Flags
 

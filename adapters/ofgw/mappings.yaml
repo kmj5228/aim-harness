@@ -1,9 +1,123 @@
-source_pack: aim-product-specific
+adapter_status:
+  confirmation_level: confirmed
+  reuse_policy: rebuild_validation_only
+
+source_pack: aim-template
 target_product: ofgw
+runtime_entry:
+  hook_event: SessionStart
+  matcher: startup|resume|clear|compact
+  inject_artifact: AGENTS.md
+  startup_contract:
+    require_skill_check: true
+    enforce_skill_routing: true
+    require_skill_gap_reporting: true
+    preserve_workflow_chain: true
+    deferred_tail:
+      - completing-patch
+      - external_manual_publish
 terminology:
-  issue_item: null
-  review_artifact: null
-  docs_artifact: null
+  issue_item:
+    canonical: issue
+    aliases:
+      - ticket
+      - jira
+      - ims
+  review_artifact:
+    canonical: PR
+    aliases:
+      - pull request
+      - review request
+  docs_artifact:
+    canonical: markdown document
+    aliases:
+      - doc
+      - note
+      - report
+generation_assets:
+  - source: templates/aim/skills/issue-analysis/SKILL.md
+    action: generate
+    target: skills/product/issue-analysis/SKILL.md
+    note: generate the product issue-analysis skill with ofgw bindings
+  - source: templates/aim/skills/writing-documents/SKILL.md
+    action: generate
+    target: skills/docs/writing-documents/SKILL.md
+    note: generate the bound docs workflow for repo markdown, PR text, and manual follow-up routing
+  - source: templates/aim/skills/writing-documents/markdown-guide.md
+    action: absorb
+    target: skills/docs/writing-documents/SKILL.md
+    note: keep markdown conventions available in the generated docs skill body; support-asset bundling may still carry adjacent guide files unless a concrete validation problem appears
+  - source: templates/aim/skills/writing-documents/manual-guide.md
+    action: absorb_partial
+    target: skills/docs/manual-workflow/SKILL.md
+    note: absorb need-gate and draft-first semantics into the generated manual workflow; keep upstream publish procedure out of v1 runtime generation
+  - source: templates/aim/skills/completing-patch/SKILL.md
+    action: defer
+    note: leave for a later pass because of high operational coupling
+  - source: templates/aim/review/code-reviewer/info-collector-prompt.md
+    action: absorb_partial
+    target: skills/review/review-context-collector/SKILL.md
+    note: absorb reusable context-gathering semantics and replace AIM-specific identifiers with ofgw bindings
+  - source: templates/aim/review/code-reviewer/coverage-analyst-prompt.md
+    action: absorb_partial
+    target: skills/review/coverage-review/SKILL.md
+    note: absorb product-safe coverage review semantics and replace AIM gcov flow with JaCoCo-based review; treat the source prompt as substantially productized into the active coverage-review skill
+  - source: templates/aim/review/code-reviewer/scripts/measure_diff_cov.sh
+    action: generate
+    target: skills/review/code-reviewer/scripts/measure_diff_cov.sh
+    note: rewrite the legacy AIM helper into an experimental OFGW repo-native diff-coverage helper using git diff plus JaCoCo XML; do not treat it as a mandatory policy gate yet
+refinement_goal:
+  purpose: validate harness-refinement skill and refinement schema, not maximize ofgw-harness completeness in one pass
+  current_generated_target: generated/ofgw-harness/
+  success_criteria:
+    - refinement scope is explicitly separated from initiator scope
+    - refinement targets point to generated runtime assets only
+    - repo-specific evidence from /home/woosuk_jung/harness/ofgw can be cited without leaking template/source paths into runtime skills
+    - shared refinement rules remain reusable for later products such as osd
+    - refinement schema remains small enough to read directly from mappings.yaml without a second adapter file
+refinement_targets:
+  - target: skills/docs/writing-documents/SKILL.md
+    priority: high
+    portability: product_local
+    objective: tighten generated docs workflow around actual ofgw module split and artifact destinations without expanding publish adapters
+    source_inputs:
+      - adapters/ofgw/mappings.yaml
+      - /home/woosuk_jung/harness/ofgw/AGENTS.md
+      - /home/woosuk_jung/harness/ofgw/build.gradle
+    constraints:
+      - keep external publish/send adapters out of scope
+      - preserve draft-first hard gate
+    status: refined
+    result_note: generated docs skill now calls out ofgwSrc/webterminal/ofgwAdmin boundaries and safe evidence expectations without expanding publish scope
+  - target: skills/review/coverage-review/SKILL.md
+    priority: high
+    portability: product_local
+    depends_on:
+      - skills/docs/writing-documents/SKILL.md
+    objective: make the generated coverage skill explicitly ofgw-safe around :ofgwSrc JaCoCo flow and non-goals for webterminal/ofgwAdmin
+    source_inputs:
+      - adapters/ofgw/mappings.yaml
+      - /home/woosuk_jung/harness/ofgw/ofgwSrc/build.gradle
+      - /home/woosuk_jung/harness/ofgw/build.gradle
+    constraints:
+      - do not introduce diff-aware gating yet
+      - do not treat admin frontend build as part of the first review gate
+    status: refined
+    result_note: generated coverage skill now states the ofgwSrc-only coverage boundary and blocks misleading extension to webterminal/ofgwAdmin
+  - target: skills/docs/manual-workflow/SKILL.md
+    priority: medium
+    portability: shared_candidate
+    depends_on:
+      - skills/docs/writing-documents/SKILL.md
+    objective: keep local manual drafting explicit while making it clear that external publish remains deferred
+    source_inputs:
+      - adapters/ofgw/mappings.yaml
+      - generated/ofgw-harness/generated/manual/README.md
+    constraints:
+      - generated/manual/ stays the only writable manual target
+      - no external manual repo assumptions
+    status: refined
+    result_note: generated manual workflow now uses a clearer local draft contract with explicit draft status, scoped manual output path, and no external publish assumptions
 command_bindings:
   project_build_command: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:classes --no-daemon
   project_test_command: JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 ./gradlew :ofgwSrc:test --no-daemon
@@ -25,7 +139,7 @@ access_bindings:
           - codex mcp list
           - codex mcp get atlassian-rovo
         api_fallback:
-          auth_source: ../agent/info/access.md
+          auth_source: agent/info/access.md
           example: |
             curl -s -u "<EMAIL>:<API_TOKEN>" \
               "https://tmaxsoft.atlassian.net/rest/api/2/issue/<JIRA_KEY>" | jq '.fields.summary, .fields.description'
@@ -76,19 +190,14 @@ access_bindings:
       location: null
   manual_targets:
     manual_repo:
-      enabled: null
-      default_mode: null
+      enabled: true
+      default_mode: workspace_file
       fallback_modes: []
-      location: null
-confirm:
-  - terminology.issue_item
-  - terminology.review_artifact
-  - terminology.docs_artifact
-  - access_bindings.manual_targets.manual_repo.enabled
-  - access_bindings.manual_targets.manual_repo.default_mode
-  - access_bindings.manual_targets.manual_repo.location
+      location: generated/manual/
+confirm: []
 notes:
   - map AIM-specific channel names only after access binding confirmation
-  - keep markdown-guide as support reference, not as a generated main workflow template
-  - provider defaults are provisional until location and fallback policy are confirmed
+  - support assets next to selected source skills default to bundle-and-port in the generated runtime; generation_assets is for explicit skill generation and true override cases
+  - `writing-skills` is carried from shared root `skills/writing-skills/` as a whole authoring family; it is no longer a template-side support-asset productization case
+  - manual provider follows the AIM-style release/manual flow, but targets a generated workspace path instead of the legacy AIM MANUAL repo
   - `agent/` is treated as a product-root workspace directory for generated markdown artifacts

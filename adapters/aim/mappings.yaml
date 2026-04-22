@@ -1,0 +1,120 @@
+adapter_status:
+  confirmation_level: confirmed
+  reuse_policy: rebuild_validation_only
+
+source_pack: aim-template
+target_product: aim
+runtime_entry:
+  hook_event: SessionStart
+  matcher: startup|resume|clear|compact
+  inject_artifact: AGENTS.md
+  startup_contract:
+    require_skill_check: true
+    enforce_skill_routing: true
+    require_skill_gap_reporting: true
+    preserve_workflow_chain: true
+    deferred_tail:
+      - completing-patch
+      - external_manual_publish
+terminology:
+  issue_item:
+    canonical: issue
+    aliases:
+      - ticket
+      - jira
+      - ims
+  review_artifact:
+    canonical: MR
+    aliases:
+      - merge request
+      - review request
+      - gitlab mr
+  docs_artifact:
+    canonical: markdown document
+    aliases:
+      - doc
+      - note
+      - report
+generation_assets:
+  - source: templates/aim/skills/issue-analysis/SKILL.md
+    action: generate
+    target: skills/product/issue-analysis/SKILL.md
+    note: restore the AIM issue-analysis workflow as a product skill under the layered generated layout
+  - source: templates/aim/skills/writing-documents/SKILL.md
+    action: generate
+    target: skills/docs/writing-documents/SKILL.md
+    note: restore the AIM document hub while keeping generated runtime paths under agent/ and generated/manual/
+  - source: templates/aim/skills/writing-documents/markdown-guide.md
+    action: absorb_partial
+    target: skills/docs/writing-documents/SKILL.md
+    note: keep canonical artifact naming and markdown structure rules visible in the generated runtime
+  - source: templates/aim/skills/writing-documents/manual-guide.md
+    action: absorb_partial
+    target: skills/docs/manual-workflow/SKILL.md
+    note: preserve manual gate semantics and upstream repo truth, but stop at local draft under the current contract
+  - source: templates/aim/review/code-reviewer/info-collector-prompt.md
+    action: generate
+    target: skills/review/review-context-collector/SKILL.md
+    note: productize the AIM info collector into an explicit context skill
+  - source: templates/aim/review/code-reviewer/coverage-analyst-prompt.md
+    action: generate
+    target: skills/review/coverage-review/SKILL.md
+    note: productize the AIM gcov and diff-coverage workflow into a dedicated review helper
+  - source: templates/aim/review/code-reviewer/*
+    action: absorb_partial
+    target: skills/review/code-reviewer/
+    note: keep prompt assets and measure_diff_cov.sh near the generated review skill for semantic fidelity
+  - source: templates/aim/skills/completing-patch/SKILL.md
+    action: defer
+    note: required for full AIM equivalence, but still outside the current first-pass generated runtime contract
+command_bindings:
+  project_build_command: dx make
+  project_test_command: dx tmdown -y && dx make gtest
+  coverage_command: dx bash -c "cd /root/ofsrc/aim && bash skills/review/code-reviewer/scripts/measure_diff_cov.sh"
+access_bindings:
+  issue_sources:
+    jira:
+      enabled: true
+      default_mode: api
+      fallback_modes: []
+      location: https://tmaxsoft.atlassian.net/rest/api/2/issue/<JIRA_KEY>
+      setup:
+        auth_source: agent/info/access.md
+    ims:
+      enabled: true
+      default_mode: browser
+      fallback_modes: []
+      location: https://ims.tmaxsoft.com/tody/ims/issue/issueView.do?issueId=<IMS_NUMBER>
+  spec_sources:
+    notebooklm:
+      enabled: true
+      default_mode: mcp
+      fallback_modes:
+        - browser
+      location: xsp-specification
+  review_targets:
+    merge_request:
+      enabled: true
+      default_mode: api
+      fallback_modes:
+        - browser
+        - git
+      location: http://192.168.51.106/api/v4/projects/211/merge_requests
+  docs_targets:
+    repo_markdown:
+      enabled: true
+      default_mode: workspace_file
+      fallback_modes: []
+      location: agent/
+  manual_targets:
+    manual_repo:
+      enabled: true
+      default_mode: workspace_file
+      fallback_modes: []
+      location: generated/manual/
+confirm: []
+notes:
+  - original AIM semantics use MR, not PR, as the canonical review artifact term
+  - current schema can represent local manual drafting but not the full upstream MANUAL repository push flow as first-class truth
+  - current generated layout can preserve review prompt assets, but Claude-era orchestration instructions still need a later Codex-specific normalization pass
+  - `writing-skills` is carried from shared root `skills/writing-skills/` as a whole authoring family; it is no longer a template-side support-asset productization case

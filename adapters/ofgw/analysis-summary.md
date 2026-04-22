@@ -54,7 +54,7 @@
 
 ## Evidence
 
-- Root repo guide: `/home/smj/harness/ofgw/AGENTS.md`
-- Root build orchestration: `/home/smj/harness/ofgw/build.gradle`
-- Core module build/test/coverage: `/home/smj/harness/ofgw/ofgwSrc/build.gradle`
-- Admin frontend guide: `/home/smj/harness/ofgw/ofgwAdmin/AGENTS.md`
+- Root repo guide: `/home/woosuk_jung/harness/ofgw/AGENTS.md`
+- Root build orchestration: `/home/woosuk_jung/harness/ofgw/build.gradle`
+- Core module build/test/coverage: `/home/woosuk_jung/harness/ofgw/ofgwSrc/build.gradle`
+- Admin frontend guide: `/home/woosuk_jung/harness/ofgw/ofgwAdmin/AGENTS.md`

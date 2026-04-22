@@ -16,6 +16,8 @@
 
 - 생성된 제품 하네스는 `generated/<product>-harness/` 아래에 둔다.
 - 첫 대상 제품은 `ofgw`다.
+- 장기 목표 산출물은 standalone product harness다.
+- 현재의 최소 생성본은 이 장기 목표를 검증하기 위한 중간 패스다.
 
 예시:
 
@@ -45,6 +47,12 @@ templates/aim + target repo
 -> generated/ofgw-harness/
 ```
 
+추가 규칙:
+
+- `fresh generation`에서는 기존 `adapters/<product>/`를 자동으로 confirmed truth로 재사용하지 않는다.
+- `fresh generation`에서는 기존 `generated/<product>-harness/`를 generation input으로 쓰지 않는다. 이건 reference-only comparison target이다.
+- `rebuild validation`에서만 이미 accepted 된 adapter truth reuse를 허용한다.
+
 ### Deliverable Priority
 
 - 1차 핵심 결과물은 `generated/ofgw-harness/` 자체가 아니라 `harness-initiator` 스킬이다.
@@ -55,6 +63,60 @@ templates/aim + target repo
   3. 최소 adapter draft 규칙 정의
   4. 그 다음 실제 제품 하네스 생성 시도
 
+### Responsibility Boundary
+
+- `harness-initiator`의 책임:
+  - template scope selection
+  - binding extraction rule 정의
+  - adapter draft 생성
+  - unresolved gap confirmation
+  - 첫 generated harness 생성
+  - generated harness의 구조/분류 검증
+  - explicit template-derived generation rule 정리
+- `harness-initiator`의 책임 밖:
+  - generated harness 내부 skill body를 계속 고도화하는 일
+  - 제품 운영에 맞춘 review/manual/coverage semantics의 장기 개선
+  - standalone harness를 실제로 사용하면서 생기는 wording/ergonomics 조정
+  - source-pack support asset을 generated skill 옆으로 carry-over 하는 좁은 변환 단계
+
+현재 `generated/ofgw-harness/`에서 진행한 review/manual/coverage skill 구체화는 initiator 검증을 위한 exploratory pass로는 의미가 있었지만, 앞으로는 generated harness refinement work로 보는 편이 맞다.
+
+### Default Carry-Over Policy
+
+- base runtime skill 번들링은 현재 adapter가 아니라 `harness-initiator` skill의 기본 generator policy로 둔다.
+- 즉 `skills/core/*`, `skills/collab/*`, base `code-reviewer`는 product별 `generation_assets`가 아니라 initiator 기본 규칙으로 포함될 수 있다.
+- `generation_assets`는 template-derived 자산 처리 계획만 설명한다.
+
+### Layered Skill Model
+
+현재 `of-harness`에는 같은 이름의 skill이 여러 레이어에 존재할 수 있다. 이것은 중복 실수가 아니라 역할 분리다.
+
+- root `skills/`
+  - shared normalized runtime skill
+  - initiator 기본 carry-over source
+- `templates/<pack>/skills/`
+  - source-fidelity template skill
+  - 특정 원본 pack의 workflow wording, startup contract, support asset 맥락을 보존
+- `generated/<product>-harness/skills/`
+  - product runtime v1
+  - shared carry-over + template-derived productization 결과
+
+해석:
+
+- root `skills/`는 공통 하네스 런타임 자산이다.
+- `templates/aim/skills/`는 AIM source asset이므로 root `skills/`와 같아 보여도 없애지 않는다.
+- template 쪽 `SKILL.md`가 있어야 initiator가 support asset과 source semantics를 함께 읽을 수 있다.
+
+### Validation Pack
+
+- initiator 검증 기준과 flow I/O 요약은 이 문서 안에 직접 유지한다.
+- root에는 별도 validation/io 문서를 늘리지 않는다.
+- current validation은 아래 질문에 답할 수 있어야 한다.
+  - standalone first draft를 재현 가능하게 만들었는가
+  - initiator와 refinement 경계가 흐려지지 않았는가
+  - generated harness가 source/template leakage 없이 self-contained한가
+  - shared skill 문제를 product-local schema 증가 없이 식별할 수 있는가
+
 ### Adapter Files
 
 - adapter 포맷은 처음부터 세분화하지 않는다.
@@ -62,20 +124,252 @@ templates/aim + target repo
   - `product-profile.yaml`
   - `mappings.yaml`
 - 추가 파일은 실제 생성 과정에서 반복적으로 필요한 항목이 확인될 때만 도입한다.
+- source asset 처리 계획(`generation_assets`)은 `mappings.yaml`에 둔다.
+- `generation_assets` action은 현재 아래 다섯 개로 제한한다.
+  - `generate`
+  - `absorb`
+  - `absorb_partial`
+  - `defer`
+  - `stay_in_templates`
 
 ### Scope Control
 
-- 지금 단계에서는 실제 디렉토리 이동이나 구조 개편을 하지 않는다.
-- `product-specific/`를 즉시 없애지 않는다.
-- `templates/`, `adapters/`, `generated/` 구조는 현재 설계 방향으로만 기록한다.
+- `templates/`, `adapters/`, `generated/` 구조를 실제 physical layout으로 사용한다.
 - `bindings/`나 세부 스키마는 최소 범위로 시작하고, 실제 사용 후 확장한다.
+
+### AGENTS and Support-Asset Interpretation
+
+- root `AGENTS.md`
+  - 생성기 저장소 규칙
+- `templates/<pack>/AGENTS.template.md`
+  - source pack의 startup/runtime contract source
+- `generated/<product>-harness/AGENTS.md`
+  - product runtime constitution
+
+현재 방향:
+
+- generated `AGENTS.md`는 thin summary보다 source-derived runtime contract로 가는 편이 맞다.
+- source pack에 `AGENTS.template.md`가 있으면 initiator는 이 파일을 기반으로 generated `AGENTS.md`를 만든다.
+- template support asset은 source pack에서 skill 옆에 두고, generated runtime에 bundle할 때도 가능한 한 generated skill 옆에 둔다.
+- support asset을 generated skill body에 억지로 흡수하는 것만 정답으로 보지 않는다.
+- 이 규칙의 첫 실증 대상은 `aim-harness`가 아니라 `ofgw-harness`로 둔다. 현재 AIM은 source-fidelity 비교 축이 강해 구조 실험과 생성 실험을 분리하는 편이 안전하다.
+
+### Current Three-Skill Flow
+
+현재 기준의 권장 흐름은 아래 세 단계다.
+
+1. `harness-initiator`
+   - adapter truth와 root shared skills를 바탕으로 standalone runtime skeleton 생성
+2. `harness-support-assets`
+   - source pack의 adjacent support asset을 generated skill 옆으로 bundle
+   - target repo / adapter truth를 이용해 obvious source-runtime assumptions를 target runtime으로 port
+   - 단, adapter `generation_assets`에 이미 예외 처리된 source asset은 번들링하지 않음
+3. `harness-refinement`
+   - 생성 후 wording, ergonomics, product-local usability 개선
+
+현재 generated runtime v1는 필요 시 `skills/authoring/`도 포함한다.
+
+- 첫 대상은 `writing-skills`
+- 현재 `writing-skills`는 shared `skills/writing-skills/` 전체를 generated `skills/authoring/writing-skills/`로 carry-over 하는 쪽으로 본다
+- 따라서 shared로 승격된 `writing-skills` support asset은 더 이상 `harness-support-assets` 대상이 아니다
+
+현재 첫 실증 대상:
+
+- `ofgw-harness`
+
+이 순서로 먼저 한 번 실제로 돌려본 뒤에야 support-asset 예외 규칙이나 추가 schema가 필요한지 판단한다.
+
+첫 실증에서 바로 확인된 규칙:
+
+- `harness-support-assets`는 source pack의 adjacent asset을 bundle할 때 source `SKILL.md` 자체는 절대 복사하지 않는다.
+- support-asset carry-over는 generated skill body를 덮어쓰는 방식이 아니라, generated `SKILL.md` 옆에 auxiliary file을 materialize하는 방식이어야 한다.
+- adapter `generation_assets`에 이미 `absorb`, `absorb_partial`, `defer`, `stay_in_templates`로 기록된 source asset은 support-asset 기본 bundle보다 우선한다.
+- support-asset 단계는 단순 복사가 아니라, 이미 확인된 command/path/module/runtime truth를 이용한 `bundle + port` 단계로 본다.
+
+## Validation And Flow Summary
+
+### Complete Assembly
+
+`완전 구성`은 아래 조건을 만족하는 usable first draft를 뜻한다.
+
+1. `templates/<pack>/`와 `adapters/<product>/`만으로 standalone product harness 기본 tree를 생성할 수 있다.
+2. generated tree가 runtime 관점에서 self-contained하다.
+3. generated tree 안에 `templates/`, `adapters/`, comparison 자료 같은 생성기 내부 자산이 남지 않는다.
+4. 필수 runtime layer가 존재한다.
+5. 각 layer가 최소한의 usable skill body와 binding을 가진다.
+6. `review-generated-harness`를 통과한다.
+
+필수 runtime layer:
+
+- root docs:
+  - `AGENTS.md`
+  - `README.md`
+  - `GENERATION_SUMMARY.md`
+- runtime:
+  - `hooks/`
+  - `agent/`
+  - `generated/manual/`
+- skills:
+  - `skills/core/`
+  - `skills/collab/`
+  - `skills/docs/`
+  - `skills/review/`
+  - `skills/product/`
+
+주의:
+
+- `완전 구성`은 최종 polished harness를 뜻하지 않는다.
+- wording, ergonomics, 운영 세부조정은 refinement에 남을 수 있다.
+- `REVIEW_GENERATED_HARNESS.md`는 validation artifact이지 runtime asset이 아니다.
+- generated harness root md는 runtime-facing 문서만 유지한다:
+  - `README.md`
+  - `AGENTS.md`
+  - `GENERATION_SUMMARY.md`
+- validation/evaluation 문서는 `adapters/<product>/` 아래에 둔다.
+
+### Initiator vs Refinement
+
+| 구분 | initiator | refinement |
+|------|-----------|------------|
+| template 선택/범위 | 담당 | 비대상 |
+| binding 추출/adapter draft | 담당 | 비대상 |
+| confirm gaps | 담당 | 비대상 |
+| standalone tree 생성 | 담당 | 비대상 |
+| source asset 분류 | 담당 | 비대상 |
+| generated harness 구조 검증 | 담당 | 비대상 |
+| generated skill body 고도화 | 최소 viable draft까지만 | 담당 |
+| wording/ergonomics 개선 | 최소 범위만 | 담당 |
+| product-local semantics 강화 | 비대상 | 담당 |
+
+추가 규칙:
+
+- generated `skills/review/` 안에 `review-context-collector`, `coverage-review`가 포함되면 `code-reviewer`도 이를 bound helper로 인식해야 한다.
+- 이런 review-layer coherence는 product-local refinement보다 shared carry-over 품질 문제에 가깝다.
+
+### Flow I/O
+
+#### Harness Initiator
+
+질문:
+
+- 무엇을 생성해야 하는가
+- 어떤 template 자산을 흡수/보류/유지해야 하는가
+- 어떤 binding이 제품 truth인가
+
+대표 입력:
+
+- `templates/<pack>/`
+- target repo
+- `adapters/<product>/product-profile.yaml`
+- `adapters/<product>/mappings.yaml`
+- unresolved confirmation 결과
+
+대표 출력:
+
+- `generated/<product>-harness/`
+- `GENERATION_SUMMARY.md`
+- `adapters/<product>/REVIEW_GENERATED_HARNESS.md`
+- 첫 adapter draft 직후의 `Fill Now` 목록
+- generation-phase fix/defer 판단
+
+#### Product Harness Refinement
+
+질문:
+
+- 이미 생성된 harness를 어떻게 더 usable하게 만들 것인가
+- 이 개선이 product-local correction인가, shared pattern 후보인가
+- 개선 대비 adapter/schema 비용이 과한가
+
+대표 입력:
+
+- `generated/<product>-harness/`
+- adapter의 `refinement_goal`, `refinement_targets`
+- target repo evidence
+- generated review findings
+
+대표 출력:
+
+- refined generated runtime assets
+- `adapters/<product>/REFINEMENT_EVALUATION.md` 같은 refinement 평가 문서
+- product-local vs shared-candidate 판단
+
+### Validation Checklist
+
+Inputs:
+
+- selected template pack exists
+- target repo is inspectable
+- `product-profile.yaml` draft exists
+- `mappings.yaml` draft exists
+- required unresolved values are no longer `unknown`
+
+Outputs:
+
+- analysis summary exists
+- adapter drafts exist
+- confirmation packet exists
+- `Fill Now` list exists after the first adapter draft
+- generated harness tree exists
+- generated harness review report exists
+
+Pass conditions:
+
+- selected template scope was respected
+- excluded scope was reported explicitly
+- bindings were materialized into runtime paths
+- generated tree matches the current target layout
+- generated carry-over skills use standalone naming
+- generated review layer is internally coherent when companion review skills exist
+- generated tree contains no template-internal carry-over directory
 
 ## Working Interpretation
 
-- 현재 `product-specific/` 아래의 AIM 결합 자산은 폐기 대상이 아니라 변환 입력 후보로 본다.
-- 다만 지금 바로 물리 이동하지 않고, 먼저 initiator의 입력/출력 계약을 문서로 고정한다.
-- 최종 제품 하네스에서는 `product-specific/` 같은 과도기 디렉토리보다 `skills/` 중심 구조를 목표로 한다.
-- 그러나 그 목표 구조도 이번 라운드에서는 문서화까지만 하고 실제 적용은 보류한다.
+- 현재 AIM 결합 자산은 `templates/aim/` source pack으로 본다.
+- `harness-initiator`는 `templates/<pack>/`를 입력으로 읽고 `generated/<product>-harness/`를 생성한다.
+- 최종 제품 하네스에서는 `product-specific/` 같은 과도기 디렉토리 없이 `skills/` 중심 구조를 목표로 한다.
+- 따라서 현재 `generated/ofgw-harness/`는 final shape 자체가 아니라, final shape로 가는 생성 규칙 검증본으로 해석한다.
+
+## Generated Target Model
+
+### Long-Term Product Harness
+
+장기적으로 `generated/<product>-harness/`는 아래와 같은 standalone layout을 목표로 한다.
+
+```text
+generated/<product>-harness/
+├── AGENTS.md
+├── README.md
+├── hooks/
+├── skills/
+│   ├── core/
+│   ├── collab/
+│   ├── docs/
+│   ├── review/
+│   └── product/
+└── generated/
+    └── manual/
+```
+
+핵심 원칙:
+
+- `skills/core/`에는 base runtime에서 재사용 가능한 코어 루프를 배치한다.
+- `skills/collab/`에는 branch, review, handoff 같은 협업 스킬을 배치한다.
+- `skills/docs/`, `skills/review/`, `skills/product/`에는 pack + adapter로부터 생성된 product-bound layer를 배치한다.
+- runtime에 필요한 support guidance는 해당 skill이나 root doc로 흡수한다.
+- `templates/`, `adapters/` 같은 생성기 내부 디렉토리는 final generated harness 안에 남지 않는다.
+- `REVIEW_GENERATED_HARNESS.md`는 generated tree 안에 둘 수 있지만 runtime asset이 아니라 validation artifact로 본다.
+- generated carry-over skill은 standalone runtime 이름을 유지하고 legacy `*-base` naming을 다시 드러내지 않는다.
+- generated harness 이후의 고도화는 `harness-initiator`보다 별도 `harness-refinement` skill로 분리하는 편이 적절하다.
+- source-pack support asset carry-over는 `harness-initiator`에 계속 넣기보다 별도 `harness-support-assets` skill로 분리하는 편이 적절하다.
+- `ofgw-harness`를 기반으로 후속 개선을 하더라도, 그 목적이 `harness-refinement`와 refinement schema 검증인지 제품 완성도 상승인지 먼저 고정해야 한다.
+
+### Current Validation Pass
+
+현재 `ofgw`에 대해 만들어진 최소 생성본은 위 장기 목표를 바로 다 채우지 않는다.
+
+- 목적은 template selection, exclusion reporting, binding materialization, safety semantics preservation을 먼저 검증하는 것이다.
+- 따라서 first pass는 `docs`, `product`, workspace placeholder 중심으로 시작한다.
+- 다음 generate pass부터는 `skills/core/`, `skills/collab/`, `skills/review/`를 포함하는 standalone target으로 수렴시킨다.
 
 ## Micro-Session Plan
 
@@ -88,53 +382,54 @@ templates/aim + target repo
 
 ### Session 2. Input Inventory
 
-- 현재 `product-specific/` 아래에서 initiator 입력 후보를 빠르게 목록화한다.
+- 현재 `templates/aim/` 아래에서 initiator 입력 후보를 빠르게 목록화한다.
 - 어떤 스킬/지원 파일이 변환 대상인지 범위만 정한다.
 
 Result:
 
 | Asset | Current classification | Notes |
 |------|------------------------|-------|
-| `product-specific/skills/issue-analysis-base/SKILL.md` | First-pass template candidate | verdict 기반 분석 workflow는 재사용 가능. IMS/Jira/NotebookLM/Chrome/dx/path는 binding 후보 |
-| `product-specific/skills/writing-documents-base/SKILL.md` | First-pass template candidate | audience -> tone -> structure -> approval skeleton은 재사용 가능. platform guide와 AIM marker 규칙은 분리 필요 |
-| `product-specific/skills/writing-documents-base/markdown-guide.md` | Template support reference | 내부 markdown 구조 가이드는 비교적 범용적이라 지원 문서로 유지 가능 |
-| `product-specific/skills/completing-patch-base/SKILL.md` | Decompose-before-template | IMS patch verification, HTML editor, manual marker 상태머신이 강하게 결합돼 있어 즉시 템플릿화 비권장 |
-| `product-specific/skills/writing-documents-base/manual-guide.md` | Ops-locked reference | AIM manual repo, branch, Antora/AsciiDoc 운영 절차에 강하게 결합 |
-| `product-specific/skills/writing-documents-base/{jira,gitlab,ims,confluence,mail}-guide.md` | Product/platform reference set | 개별 platform reference로 보관 가능하지만 초기 initiator의 코어 템플릿 범위에서는 제외 |
-| `product-specific/code-reviewer-base/info-collector-prompt.md` | Ops-locked prompt asset | topic naming, IMS/Jira/GitLab/project ID 등 AIM 전제 강함 |
-| `product-specific/code-reviewer-base/coverage-analyst-prompt.md` | Ops-locked prompt asset | `rb_73`, `dx`, `gcov`, 80% policy 등 저장소 정책 결합이 강함 |
-| `product-specific/code-reviewer-base/scripts/measure_diff_cov.sh` | Legacy support script | 초기 initiator 입력보다는 AIM 예시/레거시 스크립트로 보는 편이 안전 |
+| `templates/aim/skills/issue-analysis/SKILL.md` | First-pass template candidate | verdict 기반 분석 workflow는 재사용 가능. IMS/Jira/NotebookLM/Chrome/dx/path는 binding 후보 |
+| `templates/aim/skills/writing-documents/SKILL.md` | First-pass template candidate | audience -> tone -> structure -> approval skeleton은 재사용 가능. platform guide와 AIM marker 규칙은 분리 필요 |
+| `templates/aim/skills/writing-documents/markdown-guide.md` | Template support reference | 내부 markdown 구조 가이드는 비교적 범용적이라 지원 문서로 유지 가능 |
+| `templates/aim/skills/completing-patch/SKILL.md` | Decompose-before-template | IMS patch verification, HTML editor, manual marker 상태머신이 강하게 결합돼 있어 즉시 템플릿화 비권장 |
+| `templates/aim/skills/writing-documents/manual-guide.md` | Ops-locked reference | AIM manual repo, branch, Antora/AsciiDoc 운영 절차에 강하게 결합 |
+| `templates/aim/skills/writing-documents/{jira,gitlab,ims,confluence,mail}-guide.md` | Product/platform reference set | 개별 platform reference로 보관 가능하지만 초기 initiator의 코어 템플릿 범위에서는 제외 |
+| `templates/aim/review/code-reviewer/info-collector-prompt.md` | Ops-locked prompt asset | topic naming, IMS/Jira/GitLab/project ID 등 AIM 전제 강함 |
+| `templates/aim/review/code-reviewer/coverage-analyst-prompt.md` | Ops-locked prompt asset | `rb_73`, `dx`, `gcov`, 80% policy 등 저장소 정책 결합이 강함 |
+| `templates/aim/review/code-reviewer/measure_diff_cov.sh` | Legacy support script | 초기 initiator 입력보다는 AIM 예시/레거시 스크립트로 보는 편이 안전 |
 
 Current boundary:
 
 - 초기 `templates/` 후보는 `issue-analysis`, `writing-documents`, `markdown-guide`까지로 제한한다.
 - `completing-patch`, `manual-guide`, coverage 관련 자산은 1차 생성 범위에서 제외한다.
 - 즉, 첫 `ofgw` 시범 생성은 "분석/문서 허브" 중심으로 시작하고, QA 문서/수동 운영 절차는 뒤로 미룬다.
+- 다만 이후 pass에서는 `manual-guide`의 전체 body가 아니라 need gate와 draft-first safety semantics만 흡수한 local `manual-workflow`를 별도 generated skill로 만들 수 있다.
 
 ### Session 3. Core Neutrality Audit
 
-- `skills/*-base`가 실제로 언어/프레임워크/기술 스택과 무관하게 재사용 가능한지 점검한다.
+- root `skills/`의 reusable common skill이 실제로 언어/프레임워크/기술 스택과 무관하게 재사용 가능한지 점검한다.
 - 핵심 체크는 stack-specific example, artifact path contract, runtime coupling이다.
 
 Result:
 
 | Skill | Classification | Why |
 |------|----------------|-----|
-| `brainstorming-base` | Core but needs neutralization | `../agent/prompt/<topic>/analysis_report.md`, `design_spec.md` 경로/파일명 계약이 하드코딩 |
-| `writing-plans-base` | Core but needs neutralization | `../agent/prompt/<topic>/plan_tasks.md` 경로 고정 + `TypeScript`/`pnpm` 예시 |
-| `executing-plans-base` | Core but needs neutralization | `plan_tasks.md` 위치를 고정된 artifact path로 가정 |
-| `subagent-driven-development-base` | Core but needs neutralization | `plan_tasks.md` 위치 가정 |
-| `test-driven-development-base` | Core but needs neutralization | `ts` 코드 예시가 기본 사례로 들어가 있어 스택 편향 발생 |
-| `verification-before-completion-base` | True core | 검증 카테고리 중심으로 서술되어 스택 결합이 낮음 |
-| `systematic-debugging-base` | True core | 증거 수집/가설 검증 중심이라 기술 스택 종속성이 낮음 |
-| `dispatching-parallel-agents-base` | Mostly core | 예시 경로가 있지만 개념적 workflow는 중립적. 후순위 정리 가능 |
-| `code-reviewer-base` | True core | review role과 workflow 중심으로 기술돼 있어 스택 중립적 |
-| `requesting-code-review-base` | True core | 저장소/언어 전제보다 review 행위 자체에 집중 |
-| `receiving-code-review-base` | True core | feedback triage와 수정 루프가 중심 |
-| `using-feature-branches-base` | Workflow-core | 언어/프레임워크와 무관. branch/workspace workflow가 있는 저장소에선 그대로 사용 가능 |
-| `finishing-a-development-branch-base` | Workflow-core | review handoff 성격의 workflow. 스택 종속성은 낮음 |
+| `brainstorming` | Core but needs neutralization | `../agent/prompt/<topic>/analysis_report.md`, `design_spec.md` 경로/파일명 계약이 하드코딩 |
+| `writing-plans` | Core but needs neutralization | `../agent/prompt/<topic>/plan_tasks.md` 경로 고정 + `TypeScript`/`pnpm` 예시 |
+| `executing-plans` | Core but needs neutralization | `plan_tasks.md` 위치를 고정된 artifact path로 가정 |
+| `subagent-driven-development` | Core but needs neutralization | `plan_tasks.md` 위치 가정 |
+| `test-driven-development` | Core but needs neutralization | `ts` 코드 예시가 기본 사례로 들어가 있어 스택 편향 발생 |
+| `verification-before-completion` | True core | 검증 카테고리 중심으로 서술되어 스택 결합이 낮음 |
+| `systematic-debugging` | True core | 증거 수집/가설 검증 중심이라 기술 스택 종속성이 낮음 |
+| `dispatching-parallel-agents` | Mostly core | 예시 경로가 있지만 개념적 workflow는 중립적. 후순위 정리 가능 |
+| `code-reviewer` | True core | review role과 workflow 중심으로 기술돼 있어 스택 중립적 |
+| `requesting-code-review` | True core | 저장소/언어 전제보다 review 행위 자체에 집중 |
+| `receiving-code-review` | True core | feedback triage와 수정 루프가 중심 |
+| `using-feature-branches` | Workflow-core | 언어/프레임워크와 무관. branch/workspace workflow가 있는 저장소에선 그대로 사용 가능 |
+| `finishing-a-development-branch` | Workflow-core | review handoff 성격의 workflow. 스택 종속성은 낮음 |
 | `using-base-harness` | Intentionally runtime-specific | base-harness 현재 구조와 라우팅을 설명하는 메타 스킬이므로 strict core audit 대상에서 분리 |
-| `writing-skills-base` | Intentionally authoring-specific | runtime core보다 skill authoring guide 역할 |
+| `writing-skills` | Intentionally authoring-specific | runtime core보다 skill authoring guide 역할 |
 
 Implications:
 
@@ -181,32 +476,51 @@ Current decision:
 ### Session 5. Initiator Phases
 
 - `harness-initiator` 내부 phase를 짧게 정리한다.
-- 최소 기준은 `analyze -> draft adapter -> confirm gaps -> generate harness`다.
+- 최소 기준은 `analyze -> draft adapter -> confirm gaps -> generate harness -> review-generated-harness`다.
 
 Phase contract:
 
 | Phase | Purpose | Main inputs | Main outputs | Stop condition |
 |------|---------|-------------|--------------|----------------|
 | `analyze` | 대상 repo와 선택된 template 후보에서 재사용 가능한 부분과 binding 후보를 식별 | `templates/<source-pack>` 개념, target repo, selected scope | analysis summary, inferred repo facts, red flags, template applicability notes | 필수 입력이 없거나 대상 repo 특성이 너무 불명확하면 중단 |
-| `draft-adapter` | codebase로 추론 가능한 값과 치환 규칙을 adapter 초안으로 구조화 | analyze 결과, target repo facts | `adapters/<product>/product-profile.yaml` draft, `adapters/<product>/mappings.yaml` draft, inferred vs unresolved field list | unresolved field가 많아도 초안은 만들되, 추측으로 확정하지 않음 |
+| `draft-adapter` | codebase-derived 사실과 template-inherited binding 후보를 adapter 초안으로 구조화 | analyze 결과, target repo facts, inherited template patterns | `adapters/<product>/product-profile.yaml` draft, `adapters/<product>/mappings.yaml` draft, inferred vs unresolved field list | unresolved field가 많아도 초안은 만들되, 추측으로 확정하지 않음 |
 | `confirm-gaps` | 사람 확인이 필요한 값, 정책, 운영 절차를 명시적으로 확인 | adapter draft, unresolved field list, red flags | confirmation report, user decisions, accepted assumptions | 사용자 확인 전에는 generate 단계로 진행하지 않음 |
 | `generate-harness` | 확정된 adapter를 적용해 첫 product harness 초안을 생성 | confirmed adapter, selected templates, generated skeleton rules | `generated/<product>-harness/` 초안, generation summary, excluded items list | adapter가 미확정이거나 template boundary가 모호하면 중단 |
+| `review-generated-harness` | 생성 결과를 standalone harness 관점에서 검토하고 구조/분류 오류를 잡음 | generated harness draft, generation summary, target layout rules | generated-harness review notes, required fixes, confirmed deferred scope | 생성 결과에 source path 누수나 active/reference 분류 오류가 남아 있으면 완료로 보지 않음 |
 
 Execution rules:
 
-1. `analyze`는 product-specific 전체를 한 번에 변환하려 하지 않는다.
+1. `analyze`는 선택된 template pack 전체를 한 번에 변환하려 하지 않는다.
    - 현재 기준의 입력 범위는 `issue-analysis`, `writing-documents`, `markdown-guide` 중심이다.
 2. `draft-adapter`는 codebase-derived 값과 human-confirmed 값의 경계를 유지한다.
    - 모르면 `TODO` 또는 explicit gap으로 남긴다.
+   - 다만 `access_bindings.*`는 codebase만으로 채우는 것이 아니라, template에서 상속된 access pattern을 suggested default로 가져올 수 있다.
+   - org-level 공통 패턴이 이미 검증된 경우, 초안 단계에서는:
+     - Jira = `mcp` default
+     - manual workspace = `generated/manual/`
+     를 default bias로 둘 수 있다.
 3. `confirm-gaps`는 질문을 줄이기 위해 unresolved item을 묶어서 보여준다.
    - issue tracker
    - review channel
    - docs channel
    - manual/release workflow 필요 여부
+   - 그리고 첫 adapter draft 직후에는 항상 `Fill Now` 목록으로 구체적인 field path, 현재 draft, 답 형식을 같이 제시한다.
 4. `generate-harness`는 생성 결과와 제외 결과를 함께 보고한다.
    - 생성된 skill
    - 제외된 skill/reference
    - 아직 분해되지 않은 ops-locked asset
+   - 이미 확정된 binding이 가리키는 concrete workspace path (`agent/`, `generated/manual/` 등)
+5. `review-generated-harness`는 생성 결과를 후속 사용 관점에서 한 번 더 검토한다.
+   - target layout conformity
+   - active skill vs reference-only classification
+   - source-pack path leakage
+   - naming normalization
+   - hook/runtime consistency
+   - review-layer coherence when companion review skills exist
+   - excluded scope reporting
+   - maturity gain vs initiator-only baseline when available
+   - interface cost of any attached refinement schema
+   - portability of observed refinement results
 
 Minimal per-phase artifacts:
 
@@ -216,11 +530,12 @@ Minimal per-phase artifacts:
 | `draft-adapter` | `product-profile.yaml` draft, `mappings.yaml` draft |
 | `confirm-gaps` | confirmation checklist or unresolved-items report |
 | `generate-harness` | `generated/<product>-harness/` + generation summary |
+| `review-generated-harness` | `adapters/<product>/REVIEW_GENERATED_HARNESS.md` + fix/defer decisions |
 
 Non-goals for first run:
 
 - source pack backfill
-- automatic restructuring of every product-specific skill
+- automatic restructuring of every template-pack asset
 - manual-guide / patch-completion generation
 - direct in-place rewrite of live source assets
 
@@ -295,9 +610,18 @@ source_pack: <source-pack-name>
 target_product: <product-name>
 
 terminology:
-  issue_item: <target-term-or-null>
-  review_artifact: <target-term-or-null>
-  docs_artifact: <target-term-or-null>
+  issue_item:
+    canonical: <target-term-or-null>
+    aliases:
+      - <alternate-term>
+  review_artifact:
+    canonical: <target-term-or-null>
+    aliases:
+      - <alternate-term>
+  docs_artifact:
+    canonical: <target-term-or-null>
+    aliases:
+      - <alternate-term>
 
 command_bindings:
   project_build_command: <command-or-null>
@@ -360,9 +684,9 @@ access_bindings:
       location: <repo-path-or-url-or-null>
 
 confirm:
-  - terminology.issue_item
-  - terminology.review_artifact
-  - terminology.docs_artifact
+  - terminology.issue_item.canonical
+  - terminology.review_artifact.canonical
+  - terminology.docs_artifact.canonical
   - access_bindings.issue_sources.jira.enabled
   - access_bindings.issue_sources.jira.default_mode
   - access_bindings.issue_sources.jira.location
@@ -384,10 +708,31 @@ confirm:
 Field rule:
 
 - `command_bindings.*`는 가능하면 codebase에서 채운다.
-- `terminology.*`는 표현 레이어라서 중요하지만 1순위 confirm 대상은 아니다.
+- `terminology.*.canonical`은 generated harness의 기본 표현을 정한다.
+- `terminology.*.aliases`는 추가 표현과 입력 해석을 위해 유지하되, 초기 생성의 hard gate로 보지 않는다.
+- `workflow.defaults.*`가 confirmed provider binding에서 직접 유도될 수 있으면, 별도 confirm gate로 남기지 않고 derived default로 본다.
+- generated skill은 source skill의 behavior-critical safety semantics를 보존해야 한다.
 - `access_bindings.*`는 provider registry처럼 정의한다.
+- `access_bindings.*`의 초안은 보통 세 입력을 섞어 만든다:
+  - target repo/codebase에서 읽은 사실
+  - selected template 안에 들어 있는 inherited access pattern
+  - 사용자 또는 조직 기본값 확인
 - 같은 시스템 이름을 쓰더라도 `enabled`, `default_mode`, `fallback`, `location`이 다르면 별도 binding으로 본다.
 - 사용자 요청이 `jira`, `ims`, `manual`, `spec` 중 무엇을 가리키는지에 따라 해당 provider를 선택한다.
+
+Inline extraction rule:
+
+- `templates/<pack>/bindings/`가 아직 없어도 initiator는 selected template 본문에서 binding 후보를 뽑아야 한다.
+- 우선 추출 대상:
+  - URL pattern
+  - repo path
+  - notebook target
+  - access mode 제약 (`mcp`, `browser`, `api`, `workspace_file`)
+  - workflow marker / completion semantics
+- 구분 규칙:
+  - provider routing에 영향을 주면 `access_bindings.*`
+  - generated workspace path와 artifact materialization에 영향을 주면 runtime convention
+  - 표현 예시나 긴 본문은 support reference 또는 excluded asset
 
 ### Inferred vs Human-Confirmed
 
@@ -399,9 +744,9 @@ Field rule:
 | coverage tool | inferred | `jacoco` |
 | build/test/coverage command | inferred first, then user correction if needed | `./gradlew :ofgwSrc:test` |
 | workflow defaults | human-confirmed fallback | `jira`, `pull_request`, `repo_markdown` |
-| terminology | human-confirmed when wording matters | `issue`, `MR`, `analysis note` |
-| provider registry | human-confirmed | `jira`, `ims`, `notebooklm`, `pull_request`, `repo_markdown`, `manual_repo` |
-| provider mode/location | human-confirmed | `mcp`, `browser`, `workspace_file`, URL, repo path |
+| terminology | human-confirmed when wording matters | `issue` + aliases, `pull request` + aliases |
+| provider registry | template-inherited candidate + human confirmation | `jira`, `ims`, `notebooklm`, `pull_request`, `repo_markdown`, `manual_repo` |
+| provider mode/location | template-inherited candidate + repo signal + human confirmation | `mcp`, `browser`, `workspace_file`, URL, repo path |
 
 ### OFGW Draft Example
 
@@ -461,6 +806,26 @@ Boundary rule:
 - product/tool/channel-specific 값은 binding 또는 reference로 내린다.
 - 사람 승인, verdict branching, document structure 같은 반복 가능한 규칙은 template 본문에 남긴다.
 - mixed-stack target repo(`ofgw` 같은 예외 사례)는 adapter 초안의 입력일 뿐, template body를 특정 스택에 맞게 다시 쓰는 근거가 되지 않는다.
+
+### Inline Binding Extraction Map
+
+현재 `templates/aim/`에서는 아래처럼 본문 안의 규칙을 추출 대상으로 본다.
+
+| Source asset | Inline candidate | Draft target |
+|------|-------------------|-------------|
+| `skills/issue-analysis/SKILL.md` | IMS URL pattern | `access_bindings.issue_sources.ims.location` |
+| `skills/issue-analysis/SKILL.md` | Jira API/MCP semantics | `access_bindings.issue_sources.jira.*` |
+| `skills/issue-analysis/SKILL.md` | NotebookLM / spec lookup requirement | `access_bindings.spec_sources.notebooklm.*` |
+| `skills/writing-documents/SKILL.md` + `markdown-guide.md` | markdown workspace convention | `access_bindings.docs_targets.repo_markdown.*` |
+| `skills/writing-documents/manual-guide.md` | manual repo path / mode / workflow semantics | `workflow.defaults.manual_workflow_required`, `access_bindings.manual_targets.manual_repo.*` |
+| `skills/writing-documents/gitlab-guide.md` | MR target/API pattern | `access_bindings.review_targets.*` candidate |
+| `review/code-reviewer/info-collector-prompt.md` | review system and project access assumptions | review-target candidate or excluded review reference |
+| `review/code-reviewer/coverage-analyst-prompt.md` | coverage measurement semantics | review reference or excluded ops-locked asset |
+
+Current rule:
+
+- 별도 `bindings/` 디렉토리가 없어도 위 inline candidate를 읽어 adapter 초안을 만든다.
+- 반복 패턴이 여러 pack에서 안정적으로 재등장하기 전에는 별도 `bindings/*.yaml`로 승격하지 않는다.
 
 ### `issue-analysis` boundary
 
@@ -551,16 +916,19 @@ Loop goal:
 
 ### Confirmation Packet
 
-`confirm-gaps`는 아래 4개 블록으로 보고한다.
+`confirm-gaps`는 아래 5개 블록으로 보고한다.
 
-1. **Inferred Facts**
+1. **Reused Confirmed Truth**
+   - 기존 accepted adapter에서 그대로 재사용하는 값
+   - rebuild validation에서는 이 블록을 명시적으로 보여준다
+2. **Inferred Facts**
    - 코드베이스에서 추론한 값
    - 사용자가 바꾸지 않으면 그대로 adapter에 반영
-2. **Needs Confirmation**
+3. **Needs Confirmation**
    - 운영 정책/채널/용어처럼 사람 확인이 필요한 값
-3. **Red Flags**
+4. **Red Flags**
    - template 적용 범위가 애매하거나 ops-locked asset이 남아 있는 경우
-4. **Proposed Next Step**
+5. **Proposed Next Step**
    - 확인 후 바로 생성 가능한지, 아니면 추가 분해가 필요한지
 
 ### Confirmation Report Format
@@ -579,9 +947,9 @@ Loop goal:
 - workflow.review_channel: ?
 - workflow.docs_channel: ?
 - workflow.manual_workflow_required: ?
-- terminology.issue_item: ?
-- terminology.review_artifact: ?
-- terminology.docs_artifact: ?
+- terminology.issue_item.canonical: ?
+- terminology.review_artifact.canonical: ?
+- terminology.docs_artifact.canonical: ?
 
 ## Red Flags
 - `completing-patch` is still excluded from first-run generation
@@ -592,6 +960,11 @@ Loop goal:
 - Then generate the first `ofgw-harness` draft from the selected templates
 ```
 
+추가 규칙:
+
+- fresh generation에서는 `Reused Confirmed Truth` 블록이 비어 있거나 매우 작아야 자연스럽다.
+- rebuild validation에서는 기존 accepted adapter reuse가 있으면 이 블록을 생략하지 않는다.
+
 ### Grouping Rule
 
 질문은 field 단위가 아니라 아래 묶음 단위로 보여준다.
@@ -600,7 +973,7 @@ Loop goal:
 |------|----------------|
 | workflow core | `workflow.issue_tracker`, `workflow.review_channel`, `workflow.docs_channel` |
 | release/manual policy | `workflow.manual_workflow_required`, `workflow_bindings.completion_workflow` |
-| terminology | `terminology.issue_item`, `terminology.review_artifact`, `terminology.docs_artifact` |
+| terminology | `terminology.issue_item.canonical`, `terminology.review_artifact.canonical`, `terminology.docs_artifact.canonical` |
 
 ### Resolution States
 
@@ -711,8 +1084,7 @@ generated/ofgw-harness/
 │   │   └── writing-documents/
 │   └── product/
 │       └── issue-analysis/
-└── references/
-    └── markdown-guide.md
+└── agent/
 ```
 
 Role of each item:
@@ -723,12 +1095,14 @@ Role of each item:
   - 이 초안이 first validation draft라는 점과 포함/제외 범위를 요약한다
 - `GENERATION_SUMMARY.md`
   - 무엇을 생성했고 무엇을 의도적으로 제외했는지 기록한다
+- `agent/`
+  - generated harness의 markdown workspace binding을 실제 디렉토리로 materialize 한다
 - `skills/docs/writing-documents/`
   - selected template scope에서 생성된 문서 workflow 스킬 초안
 - `skills/product/issue-analysis/`
   - selected template scope에서 생성된 분석 workflow 스킬 초안
-- `references/markdown-guide.md`
-  - main template body가 아니라 shared support reference로 carry-over 한다
+- `agent/`
+  - generated harness의 markdown workspace binding을 실제 디렉토리로 materialize 한다
 
 Explicitly out of scope for this skeleton:
 
@@ -743,6 +1117,24 @@ Reason:
 
 - 위 자산들은 장기적으로 필요할 수 있지만, 첫 validation pass에서는 initiator의 template selection / exclusion reporting / minimal generation 능력을 확인하는 데 필수는 아니다.
 - 따라서 첫 skeleton은 "생성기 검증에 필요한 최소 산출물"만 포함한다.
+
+Long-term direction after this pass:
+
+- 다음 skeleton부터는 `skills/core/`, `skills/collab/`, `skills/review/`를 누락 상태가 아니라 생성 목표 상태로 취급한다.
+- first pass에서 빠진 자산은 "불필요"가 아니라 "다음 generate pass로 미룬 범위"로 해석한다.
+- 즉 Session 11의 minimal skeleton은 final target definition이 아니라 validation scaffold다.
+- generated standalone harness는 long-term 기준으로 `references/`를 갖지 않는 편이 더 적절하다.
+- support guidance는 해당 skill이나 root doc로 흡수하고, source-derived comparison material은 `templates/`에 남긴다.
+
+Second-pass inclusion criteria:
+
+- `skills/core/`: base runtime skill이 stack-neutral이고 artifact contract를 따른 경우 포함
+- `skills/collab/`: branch/review/handoff workflow가 제품 고유 시스템 없이 동작하면 포함
+- `skills/review/`: base review workflow + product-bound bindings 조합으로 표현 가능하면 포함
+- source review info-collector는 provider binding과 local artifact shape가 확정되면 `skills/review/review-context-collector/`로 승격 가능
+- source coverage workflow는 repository-native coverage path가 확인되면 `skills/review/coverage-review/`로 승격 가능
+- source manual-guide는 external publish 절차를 제외한 local draft workflow로만 제한적으로 `skills/docs/manual-workflow/`에 승격 가능
+- excluded review prompt/script: adapter가 외부 시스템 결합을 안전하게 설명할 수 있을 때까지 `templates/`에 남겨 둔다
 
 ### Session 12. First Build Readiness
 
@@ -860,8 +1252,8 @@ Reviewed:
 - `product-specific/skills/writing-documents-base/SKILL.md`
 - `product-specific/skills/writing-documents-base/manual-guide.md`
 - `product-specific/skills/writing-documents-base/markdown-guide.md`
-- `product-specific/code-reviewer-base/info-collector-prompt.md`
-- `product-specific/code-reviewer-base/coverage-analyst-prompt.md`
+- `product-specific/code-reviewer/info-collector-prompt.md`
+- `product-specific/code-reviewer/coverage-analyst-prompt.md`
 
 Decision:
 
@@ -873,21 +1265,21 @@ Decision:
 
 Reviewed:
 
-- `skills/brainstorming-base/SKILL.md`
-- `skills/writing-plans-base/SKILL.md`
-- `skills/executing-plans-base/SKILL.md`
-- `skills/subagent-driven-development-base/SKILL.md`
-- `skills/test-driven-development-base/SKILL.md`
-- `skills/verification-before-completion-base/SKILL.md`
-- `skills/systematic-debugging-base/SKILL.md`
-- `skills/dispatching-parallel-agents-base/SKILL.md`
-- `skills/code-reviewer-base/SKILL.md`
+- `skills/brainstorming/SKILL.md`
+- `skills/writing-plans/SKILL.md`
+- `skills/executing-plans/SKILL.md`
+- `skills/subagent-driven-development/SKILL.md`
+- `skills/test-driven-development/SKILL.md`
+- `skills/verification-before-completion/SKILL.md`
+- `skills/systematic-debugging/SKILL.md`
+- `skills/dispatching-parallel-agents/SKILL.md`
+- `skills/code-reviewer/SKILL.md`
 - `skills/using-base-harness/SKILL.md`
 
 Findings:
 
 - 현재 가장 큰 중립성 문제는 `../agent/prompt/<topic>/...` 형태의 산출물 경로 계약이다.
-- 그 다음은 `writing-plans-base`, `test-driven-development-base`의 `TypeScript`/`pnpm` 예시 편향이다.
+- 그 다음은 `writing-plans`, `test-driven-development`의 `TypeScript`/`pnpm` 예시 편향이다.
 - 반면 review/debug/verification 계열은 기술 스택이 바뀌어도 거의 그대로 재사용 가능하다.
 
 Decision:
@@ -899,10 +1291,10 @@ Decision:
 
 Reviewed:
 
-- `skills/brainstorming-base/SKILL.md`
-- `skills/writing-plans-base/SKILL.md`
-- `skills/executing-plans-base/SKILL.md`
-- `skills/subagent-driven-development-base/SKILL.md`
+- `skills/brainstorming/SKILL.md`
+- `skills/writing-plans/SKILL.md`
+- `skills/executing-plans/SKILL.md`
+- `skills/subagent-driven-development/SKILL.md`
 - `product-specific/skills/writing-documents-base/markdown-guide.md`
 
 Decision:
@@ -915,18 +1307,18 @@ Decision:
 
 Edited:
 
-- `skills/brainstorming-base/SKILL.md`
-- `skills/writing-plans-base/SKILL.md`
-- `skills/executing-plans-base/SKILL.md`
-- `skills/subagent-driven-development-base/SKILL.md`
-- `skills/test-driven-development-base/SKILL.md`
+- `skills/brainstorming/SKILL.md`
+- `skills/writing-plans/SKILL.md`
+- `skills/executing-plans/SKILL.md`
+- `skills/subagent-driven-development/SKILL.md`
+- `skills/test-driven-development/SKILL.md`
 
 Changes:
 
-- `brainstorming-base`의 `analysis_report` / `design_spec` 참조를 logical artifact 표현으로 변경
-- `writing-plans-base`의 `implementation_plan` 저장/전달 표현을 artifact contract 기준으로 변경
-- `executing-plans-base`, `subagent-driven-development-base`의 plan loading 규칙을 physical path 대신 artifact 참조로 변경
-- `writing-plans-base`, `test-driven-development-base`의 `TypeScript`/`pnpm` 예시를 stack-neutral pseudocode로 교체
+- `brainstorming`의 `analysis_report` / `design_spec` 참조를 logical artifact 표현으로 변경
+- `writing-plans`의 `implementation_plan` 저장/전달 표현을 artifact contract 기준으로 변경
+- `executing-plans`, `subagent-driven-development`의 plan loading 규칙을 physical path 대신 artifact 참조로 변경
+- `writing-plans`, `test-driven-development`의 `TypeScript`/`pnpm` 예시를 stack-neutral pseudocode로 교체
 
 Verification:
 
@@ -944,15 +1336,15 @@ Reviewed:
 
 - `skills/using-base-harness/SKILL.md`
 - `product-specific/skills/writing-documents-base/markdown-guide.md`
-- `skills/dispatching-parallel-agents-base/SKILL.md`
-- `skills/systematic-debugging-base/SKILL.md`
+- `skills/dispatching-parallel-agents/SKILL.md`
+- `skills/systematic-debugging/SKILL.md`
 
 Changes:
 
 - `using-base-harness`에 현재 `product-specific` 구조가 transitional layout임을 명시
 - `using-base-harness`에 `templates/`, `adapters/`, `generated/` 방향과 logical artifact convention을 추가
 - `markdown-guide`의 산출물 규칙을 fixed physical path에서 artifact contract 중심 표현으로 변경
-- `dispatching-parallel-agents-base`, `systematic-debugging-base`는 현재 기준으로 추가 중립화 없이 유지 가능하다고 확인
+- `dispatching-parallel-agents`, `systematic-debugging`는 현재 기준으로 추가 중립화 없이 유지 가능하다고 확인
 
 Verification:
 
@@ -1041,6 +1433,14 @@ Rule:
 Decision:
 
 - `confirm-gaps`는 `Inferred Facts / Needs Confirmation / Red Flags / Proposed Next Step` 4블록으로 보고한다.
+- 첫 adapter draft 이후에는 위 보고와 함께 `Fill Now` 목록도 항상 제공한다.
+- `Fill Now`는 각 unresolved 값에 대해:
+  - field path
+  - current draft
+  - meaning
+  - answer shape
+  - recommended value if plausible
+  를 짧게 보여준다.
 - 질문은 field 단위가 아니라 workflow core / release-manual policy / terminology 묶음으로 보여준다.
 - unresolved 항목의 상태는 `confirmed`, `deferred`, `unknown` 셋 중 하나로만 관리한다.
 
@@ -1233,3 +1633,1101 @@ Decision:
 - `review_targets`, `docs_targets`, `issue_sources` 하위에는 여러 provider가 동시에 `enabled: true`일 수 있다
 - generate 시점의 핵심은 "어떤 provider들이 열려 있나"와 "요청이 들어왔을 때 어떤 provider를 우선 선택하나"이지, 그룹마다 반드시 하나만 true인 것은 아니다
 - `manual_targets`는 기존 `manual-guide` / patch completion 연동 같은 release/manual workflow를 provider로 분리해 담는 자리이고, `manual_workflow_required`는 그 workflow 자체를 기본 completion path에 포함할지 정하는 상위 플래그다
+
+### 2026-04-21 Session 22. AIM-style manual flow 유지 + generated workspace로 위치 전환
+
+Edited:
+
+- `adapters/ofgw/product-profile.yaml`
+- `adapters/ofgw/mappings.yaml`
+- `adapters/ofgw/confirmation-packet.md`
+- `HARNESS_INITIATOR.md`
+
+Changes:
+
+- `workflow.defaults.manual_workflow_required`를 `true`로 확정
+- `access_bindings.manual_targets.manual_repo.enabled`를 `true`로 확정
+- `access_bindings.manual_targets.manual_repo.default_mode`를 `workspace_file`로 확정
+- `access_bindings.manual_targets.manual_repo.location`을 `generated/manual/`로 확정
+- manual flow는 AIM의 상태 기반 completion path semantics를 유지하되, legacy AIM MANUAL repo 대신 generated harness 내부 workspace를 writable target으로 사용한다고 문서화
+
+Decision:
+
+- `manual_workflow_required`와 `manual_repo.enabled`는 같은 방향으로 움직여야 한다
+- `workspace_file`은 제품 repo 내부 문서 일반 경로(`agent/`)와 구분되는 별도 manual workspace를 가리켜야 한다
+- `generated/manual/`는 AIM의 외부 manual repo 개념을 generated harness 안으로 단순화한 위치로 본다
+
+### 2026-04-21 Session 23. terminology를 canonical + aliases로 확정
+
+Edited:
+
+- `adapters/ofgw/mappings.yaml`
+- `adapters/ofgw/confirmation-packet.md`
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- terminology schema를 단일 문자열 대신 `canonical` + `aliases` 구조로 고정
+- `issue_item`을 `issue` 기준으로 확정하고 alias를 `ticket`, `jira`, `ims`로 설정
+- `review_artifact`를 `PR` 기준으로 확정하고 alias를 `pull request`, `review request`로 설정
+- `docs_artifact`를 `markdown document` 기준으로 확정하고 alias를 `doc`, `note`, `report`로 설정
+- `mappings.yaml`의 terminology confirm 항목을 제거하고 confirmation packet을 confirmed 상태로 갱신
+
+Decision:
+
+- generated harness는 `canonical`을 기본 표현으로 사용한다
+- runtime 해석과 사용자 입력 다양성은 `aliases`로 흡수한다
+- provider label과 terminology label은 계속 분리한다
+
+### 2026-04-21 Session 24. First `generate-harness` pass 실행 및 인터페이스 정리
+
+Edited:
+
+- `generated/ofgw-harness/AGENTS.md`
+- `generated/ofgw-harness/README.md`
+- `generated/ofgw-harness/GENERATION_SUMMARY.md`
+- `generated/ofgw-harness/skills/product/issue-analysis/SKILL.md`
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md`
+- `generated/ofgw-harness/references/markdown-guide.md`
+- `generated/ofgw-harness/generated/manual/README.md`
+- `adapters/ofgw/product-profile.yaml`
+- `adapters/ofgw/mappings.yaml`
+- `adapters/ofgw/confirmation-packet.md`
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- `generated/ofgw-harness/` 최소 스켈레톤을 실제로 생성
+- generated draft에 concrete workspace convention을 materialize
+  - `agent/<topic>/`
+  - `agent/`
+  - `generated/manual/`
+- manual flow는 required policy로 유지하되, 첫 pass에서는 writable workspace binding만 생성
+- `workflow.defaults.issue_tracker`, `review_channel`, `docs_channel`은 confirmed provider binding에서 직접 유도되는 derived default로 정리
+- `product-profile.yaml`의 workflow confirm 목록을 제거하고 `mappings.yaml`의 confirm을 빈 목록으로 정리
+
+Decision:
+
+- 첫 generated draft는 "full workflow 복원"보다 "binding이 실제 파일 구조로 내려오는지"를 검증하는 데 의미가 있다
+- generated harness는 binding이 이미 확정된 경로를 실제 디렉토리와 파일로 materialize해야 인터페이스가 매끄럽다
+- provider binding으로 충분히 결정되는 workflow label은 별도 generate gate로 남기지 않는 편이 더 일관적이다
+
+### 2026-04-21 Session 25. First generated draft review 반영
+
+Edited:
+
+- `generated/ofgw-harness/agent/README.md`
+- `generated/ofgw-harness/README.md`
+- `generated/ofgw-harness/AGENTS.md`
+- `generated/ofgw-harness/GENERATION_SUMMARY.md`
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md`
+- `generated/ofgw-harness/skills/product/issue-analysis/SKILL.md`
+- `skills/harness-initiator/SKILL.md`
+- `HARNESS_INITIATOR.md`
+
+Changes:
+
+- `agent/` workspace placeholder를 실제로 추가해 generated path policy와 생성물을 일치시킴
+- generated `writing-documents` skill에 source workflow의 hard gate와 write/save 분리 규칙을 다시 주입
+- generated `issue-analysis` skill에 NotebookLM target URL과 provider source를 반영
+- initiator contract에 "behavior-critical safety semantics 보존" 규칙을 추가
+
+Decision:
+
+- generated harness가 source template를 축약하더라도 안전 규칙을 약화시키면 안 된다
+- 경로 정책을 문서로만 설명하지 말고 실제 placeholder로 내려주는 편이 first-pass review에 유리하다
+- review 결과는 generated artifact 수정에 그치지 않고 initiator contract 개선으로 다시 환류돼야 한다
+
+### 2026-04-21 Session 26. `templates/aim/` 물리 전환 확정
+
+Edited:
+
+- `templates/README.md`
+- `templates/aim/README.md`
+- `README.md`
+- `AGENTS.md`
+- `skills/using-base-harness/SKILL.md`
+- `skills/brainstorming/SKILL.md`
+- `skills/harness-initiator/SKILL.md`
+- `claude/CLAUDE.md`
+- `adapters/ofgw/mappings.yaml`
+
+Changes:
+
+- `product-specific/`에 있던 AIM source 자산을 실제로 `templates/aim/`로 이동
+- 루트 문서와 메타 스킬에서 `templates/`를 intended layout이 아니라 live physical layout으로 고정
+- `adapters/ofgw/mappings.yaml`의 `source_pack` 식별자를 `aim-template`로 정리
+- `templates/README.md`, `templates/aim/README.md`를 추가해 source pack 레이어를 문서화
+
+Decision:
+
+- 이제 `product-specific/`는 active source location이 아니다
+- 과거 `product-specific/` 경로는 `MIGRATION.md`와 세션 기록 안에서만 historical reference로 남긴다
+- 이후 initiator 입력은 `templates/<pack>/`를 기준으로 설계하고 확장한다
+
+### 2026-04-21 Session 27. generated target을 standalone harness 기준으로 재정렬
+
+Edited:
+
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+- `README.md`
+
+Changes:
+
+- generated output에 대해 "현재 validation pass"와 "장기 standalone target"을 분리해 문서화
+- 장기 target을 `skills/core`, `skills/collab`, `skills/docs`, `skills/review`, `skills/product` 구조로 고정
+- 기존 first-pass minimal skeleton은 final shape가 아니라 validation scaffold라는 점을 명시
+
+Decision:
+
+- 앞으로 generated harness 품질 평가는 "minimal draft가 만들어졌는가"가 아니라 "standalone target으로 수렴하는 generate contract가 명확한가"를 같이 본다
+- `skills/core/`, `skills/collab/`, `skills/review/`는 더 이상 optional final scope가 아니라 다음 pass의 명시적 생성 목표다
+
+### 2026-04-21 Session 28. `templates/aim/` 세부 분리 보류
+
+Edited:
+
+- `templates/aim/README.md`
+- `HARNESS_INITIATOR.md`
+- `MIGRATION.md`
+
+Changes:
+
+- `templates/aim/`를 당장 `skills/`, `bindings/`, `examples/`로 물리 분리하지 않기로 결정
+- 현재 pack 안의 binding/example은 독립 자산보다 inline 규칙에 가깝다는 점을 문서화
+- 향후 분리 조건을 "반복되는 binding schema", "독립 example asset 축적", "initiator의 직접 소비 가치" 기준으로 고정
+
+Decision:
+
+- 지금 시점의 최적 구조는 얕은 `skills/` + `review/` 유지다
+- 먼저 해야 할 일은 디렉토리 분리보다 inline binding을 adapter schema로 안정적으로 추출하는 규칙 정리다
+- `bindings/`와 `examples/`는 두 번째 template pack 이상이 생기거나, 생성기에서 직접 읽을 실익이 생길 때 도입한다
+
+### 2026-04-21 Session 29. binding 추출 소스를 codebase-only로 보지 않도록 계약 보정
+
+Edited:
+
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+- `MIGRATION.md`
+
+Changes:
+
+- adapter draft가 codebase-derived facts만으로 만들어지는 것이 아니라, template-inherited access pattern도 함께 사용한다고 명시
+- `access_bindings.*`의 초안 소스를 `target repo + selected template + human confirmation` 조합으로 재정의
+- 별도 `templates/<pack>/bindings/` 디렉토리 없이도 현재 initiator가 binding 초안을 만들 수 있는 이유를 문서화
+
+Decision:
+
+- `repo.*`와 `command_bindings.*`는 주로 codebase에서 가져온다
+- `access_bindings.*`는 template 본문에 들어 있는 URL pattern, tool mode, workflow semantics를 suggested default로 상속받을 수 있다
+- 따라서 지금 단계의 핵심 작업은 `templates/aim` 분리보다 "inline binding extraction rule"을 더 명확히 적는 것이다
+
+### 2026-04-21 Session 30. inline binding inventory 및 second-pass 포함 기준 추가
+
+Edited:
+
+- `templates/aim/README.md`
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+- `MIGRATION.md`
+
+Changes:
+
+- `templates/aim`에서 실제로 어떤 inline 규칙이 binding 후보인지 source별 목록화
+- initiator 계약에 inline extraction rule을 추가해 `access_bindings`, runtime convention, support reference를 구분
+- second-pass generate에서 `skills/core`, `skills/collab`, `skills/review`를 포함하는 기준을 문서화
+
+Decision:
+
+- 이제 다음 generate pass는 단순 확장이 아니라, 어떤 자산이 standalone target에 들어갈 자격이 있는지 기준을 가진 상태에서 진행할 수 있다
+- `templates/aim`는 여전히 얕은 구조를 유지하지만, initiator가 읽어야 할 inline candidate는 충분히 명시된 상태가 된다
+
+### 2026-04-21 Session 31. `generated/ofgw-harness/` second-pass 재생성
+
+Edited:
+
+- `generated/ofgw-harness/AGENTS.md`
+- `generated/ofgw-harness/README.md`
+- `generated/ofgw-harness/GENERATION_SUMMARY.md`
+- `generated/ofgw-harness/hooks/*`
+- `generated/ofgw-harness/skills/core/*`
+- `generated/ofgw-harness/skills/collab/*`
+- `generated/ofgw-harness/skills/review/code-reviewer/SKILL.md`
+- `generated/ofgw-harness/references/review/README.md`
+- `generated/ofgw-harness/references/review/aim/*`
+
+Changes:
+
+- `core`, `collab`, `review` 레이어를 generated harness 안에 실제로 materialize
+- base runtime carry-over skill을 standalone naming으로 정리해 generated tree에 포함
+- `hooks/`를 generated harness 안에 함께 복사하고 SessionStart context를 generated `AGENTS.md` 기준으로 변경
+- AIM review prompt/script는 active skill이 아니라 `references/review/aim/`의 reference-only 자산으로 포함
+
+Decision:
+
+- second pass부터 `generated/ofgw-harness/`는 더 이상 docs/product-only 검증본이 아니라 standalone target에 수렴하는 generated draft로 본다
+- review layer는 reusable workflow와 AIM-locked reference를 분리해 가져가는 편이 현재 계약에 가장 맞다
+- 다음 판단 포인트는 `references/review/aim/*` 중 무엇을 실제 `skills/review/`로 승격할지다
+
+### 2026-04-21 Session 32. `review-generated-harness` phase 추가 및 `references/` 역할 명확화
+
+Edited:
+
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- initiator phase contract를 `analyze -> draft-adapter -> confirm-gaps -> generate-harness -> review-generated-harness`로 확장
+- post-generate review에서 확인해야 할 구조/분류 체크리스트를 공식화
+- `references/`를 "언젠가 없어져야 하는 임시 보관소"가 아니라 active behavior 밖의 지원 자산 계층으로 재정의
+
+Decision:
+
+- `review-generated-harness`는 optional human taste check가 아니라 initiator의 공식 후속 phase다
+- standalone harness가 구성된 뒤에도 `references/` 자체는 남을 수 있다
+- 다만 active runtime behavior는 `skills/*`로 이동해야 하며, AIM-locked carry-over 자산은 productized되거나 폐기되기 전까지 transitional reference로 본다
+
+### 2026-04-21 Session 33. `ofgw-harness` 첫 공식 generated review 실행
+
+Edited:
+
+- `generated/ofgw-harness/REVIEW_GENERATED_HARNESS.md`
+- `generated/ofgw-harness/hooks/hooks.json`
+- `generated/ofgw-harness/skills/core/brainstorming/SKILL.md`
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- `review-generated-harness` phase의 선호 산출물을 `generated/<product>-harness/REVIEW_GENERATED_HARNESS.md`로 고정
+- 현재 `generated/ofgw-harness/`를 phase 체크리스트로 검토해 first official review 문서를 생성
+- review 중 발견된 `hooks/hooks.json` 오염과 `brainstorming`의 source-pack path leakage를 즉시 수정
+
+Decision:
+
+- `generated/ofgw-harness/`는 현재 standalone-target draft로서 구조적으로는 pass 상태다
+- 다만 review/manual asset의 productization 범위는 다음 pass에서 계속 정리해야 한다
+
+### 2026-04-21 Session 34. review context와 local manual workflow의 제한적 productization
+
+Edited:
+
+- `generated/ofgw-harness/skills/review/review-context-collector/SKILL.md`
+- `generated/ofgw-harness/skills/docs/manual-workflow/SKILL.md`
+- `generated/ofgw-harness/references/manual/README.md`
+- `generated/ofgw-harness/skills/review/code-reviewer/SKILL.md`
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md`
+- `generated/ofgw-harness/generated/manual/README.md`
+- `generated/ofgw-harness/README.md`
+- `generated/ofgw-harness/AGENTS.md`
+- `generated/ofgw-harness/GENERATION_SUMMARY.md`
+- `generated/ofgw-harness/references/review/README.md`
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- AIM info-collector pattern을 `ofgw` binding에 맞는 active `review-context-collector` skill로 승격
+- AIM manual-guide의 전체 body는 유지하지 않고, need gate와 draft-first semantics만 흡수한 local `manual-workflow` skill을 추가
+- coverage automation은 여전히 reference-only로 유지하고, 그 이유를 generated docs에 명시
+
+Decision:
+
+- review/manual source asset은 "통째 복제"보다 "재사용 가능한 semantics만 productize"하는 쪽이 현재 initiator 방향에 맞다
+- `references/`는 줄어들 수는 있어도 0이 되는 것이 목표는 아니며, coverage 같은 AIM-locked automation은 당분간 reference-only가 맞다
+
+### 2026-04-21 Session 35. `references/` 제거 방향 확정 및 `coverage-review` 추가
+
+Edited:
+
+- `generated/ofgw-harness/skills/review/coverage-review/SKILL.md`
+- `generated/ofgw-harness/skills/review/code-reviewer/SKILL.md`
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md`
+- `generated/ofgw-harness/README.md`
+- `generated/ofgw-harness/AGENTS.md`
+- `generated/ofgw-harness/GENERATION_SUMMARY.md`
+- `generated/ofgw-harness/REVIEW_GENERATED_HARNESS.md`
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- `ofgw`에 맞는 JaCoCo 기반 active `coverage-review` skill을 추가
+- standalone harness에서 `references/`를 제거하고, 필요한 markdown guidance는 active docs skill로 흡수
+- template/source-only carry-over는 generated harness가 아니라 `templates/`에 남기는 방향으로 계약을 보정
+
+Decision:
+
+- standalone harness는 runtime 번들처럼 보여야 하므로 `references/` 없는 구조가 더 맞다
+- source-derived comparison material과 미승격 자산은 generated harness가 아니라 `templates/`에 남긴다
+- coverage workflow는 이제 active skill로 productize됐고, 남은 보류 범위는 diff-aware gating과 외부 manual publish workflow다
+
+### 2026-04-21 Session 36. initiator 책임 경계 재정의
+
+Edited:
+
+- `HARNESS_INITIATOR.md`
+- `skills/harness-initiator/SKILL.md`
+
+Changes:
+
+- `harness-initiator`의 책임을 template selection, binding extraction, adapter drafting, generation, generated-structure review로 한정
+- generated harness 안의 review/manual/coverage skill 고도화는 별도의 refinement work로 보는 경계를 명시
+- 최근 `ofgw` skill 구체화 작업은 initiator 검증을 위한 exploratory pass였다고 재분류
+
+Decision:
+
+- 앞으로 initiator 검증은 "생성기가 어떤 shape와 분류를 만들어내는가"에 집중한다
+- generated harness의 skill body 품질 개선은 initiator의 기본 책임으로 넣지 않는다
+
+### 2026-04-21 Session 37. initiator 검증 기준 문서화
+
+Edited:
+
+- `INITIATOR_VALIDATION.md`
+- `HARNESS_INITIATOR.md`
+- `MIGRATION.md`
+
+Changes:
+
+- complete assembly 정의를 문서화
+- initiator 단독 생성 범위와 refinement 범위를 표로 정리
+- adapter에 추가로 필요한 정보 항목을 정리
+- initiator 입력/출력 체크리스트를 operational checklist 형태로 정리
+- `templates/aim` 자산 분류표, `ofgw` 순수 initiator walkthrough, readiness 평가, second validation target 제안을 하나의 validation 문서로 정리
+
+Decision:
+
+- 앞으로 initiator 검증은 `INITIATOR_VALIDATION.md`를 기준선으로 본다
+- `ofgw` generated harness 안의 일부 review/manual/coverage skill은 exploratory refinement 결과로 분리해서 해석한다
+- second validation target의 현재 우선 후보는 `osd`다
+
+### 2026-04-21 Session 38. `ofgw-harness` clean rebuild 및 naming normalization 규칙 보강
+
+Edited:
+
+- `generated/ofgw-harness/*`
+- `adapters/ofgw/generation-assets-check.md`
+- `skills/brainstorming/SKILL.md`
+- `skills/harness-initiator/SKILL.md`
+- `INITIATOR_VALIDATION.md`
+- `HARNESS_INITIATOR.md`
+
+Changes:
+
+- 현재 initiator 계약과 adapter 입력만 기준으로 `generated/ofgw-harness/`를 다시 구성
+- base-runtime carry-over skill을 regenerated tree에 다시 materialize
+- generated standalone tree에서 source `*-base` naming을 runtime naming으로 정규화
+- generated runtime skill에서 template source path 누수를 제거
+- `generation-assets-check`와 `REVIEW_GENERATED_HARNESS`를 rebuilt tree 기준으로 다시 맞춤
+
+Decision:
+
+- clean rebuild는 현재 initiator 계약으로 재현 가능하다고 본다
+- standalone product harness에서는 carry-over skill의 frontmatter와 cross-skill reference도 runtime 이름으로 정규화해야 한다
+- `REVIEW_GENERATED_HARNESS.md`는 계속 validation artifact로만 유지하고 runtime asset으로 취급하지 않는다
+
+### 2026-04-21 Session 39. root `skills/` standalone naming 전환
+
+Edited:
+
+- `skills/brainstorming/`
+- `skills/code-reviewer/`
+- `skills/dispatching-parallel-agents/`
+- `skills/executing-plans/`
+- `skills/finishing-a-development-branch/`
+- `skills/receiving-code-review/`
+- `skills/requesting-code-review/`
+- `skills/subagent-driven-development/`
+- `skills/systematic-debugging/`
+- `skills/test-driven-development/`
+- `skills/using-feature-branches/`
+- `skills/verification-before-completion/`
+- `skills/writing-plans/`
+- `skills/writing-skills/`
+- `README.md`
+- `skills/using-base-harness/SKILL.md`
+- `skills/harness-initiator/SKILL.md`
+- `INITIATOR_VALIDATION.md`
+- `generated/ofgw-harness/*`
+
+Changes:
+
+- root `skills/`의 reusable common skill 디렉토리 naming을 `*-base`에서 standalone name으로 전환
+- source skill frontmatter와 cross-skill reference를 새 root layout에 맞게 정리
+- initiator carry-over policy를 새 root `skills/` layout 기준으로 보정
+- rebuilt `ofgw-harness` 문서도 legacy `*-base` naming 누수 금지 기준으로 갱신
+
+Decision:
+
+- root `skills/`는 더 이상 `*-base` postfix를 사용하지 않는다
+- generated harness review는 앞으로 “legacy naming이 재도입됐는지”를 보는 식으로 단순화할 수 있다
+
+### 2026-04-21 Session 40. refinement skill 분리
+
+Edited:
+
+- `skills/product-harness-refinement/SKILL.md`
+- `skills/using-base-harness/SKILL.md`
+- `README.md`
+- `INITIATOR_VALIDATION.md`
+- `HARNESS_INITIATOR.md`
+
+Changes:
+
+- generated harness 이후의 고도화 작업을 `product-harness-refinement` skill로 분리
+- `harness-initiator`는 generation/classification/review-generated-harness 범위에 집중하도록 경계를 다시 명시
+- base meta skill routing에도 refinement skill을 추가
+
+Decision:
+
+- refinement는 initiator 안의 후반 phase보다 별도 skill이 더 적절하다
+- 이후 generated harness 개선은 우선 `product-harness-refinement`로 다루고, generator defect만 initiator로 되돌린다
+
+### 2026-04-21 Session 41. 첫 refinement target 실증
+
+Edited:
+
+- `generated/ofgw-harness/skills/docs/writing-documents/SKILL.md`
+- `adapters/ofgw/mappings.yaml`
+- `skills/product-harness-refinement/SKILL.md`
+
+Changes:
+
+- 첫 refinement target을 `writing-documents`로 선택
+- generated docs skill에 `ofgwSrc`, `webterminal`, `ofgwAdmin` 실제 모듈 경계와 safe evidence guidance를 추가
+- refinement schema에 `status`, `result_note`를 실제 사용해 봄
+
+Decision:
+
+- refinement는 generated asset 하나씩 좁게 적용하는 방식이 적절하다
+- 이번 라운드는 generated docs skill을 더 정확하게 만들면서도 initiator scope나 publish adapter를 다시 열지 않는 선에서 검증하는 것이 맞다
+
+### 2026-04-21 Session 42. second refinement target과 schema 보강
+
+Edited:
+
+- `generated/ofgw-harness/skills/review/coverage-review/SKILL.md`
+- `adapters/ofgw/mappings.yaml`
+- `skills/product-harness-refinement/SKILL.md`
+- `INITIATOR_VALIDATION.md`
+
+Changes:
+
+- 두 번째 refinement target으로 `coverage-review`를 적용
+- generated coverage skill에 `ofgwSrc`-only coverage boundary와 `webterminal`/`ofgwAdmin` 비포함 rule을 추가
+- refinement schema에 `priority`, `depends_on`를 추가해 실행 순서를 표현
+
+Decision:
+
+- refinement schema는 target 목록만으로 끝내기보다 최소한의 ordering 정보까지 담는 편이 더 실용적이다
+- refinement는 여전히 generated runtime asset 단위로 좁게 진행하는 것이 적절하다
+### Session 43 - Cross-Product Refinement Guardrail
+
+- `product-harness-refinement`는 `ofgw` 검증에 쓰더라도 shared skill/schema 자체는 `osd`와 이후 제품에도 재사용 가능해야 한다는 guardrail을 명시했다.
+- refinement schema에 `portability`를 추가해 각 refinement 결과가 `product_local`인지 `shared_candidate`인지 표시할 수 있게 했다.
+- `ofgw`의 `writing-documents`, `coverage-review` refinement는 `product_local`로 유지하고, `manual-workflow` refinement는 local draft contract 패턴 검증용 `shared_candidate`로 분류했다.
+- generated `manual-workflow`는 제품 사실을 더 많이 집어넣는 대신, topic-scoped local draft path와 explicit draft status 같은 reusable output contract를 강화하는 쪽으로 보정했다.
+
+### Session 44 - Two-Skill Rebuild Evaluation
+
+- 현재 refined `generated/ofgw-harness/`를 새 백업으로 보존한 뒤, initiator-only baseline을 복원하고 다시 refinement를 적용해 두 단계 프로세스를 실제로 재현했다.
+- 평가 초점은 `ofgw-harness` 완성도가 아니라:
+  - 두 개의 skill 분리가 실제로 도움이 되는지
+  - refinement 이후 harness가 initiator-only baseline보다 성숙해지는지
+  - adapter/schema가 과하게 복잡해지지 않는지
+  였다.
+- `product-harness-refinement` skill과 validation 문서에 baseline 대비 성숙도, interface cost, portability를 함께 평가하라는 기준을 추가했다.
+- 결과적으로 두-skill 모델은 유지할 가치가 있고, 현재 refinement schema는 아직 읽을 수 있는 크기라고 판단했다.
+
+### Session 45 - Shared Review Criteria and OSD Draft Adapter
+
+- `review-generated-harness` 체크리스트에 maturity gain, interface cost, portability를 추가했다.
+- `HARNESS_FLOW_IO.md`를 추가해 `harness-initiator`와 `product-harness-refinement`의 I/O 예시를 한 장으로 압축했다.
+- second validation target인 `osd`에 대해 initiator 범위의 analyze + draft-adapter를 수행했다.
+- 생성한 초안:
+  - `adapters/osd/analysis-summary.md`
+  - `adapters/osd/product-profile.yaml`
+  - `adapters/osd/mappings.yaml`
+  - `adapters/osd/confirmation-packet.md`
+- `osd-harness` generation은 아직 하지 않았다.
+  - Jira/NotebookLM/manual policy가 미확정이라 confirm-gaps 이후로 넘겼다.
+
+### Session 46 - Fill Now Contract
+
+- `harness-initiator`는 이제 첫 adapter draft 직후 항상 `Fill Now` 목록을 제시해야 한다.
+- `Fill Now`는 각 unresolved 값에 대해:
+  - field path
+  - current draft
+  - meaning
+  - answer shape
+  - recommended value if plausible
+  를 포함한다.
+- 목적은 사용자가 adapter를 닫기 위해 무엇을 답해야 하는지 한 번에 보이게 만드는 것이다.
+
+### Session 47 - Jira/Auth Path and OSD Default Policy
+
+- Jira MCP binding은 `ofgw`와 같은 org-level shape를 기본값으로 재사용해도 되는 것으로 정리했다.
+- Jira API fallback의 `auth_source`는 `../agent/info/access.md`가 아니라 `agent/info/access.md`로 바로잡았다.
+  - 현재 standalone/generated runtime 기준에서는 이 경로가 더 일관적이다.
+- `osd` adapter draft는 다음 기본값으로 닫았다:
+  - Jira enabled = `true`
+  - manual required = `true`
+  - manual enabled = `true`
+  - manual location = `generated/manual/`
+- 따라서 현재 `osd`의 남은 필수 confirmation은 NotebookLM 여부만 남는다.
+
+### Session 48 - OSD NotebookLM Default Alignment
+
+- `osd`의 NotebookLM binding도 first draft 단계에서는 `ofgw`와 같은 기본값으로 닫았다.
+- 이유:
+  - 지금 단계에서는 "어느 notebook인가"보다 binding shape 검증이 더 중요하다.
+  - `harness-initiator`가 default integration shape를 빠르게 materialize하는지 보는 편이 더 유효하다.
+- 이 변경 후 `osd`는 confirm-gaps가 모두 닫힌 상태로 보고 generation 단계로 진행할 수 있게 됐다.
+
+### Session 49 - OSD First Draft Generation
+
+- `adapters/osd/*`를 confirmed 상태로 보고 `generated/osd-harness/` first draft를 생성했다.
+- 생성 범위:
+  - root docs
+  - hooks
+  - `agent/`
+  - `generated/manual/`
+  - `skills/core/*`
+  - `skills/collab/*`
+  - `skills/review/*`
+  - `skills/docs/*`
+  - `skills/product/issue-analysis/`
+- `osd` product-bound file들은 `Makefile`, `test/run_coverage.sh`, `dist/patch_osd.sh`, git remote evidence에 맞게 다시 썼다.
+- `adapters/osd/generation-assets-check.md`도 추가해 template-derived generation이 현재 draft와 맞는지 검증했다.
+
+### Session 50 - Draft Default Bias
+
+- `harness-initiator` 초안 생성 시 user-config 최소화를 위해 다음 default bias를 문서화했다:
+  - Jira = `mcp` default
+  - manual workspace = `generated/manual/`
+- 다만 이 값들은 universal hard rule이 아니라 draft default로 본다.
+- repo/product evidence가 다르면 adapter에서 다시 열거나 덮어쓸 수 있게 유지한다.
+
+### Session 51 - Root Harness Docs Consolidation
+
+- root 문서 역할을 다시 정리했다.
+- `HARNESS_FLOW_IO.md`, `INITIATOR_VALIDATION.md`는 `HARNESS_INITIATOR.md`의 하위 성격이 강해서 별도 root 문서로 유지하지 않기로 했다.
+- 두 문서의 현재 기준선은 이 문서의 `Validation And Flow Summary` 섹션으로 병합했다.
+- root 기준 문서는 아래 네 개만 남긴다:
+  - `README.md`
+  - `AGENTS.md`
+  - `MIGRATION.md`
+  - `HARNESS_INITIATOR.md`
+
+### Session 52 - Generated Harness Root Docs Consolidation
+
+- generated harness root md도 runtime-facing 문서만 남기기로 했다.
+- generated root 기준 문서는 아래 세 개로 고정한다:
+  - `README.md`
+  - `AGENTS.md`
+  - `GENERATION_SUMMARY.md`
+- `REVIEW_GENERATED_HARNESS.md`, `REFINEMENT_EVALUATION.md`는 runtime bundle 일부가 아니라 validation/evaluation 산출물이므로 `adapters/<product>/` 아래로 이동했다.
+- 따라서:
+  - generated harness root는 standalone runtime draft처럼 보이게 유지한다.
+  - validation trace는 adapter 산출물로 분리한다.
+
+### Session 53 - `.codex` Ignore and `product-specific/` Removal
+
+- root `.gitignore`에 `.codex`를 추가했다.
+- `product-specific/`는 이미 active source location이 아니고 deprecated 잔재만 남은 상태라고 다시 확인했다.
+- 남아 있던 `product-specific/README.md`를 제거하고, 디렉토리 자체도 정리 대상으로 본다.
+- 해석:
+  - active source는 `templates/`
+  - active runtime skill set은 `skills/`
+  - `product-specific/`는 더 이상 live layout 일부가 아니다
+
+### Session 54 - AIM Source-Fidelity Template Expansion
+
+- `templates/aim/`를 최소 curated pack이 아니라 source-fidelity pack으로 확장했다.
+- 원본 `aim-harness/CLAUDE.md`를 `templates/aim/AGENTS.template.md`로 들여와 generated `AGENTS.md`의 source 후보로 삼는다.
+- 원본 `aim-harness/skills/*`의 support asset도 source pack 자산으로 넓게 보존한다.
+  - `SKILL.md` 옆에 붙어 있던 prompt, guide, script, reviewer note를 template 아래 같은 skill 경로로 유지한다.
+- 해석:
+  - generated `AGENTS.md`는 root generator 문서의 축약본이 아니라, source pack의 runtime entry contract를 product runtime에 맞게 porting한 결과여야 한다.
+  - support asset은 generated 단계에서 새로 추정하는 것이 아니라 source pack에서 보존한 뒤 active/bundled/defer로 분류하는 것이 더 맞다.
+  - 다만 `templates/aim`는 여전히 source pack이지 원본 저장소 mirror는 아니다. build output, cache, 개인 환경 산출물은 제외한다.
+
+### Session 55 - `ofgw` Three-Skill Rebuild
+
+- 현재 `generated/ofgw-harness/`를 백업한 뒤, 같은 skeleton baseline에서 3스킬 흐름을 실증했다:
+  1. `harness-initiator`
+  2. `harness-support-assets`
+  3. `harness-refinement`
+- `harness-support-assets` 결과:
+  - `brainstorming`, `writing-plans`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `code-reviewer`에 adjacent support asset이 실제로 bundled 됐다.
+- 실증 중 확인된 규칙:
+  - source `SKILL.md`는 support asset 복사 대상이 아니다.
+  - adapter `generation_assets`에 이미 예외가 적힌 asset은 default bundle보다 그 예외가 우선한다.
+  - 따라서 `writing-documents` guide류와 `info-collector`/`coverage-analyst`/`measure_diff_cov.sh`는 bundled default에서 제외됐다.
+- 판단:
+  - `harness-support-assets`는 별도 스킬로 유지할 가치가 있다.
+  - 하지만 이 단계에서 추가 schema를 새로 도입할 필요는 없다.
+  - 기존 `generation_assets` override와 source adjacency만으로 첫 실증은 충분히 가능했다.
+  - 다만 support asset 단계는 단순 bundle보다 `bundle + port`가 더 정확한 역할 정의다.
+    - 실제로 `brainstorming`, `writing-plans`, `systematic-debugging` support asset 일부는 `ofgw` module/path/command 사실에 맞춰 포팅했다.
+
+### Session 56 - Support-Asset Default Bundle Rule Tightening
+
+- `generation_assets`가 support asset 기본 동작을 과하게 막지 않도록 해석을 다시 정리했다.
+- 현재 기준:
+  - support asset은 기본적으로 bundle + port 대상이다
+  - `generation_assets`는 support asset 전체 목록이 아니라 explicit skill generation 또는 true override만 담는다
+- `ofgw`에서 stale하다고 보인 guide 계열 `stay_in_templates` 항목은 제거했다.
+- 추가 실증:
+  - `subagent-driven-development` prompt 3종
+  - `review/code-reviewer` prompt 3종
+  - `writing-documents` guide 3종
+  을 `ofgw` module boundary, artifact path, review terminology, confirmed Gradle command 기준으로 포팅했다.
+- 판단:
+  - `harness-support-assets`는 단순 adjacent copy가 아니라 실제 productization step이다
+  - 그래도 아직 별도 support-asset schema는 필요하지 않다
+  - 기존 adapter truth와 repo fact만으로도 한 단계 더 포팅할 수 있다
+
+### Session 57 - `osd` Three-Skill Validation
+
+- `generated/osd-harness/`와 `adapters/osd/`를 먼저 백업한 뒤, `osd`도 `ofgw`와 같은 3스킬 흐름으로 다시 검증했다:
+  1. `harness-initiator`
+  2. `harness-support-assets`
+  3. `harness-refinement`
+- `osd`에서 추가 실증한 support asset 포팅:
+  - `brainstorming/spec-document-reviewer-prompt.md`
+  - `writing-plans/plan-document-reviewer-prompt.md`
+  - `systematic-debugging/root-cause-tracing.md`
+  - `subagent-driven-development/*.md`
+  - `review/code-reviewer/*.md`
+  - `writing-documents/markdown-guide.md`
+  - `writing-documents/jira-guide.md`
+  - `writing-documents/gitlab-guide.md`
+- 적용한 포팅 기준:
+  - `agent/<topic>/...` artifact path
+  - `src/lib` / `src/server` / `src/tool` / `src/util` / `dist` boundary
+  - confirmed `make`, `make -C test`, `test/run_coverage.sh` command set
+- 추가 판단:
+  - `ofgw`에서 정리한 support-asset 규칙은 `osd`에도 그대로 적용 가능했다
+  - script-based coverage repo에서도 extra schema 없이 support-asset productization이 가능했다
+  - 현재 우선순위는 schema 확장이 아니라 existing adapter truth 활용 강화다
+
+### Session 58 - AIM Source-Fidelity Audit
+
+- 원본 `aim-harness/skills/*`와 `templates/aim/*`를 정규화된 경로 기준으로 다시 비교했다.
+- 결과:
+  - skill-adjacent source asset은 현재 `templates/aim`에 모두 들어와 있다
+  - 실제 누락은 없었다
+- 추가 확인:
+  - `templates/aim/AGENTS.template.md`는 원본 `CLAUDE.md`를 source로 삼는 intentional extra다
+  - root `settings.json`, `hooks/session-start.sh`는 아직 template source로 들고 오지 않았다
+    - 이유:
+      - 현재 생성기는 startup text source를 `AGENTS.template.md`로 다루고
+      - runtime hook/config materialization은 root generator policy가 담당하기 때문이다
+  - `templates/aim/review/code-reviewer/measure_diff_cov.sh`는 원본 대비 중복 extra였고, 원본 경로와 맞는 `scripts/measure_diff_cov.sh`만 남기도록 정리했다
+
+generated runtime 관점의 누락/생략 해석:
+
+- 일부 support asset은 현재 generated v1에 아직 실리지 않는다
+- 이유는 아래 세 가지로 나뉜다:
+  - active generated skill로 이미 흡수됨
+    - 예: `info-collector-prompt`, `coverage-analyst-prompt`
+  - ops-locked이라 의도적으로 template에 남김
+    - 예: `scripts/measure_diff_cov.sh`
+  - 아직 첫 productization pass에서 선택되지 않음
+    - 예: `confluence-guide`, `ims-guide`, `mail-guide`, 일부 debugging/test support asset
+
+판단:
+
+- source pack fidelity 문제는 현재 크지 않다
+- 남은 차이는 source 보존보다 generated v1에서 어디까지 productize할지의 범위 문제에 가깝다
+
+### Session 59 - Common Support-Asset Pattern Extraction
+
+- `ofgw`와 `osd`를 함께 놓고 support-asset productization 결과를 다시 비교했다.
+- 현재 두 제품에서 공통으로 살아남은 support asset은 아래다:
+  - `brainstorming/spec-document-reviewer-prompt.md`
+  - `writing-plans/plan-document-reviewer-prompt.md`
+  - `subagent-driven-development/*.md`
+  - `review/code-reviewer/{code-reviewer-prompt,review-synthesizer-prompt,test-reviewer-prompt}.md`
+  - `writing-documents/{markdown-guide,jira-guide,gitlab-guide}.md`
+  - `systematic-debugging/root-cause-tracing.md`
+- 공통으로 확인된 포팅 규칙:
+  - source-relative prompt path를 `agent/<topic>/...`로 치환
+  - source-product wording을 target product wording으로 치환
+  - review artifact 용어를 target terminology로 정규화
+  - module boundary와 verification scope를 confirmed repo surface에 맞춰 다시 서술
+  - command example을 confirmed `command_bindings`로 치환
+- 추가 판단:
+  - 이 패턴들은 현재 `harness-support-assets`와 기존 adapter truth만으로 설명 가능하다
+  - 아직 새 support-asset schema를 도입할 근거는 부족하다
+  - generated v1 생략 자산은 여전히 세 범주로 읽는 것이 맞다:
+    - active generated skill에 흡수된 자산
+    - ops-locked이라 template에 남는 자산
+    - 아직 첫 productization pass에서 선택되지 않은 자산
+
+### Session 60 - Boundary Tightening and OSD Narrow Pass 2
+
+- `harness-initiator`, `harness-support-assets`, `harness-refinement`의 경계를 다시 점검했다.
+- 확인한 중복:
+  - initiator 문서 안에 support-asset의 세부 처리 규칙이 너무 많이 남아 있었다
+  - 이는 실제 실행 책임이 `harness-support-assets`에 있는 현재 3스킬 구조와 겹쳤다
+- 정리:
+  - initiator는 source skill 선택, explicit `generation_assets` override 존중, support-asset handoff까지만 담당
+  - support-asset의 실제 bundle + port 규칙은 `harness-support-assets`가 담당
+- `osd`에서는 다음 low-risk support asset을 추가 실증했다:
+  - `systematic-debugging/condition-based-waiting.md`
+  - `systematic-debugging/defense-in-depth.md`
+  - `test-driven-development/testing-anti-patterns.md`
+- 판단:
+  - debugging/TDD support asset도 기존 adapter truth와 repo fact만으로 포팅 가능했다
+  - 아직도 새 schema를 추가할 근거는 부족하다
+
+### Session 61 - OFGW Docs-Guide Porting and Disabled-Binding Check
+
+- `ofgw`에서 docs guide 추가 포팅을 진행했다:
+  - `writing-documents/ims-guide.md`
+  - `writing-documents/mail-guide.md`
+- 적용한 기준:
+  - formal Korean channel 유지
+  - `ofgwSrc` / `webterminal` / `ofgwAdmin` module boundary 반영
+  - backend evidence는 confirmed Gradle command에만 기대기
+  - draft vs send/save 분리 유지
+- 함께 확인한 규칙:
+  - support guide가 특정 target binding에 묶여 있어도, support-asset completeness가 현재 우선순위라면 dormant reference로 계속 bundle할 수 있다
+  - disabled binding은 guide를 active destination으로 만들지 않는 근거이지, guide 파일 자체를 반드시 제외해야 한다는 근거는 아니다
+- 적용:
+  - `ofgw`에 `confluence-guide.md`를 dormant reference로 추가했다
+- 판단:
+  - 이 규칙도 새 schema 없이 existing `access_bindings`만으로 설명 가능하다
+  - support-asset productization은 계속 schema보다 existing adapter truth 활용 문제에 가깝다
+
+### Session 62 - OFGW `writing-skills` Authoring Pass
+
+- `generated/ofgw-harness/skills/authoring/writing-skills/`를 추가했다.
+- 구조:
+  - baseline `SKILL.md`는 root shared `skills/writing-skills/SKILL.md`
+  - support asset은 `templates/aim/skills/writing-skills/*`에서 port
+- 실제로 확인된 규칙:
+  - support-asset 단계는 파일명도 runtime contract에 맞춰 rename할 수 있다
+    - 예: `CLAUDE_MD_TESTING.md` -> `AGENTS_MD_TESTING.md`
+  - `~/.claude/skills/...` 같은 old runtime path는 generated harness의 `skills/` 레이아웃으로 치환 가능하다
+- 중요한 한계 사례:
+  - `anthropic-best-practices.md`는 번들링 자체는 가능하지만, 문서 전체가 vendor-locked이고 분량이 커서 first-pass `harness-support-assets`만으로 깊은 rewrite까지 맡기기 어렵다
+  - 따라서 이런 자산은:
+    - first pass: bundle + obvious runtime note
+    - later pass: `harness-refinement` 또는 shared-skill cleanup
+    로 보는 편이 적절하다
+- 판단:
+  - 새 schema는 여전히 필요하지 않다
+  - 대신 `harness-support-assets`와 `harness-refinement`의 경계를 문서상으로 더 분명히 유지해야 한다
+
+### Session 63 - `writing-skills` Shared Promotion Check
+
+- `writing-skills` support asset은 reviewer/debugging/docs guide보다 shared 승격 가능성이 높다는 초기 판단을 다시 확인했다.
+- OFGW authoring pass 이후 판단:
+  - `best-practices.md`
+  - `testing-skills-with-subagents.md`
+  - `examples/AGENTS_MD_TESTING.md`
+  - `persuasion-principles.md`
+  - `graphviz-conventions.dot`
+  - `render-graphs.js`
+  는 root shared `skills/writing-skills/`에 두는 편이 더 적절하다.
+- 반영:
+  - vendor-heavy `anthropic-best-practices.md`는 shared root에서 제거했다.
+  - shared root에는 runtime-neutral `best-practices.md`를 두고, generated OFGW authoring layer도 그 기준으로 맞췄다.
+- 의미:
+  - `harness-support-assets`는 support asset의 영구 저장소가 아니라, source 자산을 제품 runtime으로 옮기는 좁은 포터다.
+  - 여러 제품에서 포팅 차이가 거의 없으면 그 자산은 shared root skill로 승격하는 편이 맞다.
+  - `writing-skills`는 이제 `SKILL.md`뿐 아니라 shared support asset도 함께 `harness-initiator`가 carry-over 하는 가족으로 본다.
+  - 따라서 `writing-skills`는 더 이상 `harness-support-assets` 실증 대상으로 남겨두지 않는다.
+
+### Session 64 - `harness-refinement` Support-Asset Fit Check
+
+- `harness-support-assets`가 first-pass `bundle + port`를 맡더라도, bundled support asset이 실제 target product에 충분히 맞는지는 후속 확인이 필요하다는 점을 정리했다.
+- 따라서 `harness-refinement`에는 다음 검증 책임을 추가했다:
+  - bundled support asset이 target product의 기술스택에 맞는지
+  - module/service 경계와 terminology에 맞는지
+  - review/docs workflow와 runtime contract에 맞는지
+- 경계:
+  - 작은 path/command/example cleanup은 refinement가 담당
+  - 생성 규칙 자체가 잘못됐다면 initiator 또는 support-assets 쪽 defect로 되돌린다
+
+### Session 65 - OFGW Runtime Entry and `AGENTS.md` Strengthening
+
+- AIM 원본과의 가장 큰 격차 중 하나였던 startup/runtime entry 계약을 OFGW generated runtime에서 한 단계 강화했다.
+- 반영:
+  - `adapters/ofgw/mappings.yaml`에 `runtime_entry` 블록을 추가했다.
+  - `generated/ofgw-harness/hooks/hooks.json` matcher를 `startup|resume|clear|compact`로 확장했다.
+  - `generated/ofgw-harness/AGENTS.md`를 thin summary보다 강한 runtime constitution 형태로 보강했다.
+- 강화된 내용:
+  - startup contract 명시
+  - skill routing table 추가
+  - default workflow chain 보강
+  - bundled support asset을 runtime support로 읽는 규칙 추가
+- 판단:
+  - 이 작업은 단순 generated 문서 polish가 아니라 initiator가 생성해야 할 runtime-entry contract의 수준을 끌어올리는 쪽에 가깝다.
+  - 아직도 AIM의 full tail workflow까지는 아니지만, generated AGENTS/hook 계약은 이전보다 훨씬 원본 AIM의 운영 강도에 가까워졌다.
+
+### Session 66 - OFGW Support-Asset Fit Check on `testing-anti-patterns.md`
+
+- `harness-refinement`의 새 support-asset fit check 책임을 실제로 OFGW에 적용했다.
+- 대상:
+  - `generated/ofgw-harness/skills/core/test-driven-development/testing-anti-patterns.md`
+- 발견:
+  - 문서 구조와 목적은 유효했지만 예시가 여전히 AIM-specific API/상수명에 묶여 있었다.
+  - 이는 first-pass `bundle + port`만으로는 충분하지 않은 전형적인 "still source-biased support asset" 사례였다.
+- 조치:
+  - 예시를 runtime-neutral한 C/GoogleTest anti-pattern 예시로 다시 썼다.
+  - guidance는 유지하고, 제품/원본 종속 naming만 제거했다.
+- 판단:
+  - `harness-support-assets`는 first-pass productization 단계로 충분하다.
+  - 하지만 bundled support asset이 실제 target runtime에 맞는지는 `harness-refinement`가 한 번 더 보는 편이 맞다.
+
+### Session 67 - Stack-Aware Porting Rule Tightening
+
+- `testing-anti-patterns.md` 사례를 다시 보니, 기술스택이 이미 adapter/repo facts로 강하게 확인된 경우에는 first-pass `harness-support-assets`가 더 깊게 포팅했어야 했다는 점이 드러났다.
+- 정리한 기준:
+  - path/command/module/review vocabulary뿐 아니라
+  - language/test framework/build stack도 이미 강하게 확인되면 first-pass porting 대상이다
+- 적용:
+  - `harness-support-assets`에 stack-aware porting 규칙을 추가했다
+  - `harness-refinement`에는 "이 정도는 support-assets miss"라는 판단 기준을 추가했다
+  - OFGW `testing-anti-patterns.md`는 JUnit 5 / Mockito / Kotlin-Java service 기준 anti-pattern guide로 다시 작성했다
+- 의미:
+  - refinement가 stack mismatch를 영구적으로 떠안으면 안 된다
+  - stack이 이미 명확한 자산은 support-assets가 first-pass에서 더 깊게 productize해야 한다
+
+### Session 68 - Support-Asset Interpretation Clarification
+
+- support asset을 단순히 "excluded"로 해석하는 것은 현재 생성기 계약과 맞지 않는다는 점을 명시했다.
+- 현재 기준의 더 정확한 해석:
+  - 일부 자산은 active generated skill에 흡수된다
+  - 일부 자산은 generated helper/guide로 productized된다
+  - 반복적으로 차이가 거의 없는 자산은 root shared `skills/`로 승격된다
+- 따라서 support asset은 기본적으로 "버린다"보다 "적절한 레이어로 옮긴다"가 맞다.
+- 현재 실질적인 제외 후보에 가장 가까운 것은 `measure_diff_cov.sh`처럼 아직도 ops-locked 전제가 강한 helper 정도다.
+- 의미:
+  - `harness-support-assets`와 `harness-refinement`의 기본 방향은 제외가 아니라 productization이다
+  - generated review/docs/authoring/runtime layer에서 이미 다른 형태로 살아 있는 자산은 누락보다는 흡수/승격으로 본다
+
+### Session 69 - OFGW Review Support-Asset Second-Pass Fit Check
+
+- `ofgw` review support asset 3종에 대해 `harness-refinement` 기준의 2차 적합성 점검을 수행했다.
+- 대상:
+  - `generated/ofgw-harness/skills/review/code-reviewer/code-reviewer-prompt.md`
+  - `generated/ofgw-harness/skills/review/code-reviewer/review-synthesizer-prompt.md`
+  - `generated/ofgw-harness/skills/review/code-reviewer/test-reviewer-prompt.md`
+- 발견:
+  - 1차 productization은 되어 있었지만, OFGW의 Kotlin/JPA/QueryDSL/JUnit 5/Mockito/JaCoCo 경계에 맞는 review emphasis가 더 분명할 필요가 있었다.
+  - 특히 test/build/coverage 범위를 `ofgwSrc`에 묶는 설명과, service/repository/config/resource 흐름을 함께 읽는 설명이 보강될 여지가 있었다.
+- 적용:
+  - code reviewer prompt에 Kotlin/JPA/QueryDSL 계층, lazy loading/N+1, test-only seam 점검 항목을 추가했다.
+  - test reviewer prompt에 `JUnit 5`/`Mockito`/`AssertJ`/`JaCoCo`, `:ofgwSrc:test`, `:ofgwSrc:jacocoTestReport` 기준의 범위 설명을 추가했다.
+  - review synthesizer prompt에 touched module보다 넓은 검증 결론 금지와 OFGW service/config/resource 흐름 요약 기준을 보강했다.
+- 판단:
+  - review support asset은 이미 "제외" 대상이 아니라 generated review layer로 productized된 상태였다.
+  - 이번 패스는 source residue 제거보다 product-fit tightening에 가까웠다.
+  - 이 종류의 조정은 first-pass miss라기보다 refinement의 2차 적합성 점검 책임에 더 가깝다.
+
+### Session 70 - `runtime_entry` and Generated `AGENTS.md` Contract Formalization
+
+- review layer 검증도 product harness 완성보다 `harness-*` 스킬 경계를 검증하는 실증이라는 점을 다시 고정했다.
+- 다음 단계는 generated runtime 산출물보다 생성기 계약을 더 명확히 하는 쪽으로 잡았다.
+- 적용:
+  - `harness-initiator`에 `runtime_entry`를 정식 generation contract로 다루는 섹션을 추가했다.
+  - `runtime_entry`의 최소 지원 필드를 `hook_event`, `matcher`, `inject_artifact`, `startup_contract.*`로 명시했다.
+  - generated `AGENTS.md`가 반드시 가져야 할 최소 섹션 체크리스트를 initiator 규칙에 추가했다.
+- 판단:
+  - `runtime_entry`는 더 이상 `ofgw` 예시용 메모가 아니라 generated startup/hook 계약의 표준 입력으로 보는 편이 맞다.
+  - generated `AGENTS.md` 품질도 개별 product polishing보다 initiator contract 명시성이 먼저다.
+
+### Session 71 - Coverage Prompt vs Helper Script Boundary
+
+- `coverage-analyst-prompt.md`와 `measure_diff_cov.sh`를 다시 보니, 둘을 같은 의미의 "제외 자산"으로 묶는 건 부정확하다는 점을 정리했다.
+- 현재 해석:
+  - `coverage-analyst-prompt.md`
+    - 이미 active `skills/review/coverage-review/`로 상당 부분 흡수/제품화된 상태다
+    - 따라서 missing/excluded보다 absorbed/productized로 보는 편이 맞다
+  - `measure_diff_cov.sh`
+    - 아직 AIM의 gcov/diff workflow에 강하게 묶여 있어 generated runtime에는 들어오지 않았다
+    - 다만 이 역시 영구 제외보다 "repo-native diff-coverage helper rewrite candidate"로 보는 편이 더 정확하다
+- 적용:
+  - `harness-support-assets`에 "workflow role은 재사용 가능하지만 구현이 source-only tooling에 묶인 경우 rewrite candidate로 본다"는 해석을 추가했다
+  - `adapters/ofgw/mappings.yaml`의 coverage 관련 note도 같은 방향으로 수정했다
+- 판단:
+  - coverage 계열 자산은 단순 제외보다 흡수/재작성 후보로 보는 것이 현재 3스킬 계약과 더 잘 맞는다
+  - 아직 새 schema는 필요하지 않고, existing `generation_assets` note와 skill boundary 해석만으로 충분하다
+
+### Session 72 - `measure_diff_cov.sh` Rewrite Feasibility for OFGW
+
+- `measure_diff_cov.sh`가 OFGW에서 support asset으로 재작성 가능한지 로컬 repo fact 기준으로 다시 판단했다.
+- 확인된 근거:
+  - `ofgwSrc/build.gradle`은 `jacocoTestReport`와 XML report 생성을 이미 제공한다.
+  - `classDirectories`와 `sourceDirectories`가 `ofgwSrc`의 main source/class 경계를 명시하고 있다.
+  - OFGW 저장소는 일반 git diff 기반 비교가 가능하고, module 경계도 `ofgwSrc`로 충분히 좁혀져 있다.
+- 판단:
+  - 현재 OFGW에서는 legacy `gcov` 스크립트를 그대로 옮길 수는 없지만, 그 역할 자체는 repo-native helper로 재작성 가능하다.
+  - 더 정확한 해석은 "permanent exclusion"이 아니라 "future JaCoCo XML + git diff helper rewrite candidate"다.
+  - 이 판단은 새 schema를 요구하지 않는다.
+  - 필요한 입력은 이미 adapter/repo fact 안에 있다:
+    - coverage command
+    - `ofgwSrc` source boundary
+    - git diff base branch
+- 의미:
+  - 나중에 이 helper를 다시 살리더라도 `harness-support-assets` 범위 안에서 first-pass product helper로 시도할 수 있다.
+  - 그 구현이 과하게 policy-heavy해지면 그때만 refinement 또는 extension으로 넘기면 된다.
+
+### Session 73 - OFGW Experimental Diff-Coverage Helper Materialization
+
+- `measure_diff_cov.sh`를 단순 후보로 남기지 않고, OFGW generated runtime 안에 실제 experimental helper로 materialize했다.
+- 위치:
+  - `generated/ofgw-harness/skills/review/code-reviewer/scripts/measure_diff_cov.sh`
+- 설계:
+  - AIM의 `gcov`/`.c` 기반 로직은 버리고
+  - `git diff` + JaCoCo XML 기반 added-line coverage 추정기로 다시 작성했다
+  - 대상 범위는 `ofgwSrc/src/main/java`, `ofgwSrc/src/main/kotlin`
+  - 출력은 primary contract가 아니라 supplemental review signal로만 해석하도록 명시했다
+- 판단:
+  - 이 실증은 `harness-support-assets`가 ops-locked helper도 repo-native helper로 다시 쓸 수 있는지 검증하는 목적에 맞다
+  - 아직 새 schema는 필요하지 않고, existing `generation_assets`와 adapter/repo fact만으로 materialization 가능했다
+  - 따라서 "workflow role은 재사용 가능하지만 source-only tooling에 묶인 helper"는 `harness-support-assets`의 검증된 패턴으로 올릴 수 있다
+  - 다만 이 패턴을 shared skill 문서에 적을 때는 `measure_diff_cov.sh`나 `JaCoCo` 자체보다 "source-only helper -> repo-native helper rewrite"라는 일반 패턴으로 적는 편이 더 적절하다
+
+### Session 74 - Current Generator Maturity Re-Evaluation
+
+- 현재 생성기를 original `aim-harness`와 다시 비교해 보니, 구조/계약 쪽은 분명히 올라왔고 runtime startup contract도 이전보다 강해졌다.
+- 현재 강점:
+  - `harness-initiator`가 `runtime_entry`와 source-derived `AGENTS.md`를 정식 계약으로 다루기 시작했다
+  - `harness-support-assets`가 prompt/guide뿐 아니라 source-only helper도 repo-native helper로 재작성 가능한 패턴을 확보했다
+  - `harness-refinement`가 support-asset fit check를 통해 residual mismatch와 first-pass miss를 구분할 수 있게 됐다
+  - `writing-skills`는 shared family 승격까지 닫힌 첫 사례가 됐다
+- 원본 AIM 대비 아직 남은 큰 격차:
+  - startup/meta-skill 강도는 올라왔지만 `using-aim-harness` 수준의 일체형 진입 모델까지는 아직 아니다
+  - merge 이후 tail workflow (`completing-patch`, marker-driven manual follow-up, external manual publish)는 아직 generated base runtime 밖에 있다
+  - 일부 generated `AGENTS.md`는 strong runtime constitution으로 가고 있지만, 아직 AIM 원본만큼 운영 체인을 완전히 닫지는 못한다
+- 현재 판단:
+  - 생성기 자체는 internal preview 수준을 넘어, 팀 내부 pilot 배포에는 충분히 가까워졌다
+  - 하지만 public-ready라기보다 "AIM 수준의 운영 완성도에 근접 중인 생성기"로 보는 편이 정확하다
+  - 대략 original AIM 역할 수준의 75~85% 정도까지는 올라온 것으로 본다
+
+### Session 75 - `using-{product}-harness` Placement Decision
+
+- `using-{product}-harness`를 root shared `skills/`에 둘 수 있는지 먼저 검토했다.
+- 결론:
+  - root shared skill로 두는 것은 적절하지 않다.
+  - 이유:
+    - skill name 자체가 product-bound
+    - startup contract, workflow chain, access/review wording이 product runtime truth에 직접 묶인다
+    - root shared `using-base-harness`는 생성기 저장소 자체의 meta-skill로 남는 편이 더 자연스럽다
+- 따라서 `using-{product}-harness`는 generated runtime-local meta skill로 다루기로 했다.
+- OFGW first proof:
+  - `generated/ofgw-harness/skills/meta/using-ofgw-harness/SKILL.md`
+  - generated `AGENTS.md`에도 이 meta skill을 startup entry skill로 추가
+- 판단:
+  - 이것은 OFGW harness polish보다 `harness-initiator`가 source-derived startup contract를 문서 + meta skill 양쪽으로 materialize할 수 있는지 검증하는 목적에 더 가깝다
+
+### Session 76 - OFGW Rebuild Reproducibility Check
+
+- 현재 `generated/ofgw-harness/`를 먼저 백업했다.
+  - `generated/backups/20260422-151321/ofgw-harness-pre-rebuild`
+- 그 다음 현재 3스킬 계약 기준으로 별도 재생성 디렉토리에서 OFGW harness를 다시 materialize했다.
+  - `generated/rebuild-ofgw-harness/`
+- 재생성본과 live `generated/ofgw-harness/`를 비교한 결과, 처음에는 `writing-skills` shared family 3개만 달랐다.
+  - `skills/authoring/writing-skills/testing-skills-with-subagents.md`
+  - `skills/authoring/writing-skills/examples/AGENTS_MD_TESTING.md`
+  - `skills/authoring/writing-skills/graphviz-conventions.dot`
+- 이 차이는 생성기 결함이라기보다, live OFGW harness가 `writing-skills` whole-family shared carry-over 규칙보다 한 단계 뒤처져 있던 흔적이었다.
+- live OFGW harness의 해당 3개 파일을 root shared `skills/writing-skills/` 기준으로 다시 맞춘 뒤, 재생성본과 live OFGW harness는 완전히 일치했다.
+- 판단:
+  - 현재 `ofgw` 생성기 계약은 재현성 측면에서 유효하다.
+  - `using-ofgw-harness`, 강화된 `AGENTS.md`, support asset bundle/port, `measure_diff_cov.sh` helper rewrite까지 현재 계약으로 다시 materialize 가능하다고 봐도 된다.
+  - 이번 재현성 점검에서 드러난 유일한 live drift는 `writing-skills` shared family carry-over 동기화 문제였고, 지금은 정렬됐다.
+
+### Session 77 - OSD Cross-Product Reproducibility Check
+
+- 현재 `generated/osd-harness/`와 `adapters/osd/`를 먼저 백업했다.
+  - `generated/backups/20260422-152010/osd-harness-pre-cross-product`
+  - `adapters/backups/20260422-152010/osd-adapter-pre-cross-product`
+- 그 다음 OFGW에서 검증된 현재 3스킬 계약 패턴을 OSD에도 적용했다.
+  - `runtime_entry`를 `adapters/osd/mappings.yaml`에 추가
+  - generated `AGENTS.md`를 stronger runtime constitution 형태로 재작성
+  - `skills/meta/using-osd-harness/SKILL.md` 추가
+  - shared `skills/writing-skills/` whole-family를 `skills/authoring/writing-skills/`로 carry-over
+  - hook matcher를 `startup|resume|clear|compact`로 확장
+- 별도 재생성 디렉토리에서도 같은 구조를 다시 materialize했다.
+  - `generated/rebuild-osd-harness/`
+- 재생성본과 live `generated/osd-harness/`를 비교한 결과 완전히 일치했다.
+- 판단:
+  - `using-{product}-harness` 패턴은 OFGW 전용 proof가 아니라 cross-product로도 성립한다.
+  - shared `writing-skills` whole-family carry-over도 OSD에서 그대로 재현된다.
+  - `runtime_entry`와 stronger generated `AGENTS.md`는 현재 `harness-initiator` 계약의 cross-product 항목으로 봐도 된다.
+
+### Session 78 - Root Documentation Role Cleanup
+
+- root `README.md`는 사람용 개요 문서로 다시 정리했다.
+- root `AGENTS.md`는 generated harness source가 아니라, `of-harness` generator repo 자체를 다루는 AI agent contract로 다시 정의했다.
+- 명시한 핵심:
+  - generated `AGENTS.md`의 source는 `templates/<pack>/AGENTS.template.md`와 adapter truth다
+  - root `AGENTS.md`는 generator repo maintenance contract다
+  - root 문서 역할 분담:
+    - `README.md`: 사람용 개요
+    - `AGENTS.md`: AI 작업 계약
+    - `HARNESS_INITIATOR.md`: 생성기 계약과 검증 기준
+    - `MIGRATION.md`: 연속 로그
+
+### Session 79 - AIM Final Generator Validation
+
+- `aim`을 마지막 source-heavy 실증 대상으로 다시 다뤘다.
+- 현재 dirty `generated/aim-harness/`와 `adapters/aim/`를 먼저 백업했다.
+  - `generated/backups/20260422-155539/aim-harness-pre-final-validation`
+  - `adapters/backups/20260422-155539/aim-adapter-pre-final-validation`
+- 그 다음 current 3스킬 계약 기준으로 `aim`에도 아래 패턴을 적용했다.
+  - `adapters/aim/mappings.yaml`에 `runtime_entry` 추가
+  - generated `AGENTS.md`를 stronger runtime constitution으로 재작성
+  - generated runtime-local meta skill `skills/meta/using-aim-harness/SKILL.md` 추가
+  - shared `skills/writing-skills/` whole-family를 `skills/authoring/writing-skills/`로 carry-over
+  - template-side support assets를 source-fidelity 기준으로 다시 bundle
+  - `hooks/hooks.json` matcher를 `startup|resume|clear|compact`로 정렬
+- 별도 재생성 디렉토리에서도 같은 구조를 다시 materialize했다.
+  - `generated/rebuild-aim-harness/`
+- 재생성본과 live `generated/aim-harness/`는 완전히 일치했다.
+- 원본 `aim-harness`와의 support-asset basename 비교 결과:
+  - original only:
+    - `coverage-analyst-prompt.md`
+    - `info-collector-prompt.md`
+    - `manual-guide.md`
+    - `anthropic-best-practices.md`
+    - `CLAUDE_MD_TESTING.md`
+  - generated only:
+    - `best-practices.md`
+    - `AGENTS_MD_TESTING.md`
+- 해석:
+  - `coverage-analyst-prompt.md`는 `coverage-review`로 productized/absorbed
+  - `info-collector-prompt.md`는 `review-context-collector`로 productized/absorbed
+  - `manual-guide.md`는 local `manual-workflow`로 partial absorb
+  - `anthropic-best-practices.md`는 shared runtime-neutral `best-practices.md`로 승격/치환
+  - `CLAUDE_MD_TESTING.md`는 current runtime contract에 맞게 `AGENTS_MD_TESTING.md`로 치환
+- 판단:
+  - `aim`에서도 현재 3스킬 계약은 재현 가능하다.
+  - startup/meta-skill, support asset, shared authoring family까지 current generator가 원본 AIM 구조를 꽤 잘 끌어온다.
+  - 남은 큰 격차는 `completing-patch`와 external manual publish 같은 advanced tail workflow다.
+
+### Session 51 - OSD Review-Layer Evaluation and Shared `code-reviewer` Fix
+
+- `generated/osd-harness/`를 전반 평가한 결과, 가장 큰 문제는 product-local binding 부족이 아니라 review layer 내부 연결 부족이었다.
+- `review-context-collector`와 `coverage-review`가 generated 됐더라도, carried-over `code-reviewer`가 이들을 bound helper로 인식하지 못하면 review layer가 반쪽짜리로 남는다.
+- 이 문제는 `osd` 전용 refinement보다 shared `skills/code-reviewer/`와 initiator review 기준 보정으로 푸는 것이 더 적절하다고 판단했다.
+- 따라서:
+  - shared `skills/code-reviewer/SKILL.md`를 보강했다
+  - generated `ofgw-harness`, `osd-harness`의 `skills/review/code-reviewer/SKILL.md`도 같은 기준으로 맞췄다
+  - `review-generated-harness` 체크리스트에 companion review skill coherence를 추가했다
+- 판단:
+  - `osd-harness`는 initiator 적용이 전반적으로 잘 됐고 usable first draft다
+  - 지금 시점의 핵심 개선은 adapter/schema 확장이 아니라 shared carry-over skill 품질 개선이다

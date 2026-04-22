@@ -1,139 +1,153 @@
-# Base Harness Agents
+# of-harness Agent Contract
 
-## Purpose
+이 문서는 `of-harness` **생성기 저장소 자체**를 다룰 때 사용하는 AI 에이전트용 작업 계약이다.
 
-`base-harness`의 기본 런타임은 Codex다.
+중요:
 
-- 루트 `AGENTS.md`는 Codex가 바로 따르는 실제 하네스 규칙이다.
-- `skills/`는 기본 base runtime skill set이다.
-- `product-specific/`는 기본 런타임에 포함하지 않는 product pack 번들이다.
-- `hooks/`는 Codex hook source-of-truth다.
-- `claude/`는 선택형 Claude runtime pack이다.
+- 이 문서는 generated harness의 `AGENTS.md` source가 아니다.
+- generated runtime contract source는 `templates/<pack>/AGENTS.template.md`와 adapter truth다.
+- root `AGENTS.md`는 `of-harness` repo를 유지보수할 때만 적용한다.
 
-루트에는 활성화된 Codex 런타임 파일을 직접 두지 않는다.
-Codex 기본 진입점은 이 문서와 `skills/`다.
+## Repository Interpretation
 
-## Core Runtime Boundary
+이 저장소는 product runtime이 아니라 generator repo다.
 
-- 기본 런타임 규칙: `AGENTS.md`
-- 기본 스킬 세트: `skills/`
-- 선택형 제품 확장: `product-specific/`
-- Codex hook source: `hooks/`
-- 선택형 Claude 자산: `claude/`
-- 마이그레이션 기록: `MIGRATION.md`
+- `skills/`
+  - shared normalized runtime skills
+- `templates/`
+  - source-fidelity generation packs
+- `adapters/`
+  - product-specific truth and generation mapping
+- `generated/`
+  - generated product runtime v1
+- `hooks/`
+  - generator-side Codex hook source-of-truth
 
-`product-specific/` 아래의 문서는 기본 스킬 라우팅에 자동 포함되지 않는다.
-명시적으로 제품 전용 워크플로우가 필요할 때만 사용한다.
+`generated/<product>-harness/AGENTS.md`와 이 파일을 혼동하지 않는다.
 
-## Skill Rule
+## Main Working Rule
 
-관련 스킬이 있으면 행동 전에 먼저 사용한다.
+이 저장소에서 작업할 때는 항상 아래를 먼저 구분한다.
 
-우선순위:
+1. shared generator rule인가
+2. template source pack 자산인가
+3. adapter truth인가
+4. generated runtime 결과물인가
 
-1. 프로세스 스킬
-2. 실행 스킬
-3. 협업 스킬
-4. product-specific pack
+이 구분이 흐려지면, 우선 분류부터 다시 맞춘다.
 
-우선 확인 대상:
+## Three-Skill Priority
 
-- `brainstorming-base`
-- `writing-plans-base`
-- `executing-plans-base`
-- `subagent-driven-development-base`
-- `test-driven-development-base`
-- `systematic-debugging-base`
-- `verification-before-completion-base`
-- `requesting-code-review-base`
-- `receiving-code-review-base`
-- `code-reviewer-base`
+현재 generator의 중심은 아래 3개다.
+
+1. `harness-initiator`
+2. `harness-support-assets`
+3. `harness-refinement`
+
+새 요구가 생기면 먼저:
+
+- 이게 `initiator` 책임인지
+- `support-assets` 책임인지
+- `refinement` 책임인지
+
+를 나눈 뒤에 수정한다.
+
+## Responsibility Boundary
+
+### `harness-initiator`
+
+- adapter draft
+- runtime skeleton generation
+- shared family carry-over
+- `runtime_entry`
+- generated `AGENTS.md`/`hooks/*` 생성 계약
+
+### `harness-support-assets`
+
+- template-side adjacent support asset의 first-pass `bundle + port`
+- obvious path / command / terminology / stack-aware porting
+- source-only helper -> repo-native helper rewrite 후보 처리
+
+### `harness-refinement`
+
+- first-pass 이후에도 남는 residual mismatch 정리
+- bundled support asset이 실제 target runtime에 충분히 맞는지 2차 점검
+
+## Root vs Template vs Generated
+
+같은 이름의 skill이 여러 레이어에 있어도 중복 실수로 보지 않는다.
+
+- root `skills/`
+  - shared normalized runtime
+- `templates/<pack>/skills/`
+  - source-fidelity pack
+- `generated/<product>-harness/skills/`
+  - generated product runtime
+
+특히 `templates/<pack>/skills/<skill>/SKILL.md`는 adjacent support asset 해석의 anchor일 수 있으니 함부로 제거하지 않는다.
+
+## Working Policy
+
+- 사람용 개요는 `README.md`를 우선한다.
+- 생성기 계약과 검증 기준은 `HARNESS_INITIATOR.md`를 우선한다.
+- 연속 로그와 변경 기록은 `MIGRATION.md`를 우선한다.
+- root 문서 간 내용이 겹치면:
+  - `README.md`는 사람용 요약
+  - `AGENTS.md`는 AI 작업 계약
+  - 상세 결정사항은 `HARNESS_INITIATOR.md`
+  - 연속 기록은 `MIGRATION.md`
+  로 정리한다.
+
+## Generated Runtime Caution
+
+`generated/` 아래 자산은 validation target이기도 하지만, 동시에 live runtime draft다.
+
+- 불필요한 backup/rebuild 산출물은 검증 후 제거한다.
+- 다른 세션에서 만든 unrelated generated drift는 함부로 섞지 않는다.
+- generated harness 수정이 필요한 경우:
+  - generator 계약에서 재현 가능한지
+  - 아니면 아직 manual proof인지
+  를 먼저 구분한다.
+- `generated/`를 다음 generation pass의 truth source처럼 사용하지 않는다.
+
+## Fresh vs Rebuild Rule
+
+이 저장소를 다룰 때는 항상 아래를 먼저 판단한다.
+
+- fresh generation
+  - 기존 `adapters/<product>/`와 `generated/<product>-harness/`가 있어도 자동 신뢰하지 않는다.
+  - 기존 adapter 값은 suggestion일 수 있지만, confirmed truth로 간주하지 않는다.
+  - 필요한 확인값은 다시 사용자에게 닫는다.
+- rebuild validation
+  - 이미 accepted 된 adapter truth를 재사용해 parity를 확인한다.
+  - 이 경우 기존 adapter는 canonical input으로 재사용 가능하다.
+  - 기존 generated harness는 comparison target일 뿐 generation input은 아니다.
+
+Live adapter를 수정할 때는 최소 상태 메타를 유지한다.
+
+- `adapter_status.confirmation_level`
+- `adapter_status.reuse_policy`
+
+이 메타는 fresh generation에서 자동 신뢰를 막고, rebuild validation에서만 canonical reuse가 가능하다는 현재 계약을 드러내기 위한 것이다.
+
+## Skill-First Rule
+
+이 저장소를 수정할 때도 relevant skill이 있으면 먼저 읽는다.
+
+특히 우선 확인 대상:
+
 - `harness-initiator`
-- `writing-skills-base`
+- `harness-support-assets`
+- `harness-refinement`
+- `writing-skills`
+- `using-base-harness`
 
-## Skill Routing
+## Current Interpretation
 
-| Situation | Skill |
-|------|------|
-| 새 기능/수정/리팩토링 설계 | `brainstorming-base` |
-| 설계 후 태스크 분해 | `writing-plans-base` |
-| 계획을 순차 실행 | `executing-plans-base` |
-| 계획을 서브에이전트로 실행 | `subagent-driven-development-base` |
-| 독립 작업 병렬 처리 | `dispatching-parallel-agents-base` |
-| 구현/버그 수정 | `test-driven-development-base` |
-| 실패 분석/원인 추적 | `systematic-debugging-base` |
-| 완료 주장 전 검증 | `verification-before-completion-base` |
-| feature branch/workspace 분리 | `using-feature-branches-base` |
-| 브랜치 정리/리뷰 준비 | `finishing-a-development-branch-base` |
-| 셀프 리뷰 요청 | `requesting-code-review-base` |
-| 리뷰 피드백 처리 | `receiving-code-review-base` |
-| 타인 변경 리뷰 | `code-reviewer-base` |
-| 제품 하네스 생성/적응 | `harness-initiator` |
-| 스킬 작성/수정 | `writing-skills-base` |
+현재 기준으로는:
 
-## Default Workflow
+- generated harness는 standalone runtime v1.x
+- original `aim-harness` 대비 운영 완성도는 아직 약간 부족
+- 하지만 `ofgw`, `osd`에서 cross-product 재현성은 확보됨
 
-```text
-brainstorming-base
-  -> writing-plans-base
-  -> executing-plans-base / subagent-driven-development-base
-     -> test-driven-development-base
-     -> systematic-debugging-base (when needed)
-     -> verification-before-completion-base
-  -> finishing-a-development-branch-base
-     -> requesting-code-review-base
-     -> receiving-code-review-base
-```
-
-독립 스킬:
-
-- `dispatching-parallel-agents-base`
-- `code-reviewer-base`
-- `using-feature-branches-base`
-- `writing-skills-base`
-
-## Product Pack Rule
-
-아래 경로는 기본 런타임 스킬이 아니다.
-
-- `product-specific/skills/issue-analysis-base`
-- `product-specific/skills/completing-patch-base`
-- `product-specific/skills/writing-documents-base`
-- `product-specific/code-reviewer-base/*`
-
-사용 조건:
-
-- 특정 제품 절차가 명시적으로 필요할 때
-- 기본 `skills/`만으로는 작업 문맥이 부족할 때
-- 제품별 issue/document/review workflow를 복원해야 할 때
-
-## Execution And Verification
-
-- 비자명한 작업은 설계 후 실행한다.
-- 실행 중에는 태스크 단위 검증과 최종 검증을 분리한다.
-- 검증 없이 완료를 주장하지 않는다.
-- 완료 보고에는 실제 실행한 검증 또는 검증하지 못한 이유를 포함한다.
-
-## Skill Gap Reporting
-
-스킬이 오래됐거나 실제 저장소 상태와 어긋나면 사용자에게 보고한다.
-
-형식:
-
-```text
-[Skill Gap] <skill-name>
-Finding: <what is wrong>
-Evidence: <file, command, or observed behavior>
-Proposal: <specific improvement>
-```
-
-## Document Ownership
-
-- `AGENTS.md`: Codex 기본 런타임 규칙
-- `README.md`: 구조와 사용법
-- `MIGRATION.md`: 마이그레이션 이력과 판단 로그
-- `hooks/`: Codex hook source-of-truth
-- `claude/`: Claude 사용자용 선택형 runtime pack
-
-새 runtime-specific 자산은 루트에 바로 두지 않는다.
-필요하면 별도 디렉토리 아래에 모은다.
+따라서 이 저장소의 우선순위는 product harness 완성보다 **generator contract 개선과 재현성 검증**이다.
