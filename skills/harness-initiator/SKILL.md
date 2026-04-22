@@ -13,6 +13,23 @@ Turn template source assets into a first product harness draft without rewriting
 
 This skill is the first-class deliverable. Generated product harnesses are downstream validation targets, but the long-term target is still a standalone product harness rather than a thin overlay.
 
+## Layer Model
+
+Treat skill sources as three different layers, not as duplicate files.
+
+- root `skills/`
+  - shared normalized runtime skills
+  - stack-neutral carry-over source for generated `skills/core/`, `skills/collab/`, and shared review runtime
+- `templates/<pack>/skills/`
+  - source-fidelity product/template skills
+  - used when initiator needs source workflow wording, startup semantics, or skill-adjacent support asset
+- `generated/<product>-harness/skills/`
+  - product runtime v1
+  - the generated result after carry-over, productization, and path/name normalization
+
+Do not delete `templates/<pack>/skills/<skill>/SKILL.md` just because root `skills/<skill>/SKILL.md` also exists.
+The template-side `SKILL.md` is the anchor for interpreting adjacent support assets and source workflow semantics.
+
 ## When to Use
 
 - A new product harness such as `ofgw-harness` needs to be derived from existing template source assets
@@ -30,10 +47,7 @@ This skill is the first-class deliverable. Generated product harnesses are downs
 - confirming unresolved gaps
 - generating the first product harness draft
 - reviewing the generated harness for structural correctness
-- classifying source assets as:
-  - absorb into active skill
-  - defer
-  - leave in `templates/`
+- defining explicit generation rules for template-derived assets
 
 `harness-initiator` is not the long-term owner of:
 
@@ -54,14 +68,17 @@ Do not use for:
 
 Current first-pass template scope:
 
+- `AGENTS.template.md`
 - `issue-analysis`
 - `writing-documents`
 - `markdown-guide`
 
 Interpretation:
 
+- `AGENTS.template.md` is the source of generated runtime entry and top-level harness rule text when a source pack carries a strong startup contract.
 - `issue-analysis` and `writing-documents` are the main template candidates.
 - `markdown-guide` behaves more like a shared support reference than a full workflow template.
+- source packs may include skill-adjacent support assets next to `SKILL.md`; initiator should treat them as source material, not as accidental clutter.
 - Mixed-stack repositories such as `ofgw` may inform adapter facts, but they must not force the template body to become JavaScript-, Gradle-, or JVM-specific. Many target products may still be C-based.
 
 Current excluded scope:
@@ -91,6 +108,15 @@ Optional but useful:
 - known release/manual workflow policy
 
 ## Workflow
+
+Recommended three-skill sequence:
+
+1. `harness-initiator`
+   - generate the first standalone skeleton and product-bound runtime v1
+2. `harness-support-assets`
+   - bundle source-pack support assets next to the generated skills
+3. `harness-refinement`
+   - improve wording, ergonomics, or product-local usability only after the bundled runtime exists
 
 ### Phase 1: Analyze
 
@@ -228,11 +254,25 @@ Produce:
 - `generated/<product>-harness/`
 - generation summary
 - excluded-items list
+- handoff note for `harness-support-assets` when the source pack contains adjacent support assets
 
 Report explicitly:
 - what was generated
 - what was skipped
 - what remains ops-locked or unresolved
+
+Entry and support-asset generation rules:
+
+- if the selected source pack includes `AGENTS.template.md`, generated `AGENTS.md` should be derived from it rather than written as a thin summary from scratch
+- remove source-runtime-specific wording only when it conflicts with the target runtime contract
+  - example: Claude-specific file naming or tool wording
+- preserve startup governance, workflow chain, routing rules, and skill-gap reporting when they are still meaningful in the target runtime
+- if a template skill contains adjacent support assets, initiator should hand that source scope to `harness-support-assets`
+- keep initiator focused on:
+  - selecting which source skills participate in generation
+  - honoring explicit `generation_assets` overrides
+  - emitting a clear handoff note for support-asset materialization
+- while this rule was motivated by AIM source-fidelity work, the first validation target for the new bundling and AGENTS-template behavior should still be `ofgw-harness`, not `aim-harness`
 
 Long-term target layout:
 
@@ -240,6 +280,7 @@ Long-term target layout:
 - `hooks/`
 - `skills/core/`
 - `skills/collab/`
+- `skills/authoring/`
 - `skills/docs/`
 - `skills/review/`
 - `skills/product/`
@@ -261,12 +302,14 @@ Default base-runtime carry-over policy:
 - treat reusable root `skills/` entries as generator-owned defaults, not as product adapter data
 - bundle `skills/core/` by default when the corresponding base skills have already been neutralized enough for standalone reuse
 - bundle `skills/collab/` by default when the workflow is repository-neutral
+- bundle `skills/authoring/writing-skills/` from root shared `skills/writing-skills/` when the generated harness needs local skill-authoring guidance
 - bundle the base `code-reviewer` workflow by default as the minimum reusable review orchestrator
 - when generated review companions such as `review-context-collector` or `coverage-review` also exist, the carried-over `code-reviewer` must acknowledge them as optional bound helpers rather than leaving the review layer disconnected
 - when carrying these defaults into a generated harness, preserve standalone runtime names and do not reintroduce legacy `*-base` naming
 - do not require `generation_assets` entries for these carry-over defaults
 - use `generation_assets` only for template-derived productization decisions
 - if a product needs to opt out of a default carry-over rule later, add an explicit policy hook then; do not pre-emptively expand adapter schema
+- use root shared `writing-skills/SKILL.md` as the baseline body for generated authoring guidance, then let `harness-support-assets` port adjacent `templates/<pack>/skills/writing-skills/*` support assets into the product runtime
 
 For the first validation pass, allow the generated skeleton to stay minimal:
 

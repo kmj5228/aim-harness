@@ -5,7 +5,7 @@
 This document evaluates the two-skill rebuild flow:
 
 1. rebuild `generated/ofgw-harness/` from the current `harness-initiator` contract
-2. apply `product-harness-refinement` on top of that initiator-only baseline
+2. apply `harness-refinement` on top of that initiator-only baseline
 
 The goal is not to maximize `ofgw-harness` completeness. The goal is to check whether the second skill makes the harness more mature without making shared interfaces or adapters unnecessarily heavy.
 
@@ -15,7 +15,7 @@ It is a validation artifact only. It is not a runtime skill or generation input.
 
 1. backup the current refined `generated/ofgw-harness/`
 2. restore the earlier initiator-only baseline
-3. re-apply the refinement layer using the current `product-harness-refinement` skill and `adapters/ofgw/mappings.yaml`
+3. re-apply the refinement layer using the current `harness-refinement` skill and `adapters/ofgw/mappings.yaml`
 4. compare the refined result against the initiator-only baseline
 
 ## Initiator-Only Baseline
@@ -82,7 +82,7 @@ Assessment:
 
 Result: improved
 
-- keeping `harness-initiator` and `product-harness-refinement` separate made the workflow easier to reason about
+- keeping `harness-initiator` and `harness-refinement` separate made the workflow easier to reason about
 - the initiator still owns generation and structure
 - refinement now owns generated-harness quality upgrades
 
@@ -133,9 +133,49 @@ At the same time, the interface cost stayed controlled.
 - refinement concerns moved into a dedicated skill
 - adapter complexity increased only by one small refinement schema block
 
+## Support-Asset Productization Note
+
+The three-skill pass showed an additional useful distinction:
+
+- bundling support assets is not enough on its own
+- some support assets benefit from a narrow productization pass using already-known repo facts
+
+Confirmed on `ofgw`:
+
+- `brainstorming/spec-document-reviewer-prompt.md`
+- `writing-plans/plan-document-reviewer-prompt.md`
+- `systematic-debugging/root-cause-tracing.md`
+
+These were improved with:
+
+- `agent/<topic>/...` runtime paths
+- `ofgwSrc` / `webterminal` / `ofgwAdmin` boundary wording
+- confirmed Gradle command examples
+
+Current judgment:
+
+- this is still small enough to live inside `harness-support-assets`
+- no extra schema is justified yet
+- the same conclusion held after porting `subagent-driven-development`, `code-reviewer`, and selected docs guides
+- the next useful stress case is `skills/authoring/writing-skills/`, where support assets are more generalizable but one large vendor-heavy reference may still need refinement rather than pure support-asset rules
+
 ## Decision
 
 - keep the two-skill model
 - keep the current refinement schema small
 - treat `manual-workflow` output-contract refinement as the strongest current shared candidate
 - keep `writing-documents` and `coverage-review` refinement results product-local until another product repeats the same need
+
+## Three-Skill Extension Note
+
+The current `ofgw` pass also validated a third narrow step:
+
+- `harness-support-assets`
+
+Current judgment:
+
+- this step is useful enough to keep separate from `harness-initiator`
+- it did not require a new support-asset schema block
+- the only rule change needed was procedural:
+  - exclude source `SKILL.md`
+  - respect adapter `generation_assets` overrides before bundling adjacent assets

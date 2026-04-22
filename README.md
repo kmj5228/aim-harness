@@ -71,7 +71,8 @@
 
 - `using-base-harness`
 - `harness-initiator`
-- `product-harness-refinement`
+- `harness-support-assets`
+- `harness-refinement`
 - `writing-skills`
 
 ## Source Packs
@@ -81,6 +82,8 @@
 - `templates/aim/skills/issue-analysis`
 - `templates/aim/skills/completing-patch`
 - `templates/aim/skills/writing-documents`
+- `templates/aim/skills/writing-skills`
+- `templates/aim/AGENTS.template.md`
 - `templates/aim/review/code-reviewer/*`
 
 이 영역은 기본 런타임에 자동 포함되지 않는다.
@@ -100,6 +103,7 @@ generated/<product>-harness/
 ├── skills/
 │   ├── core/
 │   ├── collab/
+│   ├── authoring/
 │   ├── docs/
 │   ├── review/
 │   └── product/

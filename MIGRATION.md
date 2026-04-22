@@ -2124,3 +2124,316 @@ git -C base-harness status --short
   - source input은 `templates/`
   - runtime skill set은 `skills/`
   - `product-specific/`는 더 이상 live layout 일부로 보지 않는다
+
+## 101. AIM Source-Fidelity Template Expansion
+
+- `templates/aim/`를 curated 최소 pack이 아니라 source-fidelity pack으로 확장했다.
+- 원본 `aim-harness/CLAUDE.md`를 `templates/aim/AGENTS.template.md`로 가져왔다.
+- 원본 `aim-harness/skills/*` 아래의 skill-adjacent support asset을 `templates/aim`로 넓게 복원했다.
+  - `brainstorming`, `writing-plans`, `subagent-driven-development`, `systematic-debugging`, `test-driven-development`, `writing-skills`
+  - `review/code-reviewer/*`
+- 판단:
+  - generated `AGENTS.md`는 source 없는 summary보다 source-derived runtime contract가 더 적절하다.
+  - support asset도 generated 단계에서 추정하기보다 template source에서 보존한 뒤 bundling 여부를 결정하는 편이 안전하다.
+  - `templates/aim`는 여전히 source pack이지 원본 저장소 mirror는 아니다. build output, cache, 개인 환경 산출물은 포함하지 않는다.
+
+## 102. Layered Skill Model Clarification
+
+- root `skills/`, `templates/<pack>/skills/`, `generated/<product>-harness/skills/`를 서로 다른 레이어로 명시했다.
+- 의미:
+  - root `skills/` = shared normalized runtime
+  - `templates/aim/skills/` = AIM source-fidelity skill
+  - generated `skills/` = product runtime v1
+- 이 정리로 `templates/aim/skills/`의 `SKILL.md`가 root `skills/`와 중복 실수인지에 대한 혼선을 줄였다.
+- 추가로 아래 규칙도 고정했다:
+  - `AGENTS.template.md`가 있으면 generated `AGENTS.md`는 이를 source로 삼는다.
+  - support asset은 source pack에서도, generated runtime에서도 가능한 한 해당 `SKILL.md` 옆에 둔다.
+  - generated runtime에 support asset을 싣는 방식은 active skill body에 억지로 흡수하는 것만이 정답은 아니다.
+  - 다만 이 규칙의 첫 생성 검증 대상은 `aim`이 아니라 `ofgw`로 둔다.
+
+## 103. Support-Asset Outcome Model
+
+- support asset은 일단 `bundle` 기본값으로 다루기로 다시 단순화했다.
+- 해석:
+  - `bundle`은 support asset 파일을 generated skill 옆에 함께 싣는 것
+- 중요한 판단:
+  - AIM source pack의 support asset은 우선 shared 일반화 대상이 아니라 target product runtime으로의 productization 대상으로 본다
+  - shared 승격은 여러 제품에서 반복적으로 재사용성이 확인된 뒤에 검토한다
+  - `absorb`나 `defer`는 미리 설계 중심에 올리지 않고, 실제 생성 실증에서 구체적인 어려움이 드러날 때만 예외로 검토한다
+
+## 104. `harness-*` Skill Naming Unification
+
+- 메타/생성 계열 스킬 이름을 `harness-*` prefix로 맞추기로 확정했다.
+- 현재 구조:
+  - `harness-initiator`
+  - `harness-support-assets`
+  - `harness-refinement`
+- 해석:
+  - `harness-initiator`는 skeleton, adapter, generation, generated-structure validation 담당
+  - `harness-support-assets`는 source-pack support asset을 generated runtime으로 carry-over 하는 좁은 변환기
+  - `harness-refinement`는 생성 후 generated harness의 품질 개선 담당
+- 목적:
+  - `harness-initiator` 비대화 방지
+  - support-asset 변환 책임의 분리
+  - naming 계층 일관성 확보
+
+## 105. Three-Skill Validation Flow
+
+- current harness generation/validation 흐름을 아래 세 단계로 고정했다:
+  1. `harness-initiator`
+  2. `harness-support-assets`
+  3. `harness-refinement`
+- 해석:
+  - initiator는 skeleton과 adapter/generation 책임
+  - support-assets는 source-pack adjacent asset bundle 책임
+  - refinement는 생성 후 품질 개선 책임
+- 첫 실증 대상은 `ofgw-harness`다.
+- support-asset 예외 규칙이나 추가 schema는 이 실증 이후에만 검토한다.
+
+## 106. First `ofgw` Support-Asset Finding
+
+- `ofgw-harness`를 첫 실증 대상으로 support asset bundle을 적용했다.
+- 여기서 바로 드러난 결함:
+  - source-pack wildcard copy가 source `SKILL.md`까지 함께 복사하면 generated skill body를 덮어쓴다.
+- 바로 수정한 규칙:
+  - `harness-support-assets`는 adjacent asset bundle 시 source `SKILL.md` 자체를 제외한다.
+- 추가로 확인된 규칙:
+  - adapter `generation_assets`에 이미 `absorb`, `absorb_partial`, `defer`, `stay_in_templates`로 잡힌 source asset은 support-asset bundle 대상이 아니다.
+- 판단:
+  - 이 문제는 새 schema가 필요한 문제가 아니라 `harness-support-assets`의 기본 규칙을 더 정확히 적어야 하는 문제다.
+
+## 107. `ofgw` Three-Skill Rebuild Result
+
+- 현재 `generated/ofgw-harness/`를 `generated/backups/20260422-113758/ofgw-harness-pre-three-skill`로 백업했다.
+- 그 뒤 같은 skeleton baseline 위에서 3스킬 흐름을 다시 materialize했다:
+  - `harness-initiator`
+  - `harness-support-assets`
+  - `harness-refinement`
+- 결과:
+  - root docs:
+    - `AGENTS.md`
+    - `README.md`
+    - `GENERATION_SUMMARY.md`
+    가 3스킬 흐름 기준으로 강화됐다
+  - bundled support assets가 실제로 generated runtime에 들어갔다
+  - 단, adapter `generation_assets` 예외가 있는 asset은 다시 제거했다
+- 결론:
+  - `harness-support-assets`는 실제로 유의미한 별도 단계다
+  - 첫 실증 기준으로는 새 support-asset schema 없이도 운영 가능하다
+  - 필요한 것은 새 schema보다:
+    - source `SKILL.md` 제외
+    - `generation_assets` override 우선
+    두 가지 규칙이었다
+
+## 108. `harness-support-assets` Responsibility Upgrade
+
+- `harness-support-assets`를 단순 bundle 단계가 아니라 `bundle + port` 단계로 승격했다.
+- 의미:
+  - adjacent support asset을 generated skill 옆으로 싣는 것뿐 아니라
+  - 이미 확인된 adapter / repo truth를 이용해 obvious source-runtime assumptions를 target runtime으로 바꾸는 책임을 가진다
+- 현재 port 대상 예:
+  - artifact path
+  - product naming
+  - command examples
+  - module / boundary wording
+
+## 109. First Narrow Support-Asset Porting
+
+- `ofgw` 실증에서 아래 support asset에 실제 porting을 적용했다:
+  - `brainstorming/spec-document-reviewer-prompt.md`
+  - `writing-plans/plan-document-reviewer-prompt.md`
+  - `systematic-debugging/root-cause-tracing.md`
+- 적용한 porting:
+  - `../agent/prompt/<topic>/...` -> `agent/<topic>/...`
+  - `AIM C project` -> `OFGW product harness`
+  - AIM-specific convention 설명 -> `ofgwSrc` / `webterminal` / `ofgwAdmin` boundary 설명
+  - old command phrasing -> confirmed `:ofgwSrc:classes`, `:ofgwSrc:test`, `:ofgwSrc:jacocoTestReport`
+- 판단:
+  - support asset 단계는 단순 copy보다 `bundle + port`가 맞다
+  - 현재는 existing adapter / repo fact만으로도 유의미한 porting이 가능했다
+  - 아직 추가 schema를 넣어야 할 정도는 아니다
+
+## 110. Support-Asset Default Bundle Tightening
+
+- `generation_assets`의 support-asset 관련 예외가 stale해 보인다는 피드백을 반영했다.
+- 현재 규칙:
+  - support asset은 default bundle + port
+  - `generation_assets`는 explicit generation 또는 real override만 표현
+- `ofgw`에서 제거한 stale 예외:
+  - writing-documents guide류 `stay_in_templates`
+- `ofgw`에서 추가 porting 실증:
+  - `subagent-driven-development/spec-reviewer-prompt.md`
+  - `subagent-driven-development/implementer-prompt.md`
+  - `subagent-driven-development/code-quality-reviewer-prompt.md`
+  - `review/code-reviewer/code-reviewer-prompt.md`
+  - `review/code-reviewer/review-synthesizer-prompt.md`
+  - `review/code-reviewer/test-reviewer-prompt.md`
+  - `writing-documents/markdown-guide.md`
+  - `writing-documents/jira-guide.md`
+  - `writing-documents/gitlab-guide.md`
+- 적용한 포팅:
+  - AIM/C 중심 표현 제거
+  - `agent/<topic>/...` artifact path 사용
+  - `PR` terminology 반영
+  - `ofgwSrc` / `webterminal` / `ofgwAdmin` 경계 반영
+  - confirmed Gradle command 반영
+- 판단:
+  - `harness-support-assets`는 계속 별도 skill로 유지할 가치가 있다
+  - 하지만 새 schema를 더 키우기보다는 existing adapter truth를 더 잘 사용하는 쪽이 우선이다
+
+## 111. `osd` Three-Skill Validation
+
+- `generated/osd-harness/`를 `generated/backups/20260422-120500/osd-harness-pre-three-skill`로 백업했다.
+- `adapters/osd/`도 `adapters/backups/20260422-120500/osd-adapter-pre-three-skill`로 백업했다.
+- `osd` adapter의 stale support-asset 예외를 줄였다.
+  - docs guide류 `stay_in_templates` 예외 제거
+  - support assets next to selected source skills default to bundle-and-port라는 note 추가
+- `osd` generated runtime에 실제로 productized한 support asset:
+  - `brainstorming/spec-document-reviewer-prompt.md`
+  - `writing-plans/plan-document-reviewer-prompt.md`
+  - `systematic-debugging/root-cause-tracing.md`
+  - `subagent-driven-development/spec-reviewer-prompt.md`
+  - `subagent-driven-development/implementer-prompt.md`
+  - `subagent-driven-development/code-quality-reviewer-prompt.md`
+  - `review/code-reviewer/code-reviewer-prompt.md`
+  - `review/code-reviewer/review-synthesizer-prompt.md`
+  - `review/code-reviewer/test-reviewer-prompt.md`
+  - `writing-documents/markdown-guide.md`
+  - `writing-documents/jira-guide.md`
+  - `writing-documents/gitlab-guide.md`
+- 적용한 포팅:
+  - OSD module boundary (`src/lib`, `src/server`, `src/tool`, `src/util`, `dist`)
+  - OSD command set (`make`, `make -C test`, `test/run_coverage.sh`)
+  - `agent/<topic>/...` artifact path
+  - PR wording / verification-scope tightening
+- 판단:
+  - `ofgw`에서 얻은 3스킬 규칙은 `osd`에도 재사용 가능했다
+  - `harness-support-assets`는 cross-product로도 유효하다
+  - 아직 새 support-asset schema는 필요하지 않다
+
+## 112. AIM Source-Fidelity Audit
+
+- 원본 `aim-harness/skills/*`와 `templates/aim/*`를 정규화 경로 기준으로 재비교했다.
+- 결과:
+  - skill-adjacent support asset은 현재 `templates/aim`에 모두 들어와 있었다
+  - source-fidelity 관점의 실제 누락은 없었다
+- intentional extra:
+  - `templates/aim/AGENTS.template.md`
+    - 원본 `CLAUDE.md`의 source version
+- intentional non-import at template root:
+  - 원본 `settings.json`
+  - 원본 `hooks/session-start.sh`
+    - 현재는 startup contract text와 runtime hook materialization을 분리해서 다룬다
+- cleanup:
+  - `templates/aim/review/code-reviewer/measure_diff_cov.sh`는 원본 대비 중복 extra였고 삭제했다
+  - canonical source 경로는 `review/code-reviewer/scripts/measure_diff_cov.sh`
+- generated v1에서의 생략은 source 누락과 구분해야 한다:
+  - active generated skill로 흡수된 자산
+  - ops-locked이라 template에 남긴 자산
+  - 아직 첫 productization pass에서 선택되지 않은 자산
+- 판단:
+  - 현재 gap은 source 보존 문제가 아니라 generated v1의 productization 범위 문제다
+
+## 113. Common Support-Asset Pattern Extraction
+
+- `ofgw`와 `osd` generated runtime을 함께 보고, 실제로 cross-product로 검증된 support-asset 포팅 패턴만 추렸다.
+- 공통 asset:
+  - `brainstorming/spec-document-reviewer-prompt.md`
+  - `writing-plans/plan-document-reviewer-prompt.md`
+  - `subagent-driven-development/*.md`
+  - `review/code-reviewer/{code-reviewer-prompt,review-synthesizer-prompt,test-reviewer-prompt}.md`
+  - `writing-documents/{markdown-guide,jira-guide,gitlab-guide}.md`
+  - `systematic-debugging/root-cause-tracing.md`
+- 공통 포팅 규칙:
+  - `agent/<topic>/...` artifact path 정규화
+  - source-product wording -> target product wording
+  - review artifact terminology 정규화
+  - confirmed repo surface 기준 module/boundary 재서술
+  - confirmed `command_bindings` 기준 command example 치환
+- 판단:
+  - support-asset productization의 현재 병목은 schema 부족보다 existing adapter truth 활용 수준이다
+  - 새 support-asset schema는 아직 보류해도 된다
+  - generated v1의 생략은 source-fidelity 문제보다 productization 범위 문제로 계속 해석한다
+
+## 114. Initiator Boundary Tightening
+
+- `harness-initiator`와 `harness-support-assets` 사이의 책임 중복을 다시 점검했다.
+- 남아 있던 중복:
+  - initiator 문서 안에 support-asset의 세부 outcome model이 너무 많이 들어가 있었음
+  - support-asset bundle 기본 규칙 자체를 initiator가 실행 책임처럼 설명하는 부분이 있었음
+- 정리:
+  - initiator는 source skill 선택, explicit `generation_assets` override 존중, support-asset handoff note까지만 책임진다
+  - support-asset의 실제 bundle + port 규칙은 `harness-support-assets`가 담당한다
+- 판단:
+  - 현재 3스킬 구조에서 가장 먼저 줄여야 할 중복은 initiator 안의 support-asset 세부 처리 규칙이었다
+  - refinement 쪽은 아직 initiator와 직접 충돌하는 규칙 중복은 크지 않다
+
+## 115. OSD Narrow Support-Asset Pass 2
+
+- `osd`에서 아직 남아 있던 low-risk support asset을 추가로 포팅했다:
+  - `systematic-debugging/condition-based-waiting.md`
+  - `systematic-debugging/defense-in-depth.md`
+  - `test-driven-development/testing-anti-patterns.md`
+- 적용한 기준:
+  - OSD C/GoogleTest 문맥으로 예시와 표현 재작성
+  - `make -C test`, `test/run_coverage.sh` 기준 검증 맥락 반영
+  - `src/lib`, `src/server`, `src/tool`, `src/util` 경계 반영
+- 판단:
+  - debugging/TDD support asset도 기존 adapter truth만으로 충분히 productize 가능했다
+  - 아직 새 support-asset schema는 보류가 맞다
+
+## 116. OFGW Docs-Guide Porting And Disabled-Binding Check
+
+- `ofgw`에서 docs guide 추가 포팅:
+  - `writing-documents/ims-guide.md`
+  - `writing-documents/mail-guide.md`
+- 적용한 기준:
+  - formal Korean business-writing channel 유지
+  - `ofgwSrc` / `webterminal` / `ofgwAdmin` scope 분리
+  - confirmed Gradle command 기반 evidence guidance 반영
+  - draft/save/send 분리 유지
+- 같이 확인한 규칙:
+  - disabled target binding은 guide 파일의 완전 제외를 강제하지 않는다
+  - support-asset completeness가 현재 목표라면 guide는 dormant reference로 계속 번들될 수 있다
+- 적용:
+  - `confluence-guide.md`를 `ofgw` generated runtime에 dormant support guide로 추가했다
+- 판단:
+  - 새 support-asset schema 없이도 `access_bindings` 기반 판단이 가능하다
+
+## 117. `authoring/writing-skills` Layer Decision
+
+- generated product harness에 `skills/authoring/` 레이어를 추가하기로 결정했다.
+- 첫 대상은 `writing-skills`다.
+- baseline `SKILL.md`는 root shared `skills/writing-skills/SKILL.md`에서 carry-over 한다.
+- support asset은 `templates/aim/skills/writing-skills/*`에서 가져오고 `harness-support-assets`가 target runtime으로 bundle + port 한다.
+- 목적:
+  - `writing-skills` support asset이 product-local productization 이후 shared candidate로 승격 가능한지 검증
+  - `harness-support-assets`가 reviewer/debugging/docs guide 말고 authoring guide 계열도 무리 없이 다루는지 확인
+- 예상 한계:
+  - `anthropic-best-practices.md`처럼 vendor-locked이고 editorially 큰 자산은 기계적 포팅만으로는 충분하지 않을 수 있다
+  - 이런 경우는 새 schema를 바로 추가하기보다 `harness-refinement` 또는 shared-skill 후속 정리 대상으로 보는 편이 적절하다
+
+## 118. OFGW `writing-skills` Authoring Pass
+
+- `generated/ofgw-harness/skills/authoring/writing-skills/`를 실제로 materialize 했다.
+- 적용 구조:
+  - main `SKILL.md`는 root shared `skills/writing-skills/SKILL.md` carry-over
+  - support asset은 `templates/aim/skills/writing-skills/*`에서 bundle + port
+- 실제 포함 자산:
+  - `anthropic-best-practices.md`
+  - `persuasion-principles.md`
+  - `testing-skills-with-subagents.md`
+  - `graphviz-conventions.dot`
+  - `render-graphs.js`
+  - `examples/AGENTS_MD_TESTING.md`
+- 실제 포팅:
+  - `CLAUDE.md` example은 `AGENTS_MD_TESTING.md`로 rename
+  - `~/.claude/skills/...` 경로는 generated harness의 `skills/` 레이아웃으로 치환
+  - example 안의 task/scenario도 `ofgwSrc`와 current harness skill 경로에 맞게 조정
+- 핵심 판단:
+  - `writing-skills` support asset은 reviewer/debugging/docs guide보다 shared 승격 가능성이 높다
+  - 그러나 `anthropic-best-practices.md`는 너무 vendor-locked이고 문서량이 커서, first-pass `harness-support-assets`만으로는 깊은 rewrite까지 맡기기 어렵다
+  - 이 자산은 "bundle은 가능하지만 deeper rewrite는 refinement/shared cleanup 후보"라는 현재 경계선을 보여주는 첫 사례다
+- 결과:
+  - 아직도 새 schema는 추가하지 않았다
+  - 현재 병목은 schema보다는 `harness-support-assets`와 `harness-refinement`의 경계 정의에 가깝다

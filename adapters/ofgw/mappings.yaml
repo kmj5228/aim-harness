@@ -30,11 +30,11 @@ generation_assets:
   - source: templates/aim/skills/writing-documents/markdown-guide.md
     action: absorb
     target: skills/docs/writing-documents/SKILL.md
-    note: fold markdown conventions into the generated docs skill instead of copying a separate reference file
+    note: keep markdown conventions available in the generated docs skill body; support-asset bundling may still carry adjacent guide files unless a concrete validation problem appears
   - source: templates/aim/skills/writing-documents/manual-guide.md
     action: absorb_partial
     target: skills/docs/manual-workflow/SKILL.md
-    note: absorb need-gate and draft-first semantics only; keep external publish procedure out of the generated harness
+    note: absorb need-gate and draft-first semantics into the generated manual workflow; keep upstream publish procedure out of v1 runtime generation
   - source: templates/aim/skills/completing-patch/SKILL.md
     action: defer
     note: leave for a later pass because of high operational coupling
@@ -49,23 +49,8 @@ generation_assets:
   - source: templates/aim/review/code-reviewer/measure_diff_cov.sh
     action: stay_in_templates
     note: keep the AIM-locked coverage helper script in templates only
-  - source: templates/aim/skills/writing-documents/jira-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/gitlab-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/ims-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/confluence-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
-  - source: templates/aim/skills/writing-documents/mail-guide.md
-    action: stay_in_templates
-    note: platform reference asset, not a generated runtime skill
 refinement_goal:
-  purpose: validate product-harness-refinement skill and refinement schema, not maximize ofgw-harness completeness in one pass
+  purpose: validate harness-refinement skill and refinement schema, not maximize ofgw-harness completeness in one pass
   current_generated_target: generated/ofgw-harness/
   success_criteria:
     - refinement scope is explicitly separated from initiator scope
@@ -195,6 +180,7 @@ access_bindings:
 confirm: []
 notes:
   - map AIM-specific channel names only after access binding confirmation
-  - keep markdown-guide as support reference, not as a generated main workflow template
+  - support assets next to selected source skills default to bundle-and-port in the generated runtime; generation_assets is for explicit skill generation and true override cases
+  - `writing-skills` is carried as a root shared authoring baseline, while adjacent template support assets under `templates/aim/skills/writing-skills/` are bundled and ported by `harness-support-assets`
   - manual provider follows the AIM-style release/manual flow, but targets a generated workspace path instead of the legacy AIM MANUAL repo
   - `agent/` is treated as a product-root workspace directory for generated markdown artifacts

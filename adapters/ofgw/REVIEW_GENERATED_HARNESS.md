@@ -21,6 +21,7 @@ Status: pass
   - `hooks/`
   - `skills/core/`
   - `skills/collab/`
+  - `skills/authoring/`
   - `skills/docs/`
   - `skills/review/`
   - `skills/product/`
@@ -106,6 +107,42 @@ Status: pass
 - `writing-documents` and `coverage-review` remain product-local refinements
 - `manual-workflow` output-contract refinement is the strongest current shared candidate
 - no `ofgw`-specific module facts were promoted into shared initiator/refinement rules
+
+### 10. Support-Asset Carry-Over
+
+Status: pass after first validation fix
+
+Confirmed:
+
+- default support-asset bundling materially enriches the generated runtime without introducing a new adapter schema
+- adjacent support assets are useful for:
+  - brainstorming
+  - writing-plans
+  - subagent-driven-development
+  - systematic-debugging
+  - test-driven-development
+  - writing-skills
+  - selected review helpers
+  - writing-documents guides
+
+Fixed in this review:
+
+- source `SKILL.md` must never be copied during support-asset bundling
+- adapter `generation_assets` overrides must win over default support-asset bundling
+- selected support assets can and should be ported using existing repo/adapter facts rather than copied verbatim when obvious product/runtime assumptions are known
+- later `ofgw` validation also showed that support prompts and guides can be ported for:
+  - subagent dispatch
+  - review synthesis
+  - Jira / PR writing
+  without adding a new schema block
+- platform-bound docs guides can also use existing adapter truth:
+  - `ims-guide.md`
+  - `mail-guide.md`
+- disabled target bindings do not have to block bundling:
+  - `confluence-guide.md` is now carried as a dormant support reference even though `docs_targets.confluence.enabled` remains false
+- authoring assets expose a useful new limit case:
+  - `writing-skills` can be carried as a shared baseline plus productized support assets
+  - very large vendor-locked references such as `anthropic-best-practices.md` can still be bundled, but deeper editorial rewrite should move to `harness-refinement` or future shared-skill cleanup rather than bloating `harness-support-assets`
 
 ## Findings Summary
 
