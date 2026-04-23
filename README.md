@@ -27,7 +27,7 @@
 - `hooks/`
   - Codex hook source-of-truth
 
-즉 이 저장소는 `aim-harness`의 복제본이 아니라, `aim`을 source pack으로 삼아 `ofgw`, `osd` 같은 product harness를 생성하는 **generator repo**다.
+즉 이 저장소는 `aim-harness`의 복제본이 아니라, `aim`을 source pack으로 삼아 product harness를 생성하는 **generator repo**다.
 
 ## 검증 상태
 
@@ -36,7 +36,9 @@
 - `ofgw-harness`
   - 현재 3스킬 계약으로 재생성 가능
 - `osd-harness`
-  - 같은 3스킬 계약으로 cross-product 재현 가능
+  - 같은 3스킬 계약으로 cross-product 재현 가능함을 별도 실증에서 확인
+- `aim-harness`
+  - source-heavy final validation 대상에서 parity를 확인
 - `writing-skills`
   - shared authoring family로 승격 완료
 - `using-{product}-harness`
@@ -105,15 +107,13 @@ of-harness/
 
 현재 live generated harness는:
 
-- `generated/aim-harness/`
 - `generated/ofgw-harness/`
-- `generated/osd-harness/`
 
-현재 live adapters는:
+현재 live adapter는:
 
-- `adapters/aim/`
 - `adapters/ofgw/`
-- `adapters/osd/`
+
+`aim`, `osd`는 현재 live 배포 대상이 아니라, generator 검증 과정에서 사용한 historical validation target으로 본다.
 
 백업/임시 rebuild 산출물은 기본적으로 유지하지 않는다. 필요하면 검증 후 제거한다.
 
