@@ -263,10 +263,11 @@ Never treat bug fixing as separate from TDD.
 
 ## Testing Anti-Patterns
 
-When adding test utilities or isolating dependencies, read `testing-anti-patterns.md` to avoid:
-- Testing the stub instead of behavior
-- Adding test-only escape hatches to production code
-- Over-isolating without understanding real dependencies
+When adding test utilities or isolating dependencies, avoid:
+- Testing the stub or mock wiring instead of observable behavior
+- Adding test-only escape hatches to production code instead of improving the design
+- Over-isolating dependencies without understanding the real execution path
+- Verifying private helpers or internal choreography instead of public behavior
 
 ## Final Rule
 

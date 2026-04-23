@@ -138,10 +138,10 @@ All of these mean: stop and return to Phase 1.
 
 ## Supporting Techniques
 
-Available in this directory:
-- `root-cause-tracing.md` — trace bugs backward through call paths
-- `defense-in-depth.md` — add validation at multiple layers
-- `condition-based-waiting.md` — replace arbitrary sleeps and timing guesses
+Use these techniques during investigation when they fit the failure mode:
+- Root-cause tracing — trace the failure backward through callers, data flow, and state transitions
+- Defense in depth — add validation or protection at multiple layers instead of relying on a single guard
+- Condition-based waiting — replace arbitrary sleeps and timing guesses with explicit readiness checks
 
 ## Tool Guidance
 
