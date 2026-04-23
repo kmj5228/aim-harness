@@ -13,6 +13,14 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 **Violating the letter of the rules is violating the spirit of the rules.**
 
+## SSoT & Read 의무
+
+| 상황 | SSoT | Read 의무 | 비고 |
+|---|---|:---:|---|
+| 신규 `gtest_*.cpp` 작성 또는 기존 파일에 TEST_F 추가 | `aim/test/unit/gtest/AGENTS.override.md` | ✅ | canonical template, 네이밍, 섹션 마커, 주석 전체 |
+| gtest 작성 후 commit 직전 (self-review gate) | 동 파일의 `## Self-review checklist (적신호)` 섹션 | ✅ | 위반 시 DONE_WITH_CONCERNS에 `[Check Fail]` 기재 |
+| AIM-Specific Testing Patterns (아래) | (본 SKILL.md 본문) | — | TDD 방법론과 직접 연결된 패턴만 유지 |
+
 ## When to Use
 
 **Always:**
@@ -62,8 +70,11 @@ digraph tdd_cycle {
     green -> verify_green;
     verify_green -> refactor [label="yes"];
     verify_green -> green [label="no"];
+    self_review [label="SELF-REVIEW\n(gtest: AGENTS.override.md\n## Self-review checklist)", shape=box, style=filled, fillcolor="#ffffcc"];
     refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
+    verify_green -> self_review;
+    self_review -> next [label="pass"];
+    self_review -> red [label="violations\n→ fix"];
     next -> red;
 }
 ```
@@ -239,23 +250,17 @@ src/lib/acp/acp_parser.c
 - 예외: 함수 간 결합이 강한 경우(연속 호출/동일 워크플로우)는 1개 cpp 허용
 - 디렉토리: `test/unit/gtest/src/<zone>/<module>/`
 
-### Test Authoring Rules
+### Canonical Test Format & Mocking Rules
 
-핵심 규칙 (`test/unit/gtest/AGENTS.override.md` 전체 기준 적용):
+canonical template, 파일/Mock/Fixture 네이밍, 섹션 마커, Suite/TEST_F 주석, TEST body 구조 주석, `HP_*`/`E_*` prefix, Include 순서, `extern "C"` 규칙, Mock/Makefile 규칙은 **governance SSoT에 있다**:
 
-- 구조: setup / exercise / verify / cleanup
-- 주석: 영어로 작성
-  - Test Fixture class 위: 테스트 suite 목적, 대상 함수, mock 대상 기술
-  - 각 TEST_F 위: 검증 내용 간략 기술, 정상/오류 경로 명시
-- **신규 테스트는 최소 정상 경로 1개 + 오류 경로 1개** 포함
-- 테스트 내부에서 구조체/상수/extern 재정의 금지 — 실제 헤더를 include
+→ `aim/test/unit/gtest/AGENTS.override.md`
 
-### Mocking Rules
+**Read 의무**: 신규 `gtest_*.cpp` 작성, 또는 기존 파일에 TEST_F 추가 전 필수 (상세 규칙을 SKILL.md abbreviated summary로 대체 금지).
 
-- 외부 호출 검증: gmock (`EXPECT_CALL`, `Times`) 우선
-- mock 필요한 cpp만 `Makefile_<target>`으로 분리. mock 불필요 테스트는 기본 `Makefile`의 `SOURCES`에 추가
-- 제품 코드(`.c`, `.h`)에 테스트 전용 함수 추가 금지 — static 승격 또는 symbol 가로채기로 해결
-- symbol 가로채기(mock wrapper): `extern "C"` 직접 감싸지 않고, 원본 헤더의 `extern "C"` guard에 의존
+**Self-review gate**: commit 직전 동 SSoT의 `## Self-review checklist (적신호)` 통과 확인. 위반 시 재작성 또는 DONE_WITH_CONCERNS 리포트에 `[Check Fail] <항목>: <상황>` 기재.
+
+**레거시 파일 주의**: 기존 파일이 canonical 확정(2026-04-14) 이전 레거시일 수 있다. 레거시 스타일 답습 금지 — 새 TEST_F부터 canonical 준수.
 
 ### Coverage Requirement
 

@@ -73,17 +73,19 @@ Turn 3: 저장 함수 호출
 
 ### Step 3: 플랫폼별 가이드
 
-각 플랫폼의 상세 규칙은 별도 가이드 파일 참조:
+각 플랫폼의 상세 규칙은 별도 가이드 파일 참조. **SKILL.md에는 abbreviated summary만** 있음. 구체 형식/적신호 체크리스트는 각 guide에서만 제공.
 
-| 플랫폼 | 가이드 파일 | 핵심 규칙 |
-|--------|-----------|----------|
-| Jira | `jira-guide.md` | description/댓글/상태변경 템플릿 |
-| Confluence | `confluence-guide.md` | 페이지 구조, 분량 조절, 독자 프레이밍 |
-| IMS | `ims-guide.md` | 액션/패치 검증서, X-Free Editor HTML |
-| GitLab | `gitlab-guide.md` | MR description (default.md), 코멘트 |
-| Mail | `mail-guide.md` | 제목/본문/서명, 발신자 규칙 |
-| Markdown | `markdown-guide.md` | plan/report/분석 문서 |
-| Manual | `manual-guide.md` | AIM 제품 매뉴얼 (Antora/AsciiDoc, 경험적 검증 필수, 8단계 워크플로우) |
+| 플랫폼 | 가이드 파일 | Read 의무 | 호출 스킬 | 핵심 규칙 |
+|--------|-----------|:---:|---------|----------|
+| Jira | `jira-guide.md` | ✅ | issue-analysis-aim 등 | description/댓글/상태변경 템플릿 |
+| Confluence | `confluence-guide.md` | ✅ | — | 페이지 구조, 분량 조절, 독자 프레이밍 |
+| IMS | `ims-guide.md` | ✅ | completing-patch-aim 등 | 액션/패치 검증서, X-Free Editor HTML |
+| GitLab | `gitlab-guide.md` | ✅ | finishing-a-development-branch-aim | MR description (default.md), 코멘트 |
+| Mail | `mail-guide.md` | ✅ | — | 제목/본문/서명, 발신자 규칙 |
+| Markdown | `markdown-guide.md` | ✅ | — | plan/report/분석 문서 |
+| Manual | `manual-guide.md` | ✅ | finishing-a-development-branch-aim (marker), completing-patch-aim | AIM 제품 매뉴얼 (Antora/AsciiDoc, 경험적 검증, 8단계 워크플로우) |
+
+**"상세는 <guide> 참조" 링크를 만나면 반드시 해당 guide를 Read 후 작성한다**. summary로 대체 금지.
 
 ### Step 4: 사용자 검토
 

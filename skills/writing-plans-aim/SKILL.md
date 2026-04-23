@@ -123,6 +123,14 @@ Plan에 적는 함수 시그니처, 에러 상수, 헤더 가드는 **의도를 
 - 예: 커버리지 스크립트는 `./script/measure_diff_cov.sh`가 아니라 `.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh`이다.
 - 추측으로 쓰지 말 것. 찾기 어려우면 메모리의 `reference_*`를 확인한다.
 
+**gtest 스케치의 예외:**
+
+함수 구현 코드 스케치는 implementer가 실제 소스 기준 교정 가능. 그러나 **gtest 스케치는 canonical 형식을 Plan 단계에서 유지한다**.
+
+- HP_/E_ prefix, 섹션 마커, Suite comment, TEST body 구조 주석을 Plan 스케치에도 포함
+- Plan의 non-canonical 스케치를 implementer가 답습하거나 기존 레거시 파일 스타일을 따라가는 경향 발견 (IMS#353696)
+- **Plan 작성 시 Read 필수**: `aim/test/unit/gtest/AGENTS.override.md` (gtest 태스크 포함 시)
+
 ## No Placeholders
 
 Every step must contain actual content. These are **plan failures**:

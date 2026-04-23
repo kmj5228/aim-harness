@@ -11,6 +11,16 @@ Guide completion of development work: verify → clean up → push → create MR
 
 **Core principle:** Verify everything → Present options → Execute choice.
 
+## SSoT & Read 의무
+
+| 상황 | SSoT | Read 의무 | 비고 |
+|---|---|:---:|---|
+| MR description 작성/갱신 (PUT 전) | `.claude/skills/writing-documents-aim/gitlab-guide.md` | ✅ | 섹션 구조, Module 결정 규칙, 적신호 체크리스트 |
+| MR template 뼈대 | `aim/.gitlab/merge_request_templates/default.md` | — | GitLab 자동 로드. 뼈대 SSoT 역할만 |
+| MR PUT 직전 self-review gate | `gitlab-guide.md` `## Self-review checklist (적신호)` | ✅ | 위반 시 DONE_WITH_CONCERNS에 `[Check Fail]` |
+| commit message 형식 | `aim/.gitmessage` | — | git 자동 로드. 형식 SSoT 역할만 |
+| 매뉴얼 필요성 판단 (MR 생성/갱신 직후) | `.claude/skills/writing-documents-aim/manual-guide.md` (Step 1) | ✅ | IMS별 marker 삽입 |
+
 ## The Process
 
 ### Step 1: Verify Everything
@@ -94,7 +104,14 @@ curl -s --request POST \
 Token: see `../agent/info/access.md`
 
 
-MR description 작성 규칙 상세는 **writing-documents-aim**의 gitlab-guide.md를 참조한다.
+**MR description 작성 절차 (순서 고정)**:
+
+1. 초안 작성 — `writing-documents-aim/gitlab-guide.md` **Read 필수** (SKILL summary로 대체 금지)
+2. **Self-review gate** — 동 guide의 `## Self-review checklist (적신호)` 모든 항목 통과 확인
+3. curl POST/PUT 실행 (description body 전송)
+4. 위반 발견 시 재작성 후 재PUT 또는 DONE_WITH_CONCERNS에 `[Check Fail] <항목>: <상황>` 기재
+
+섹션 구조, verbatim stdout 요구, Module 결정 규칙, MR title 콜론 없음 등 세부 규칙은 gitlab-guide.md에서만 유지 (SSoT).
 
 **MR 생성 직후 — 매뉴얼 필요성 자동 판단 (필수)**:
 
@@ -151,17 +168,7 @@ curl -s --request PUT \
 
 **Marker가 없는 MR**은 `completing-patch-aim`이 "판단 생략됨"으로 간주하고 merge 시점에 매뉴얼 판단을 실행한다. 따라서 Option 3(Keep as-is) 같은 경로로 MR을 만들지 않은 상태에서는 marker가 존재하지 않고, 그 경우 completing-patch에서 처리된다.
 
-MR description follows `.gitlab/merge_request_templates/default.md`:
-1. `## 내용` — 요구사항, 왜 변경하는지, 왜 이렇게 변경하는지
-2. `## 수정 사항` — 변경 파일별 요약 (파일 경로 + 변경 내용)
-3. `## Test` — 추가 테스트 결과(gtest) + 기존 테스트 결과(Global Coverage + 상세보기)
-4. `## MR Check List` — coding convention, merge 대상, deadline, 양식, 테스트
-5. `## Squash Commit Message` — `.gitmessage` 전체 포맷 (IMS#, module, version)
-6. `> #OFV7-XXXX, #Deadline: YYYY-MM-DD` — Jira 티켓 + 마감일
-
-**Test 섹션 데이터:**
-- `기존`: `dx make gtest-run` 출력의 `== Global Coverage (ALL) ==` 블록 + `<details>` 전체
-- `추가`: 해당 테스트만 `--gtest_filter`로 실행한 결과
+MR description은 `.gitlab/merge_request_templates/default.md` 뼈대(자동 로드)를 따르며, 섹션 구조/verbatim/Module 결정 규칙 상세는 **`writing-documents-aim/gitlab-guide.md`**가 SSoT. **Read 필수**.
 
 #### Option 2: Update Existing MR
 
@@ -208,6 +215,12 @@ Invoke requesting-code-review-aim → code-reviewer-aim Phase A~E with `--auto`.
 
 **Missing copyright headers**
 - Fix: Check new files have copyright in top 10 lines
+
+**gitlab-guide.md를 Read하지 않고 SKILL.md summary만 보고 MR description 작성**
+- Fix: 해당 guide는 **Read 의무(✅)**. summary 대체 금지. PUT 직전 `## Self-review checklist (적신호)` 통과 확인.
+
+**Self-review checklist 위반을 은닉한 채 PUT**
+- Fix: 위반 발견 시 재작성 후 재PUT, 또는 DONE_WITH_CONCERNS에 `[Check Fail] <항목>: <상황>` 명시.
 
 ## Red Flags
 

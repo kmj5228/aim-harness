@@ -24,6 +24,16 @@ Agent tool (general-purpose):
       `.c`/`.h`: `/* Copyright (c) 2026 TmaxSoft Co., Ltd. ... */`
       `.cpp`: `// Copyright (c) 2026 TmaxSoft Co., Ltd. ...`
 
+    ## 신규/추가 gtest 작업 시 필수 절차
+
+    신규 `gtest_*.cpp` / `gtest_*_Mock.h` 생성 또는 기존 파일에 새 TEST_F 추가 시:
+
+    1. **먼저** `aim/test/unit/gtest/AGENTS.override.md` Read (canonical template, 네이밍, 섹션 마커, 주석, Self-review checklist)
+    2. 동일 모듈의 canonical 적용 최신 파일(2026-04-14 이후 커밋) 1~2개를 reference로 확인
+    3. 기존 파일이 canonical 이전 레거시여도 **새 TEST_F는 canonical 준수**
+    4. commit 직전 SSoT의 `## Self-review checklist (적신호)` 통과 확인
+    5. 위반 시 DONE_WITH_CONCERNS 리포트에 `[Check Fail] <항목>: <상황>` 기재
+
     ## Task Description
 
     [FULL TEXT of task from plan - paste it here, don't make subagent read file]
@@ -89,6 +99,14 @@ If this dispatch is to fix review findings (spec or code-quality):
    (전체 `dx make gtest`는 오케스트레이터 최종 gate에서만 수행)
 3. 검증 실패 시 즉시 BLOCKED 리포트 (리뷰 재요청 금지)
 4. 검증 통과 시에만 DONE 리포트
+
+## Skill Gap 자발 보고
+
+작업 중 skill 규칙 누락/충돌/오래된 정보 발견 시 `[Skill Gap] <skill>: <내용>` 형식으로 최종 리포트에 포함. 추측이 아닌 구체 근거(파일 경로, 라인, 문제 상황) 제시.
+
+**채널 구분**:
+- `[Check Fail]` — 체크리스트 위반 (내가 놓쳤다) → self-review gate 실패. 본 작업 재작업 채널.
+- `[Skill Gap]` — 체크리스트/skill 자체의 누락·오류 (guide에 없어서 놓쳤다) → skill 체계 수정 채널.
 
 ## Report Format
 

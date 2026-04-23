@@ -83,6 +83,13 @@ After all tasks:
 - Record Phase-spanning facts in plan.md for future reference
 - Strip unnecessary history — subagent needs only what's relevant to their task
 
+**gtest 관련 태스크 디스패치 시 필수 전달:**
+
+Implementer 프롬프트에 다음을 명시 포함:
+- "canonical 규칙은 `aim/test/unit/gtest/AGENTS.override.md` Read 후 준수"
+- "기존 레거시 파일 스타일 답습 금지 — 새 TEST_F부터 canonical 준수"
+- "commit 직전 동 SSoT의 `## Self-review checklist` 통과 확인, 위반 시 `[Check Fail]` 리포트"
+
 ## Handling Implementer Status
 
 | Status | Action |
