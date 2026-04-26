@@ -1,15 +1,15 @@
 ---
 name: using-feature-branches-aim
-description: Use when starting feature work that needs a new branch, before executing implementation plans, or when on rb_73 and about to commit
+description: Use when starting feature work that needs a new workspace (worktree or branch), before executing implementation plans, or when on rb_73 and about to commit
 ---
 
-# Using Feature Branches
+# Setting Up Workspace (Worktree or Branch)
 
 ## Overview
 
-All AIM development happens on feature branches. Never commit to `rb_73` directly.
+All AIM development happens on a feature branch — either inside a **git worktree** (isolated directory, recommended) or as a plain branch checkout in the original `aim` directory. Never commit to `rb_73` directly.
 
-**Core principle:** `rb_73` is the release branch. Feature branches isolate work until it's reviewed and ready.
+**Core principle:** `rb_73` is the release branch. Feature workspaces isolate work until it's reviewed and ready.
 
 ## When to Use
 
@@ -24,14 +24,14 @@ All AIM development happens on feature branches. Never commit to `rb_73` directl
 NEVER COMMIT TO rb_73
 ```
 
-If you're on `rb_73`, create a feature branch BEFORE any commit.
+If you're on `rb_73`, set up a feature workspace BEFORE any commit.
 
 **No exceptions:**
 - Not for "just a small fix"
 - Not for "I'll merge right away"
 - Not for "it's already tested"
 
-## Branch Creation
+## Workspace Setup
 
 ### Step 0: Verify Current Branch
 
@@ -39,19 +39,19 @@ If you're on `rb_73`, create a feature branch BEFORE any commit.
 dx git branch --show-current
 ```
 
-If NOT `rb_73`, you already have a feature branch — proceed with work.
+If NOT `rb_73`, you already have a feature branch (in original tree or worktree) — proceed with work.
 
 If `rb_73`, continue to Step 1.
 
-### Step 1: Create Branch
+### Step 1: Choose Workspace — Worktree (recommended) or Branch only
 
-**Naming convention:** `<keyword>_<IMS>_<Jira>`
+**Naming convention (both options):** `<keyword>_<IMS>_<Jira>`
 
-```bash
+```
 # Examples:
-dx git checkout -b msgrcv_335342_6293
-dx git checkout -b acsapi_351005_6293
-dx git checkout -b smqn_recovery_335342
+msgrcv_335342_6293
+acsapi_351005_6293
+smqn_recovery_335342
 ```
 
 Components:
@@ -60,12 +60,45 @@ Components:
 - `Jira`: Jira ticket number (if applicable)
 - Omit IMS/Jira if not applicable, but include at least keyword
 
+#### Option A: Worktree (recommended)
+
+병렬 작업, 원본 디렉토리 보호, 독립 빌드 산출물이 필요할 때 권장. `worktree_add.sh`가 새 feature branch를 자동 생성하고 격리된 디렉토리(`<ofsrc>/aim_worktrees/<wt_name>/aim`)를 만든다.
+
+```bash
+# Direct SSH dev server 또는 Docker 내부:
+cd /root/ofsrc/aim
+./script/worktree_add.sh <wt_name> <new_branch> rb_73
+
+# Mac SSHFS+Docker 환경:
+# dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh <wt_name> <new_branch> rb_73"
+```
+
+진입:
+```bash
+cd /root/ofsrc/aim_worktrees/<wt_name>/aim
+source /root/ofsrc/aim_worktrees/<wt_name>/env.sh   # SOURCE_BASE export
+```
+
+운영 규칙(install 금지, 서버 기동 금지, 커버리지 측정 금지 등)과 격리/공유 리소스 구분은 `aim/AGENTS.md`의 **Worktree Operations** 섹션을 참조한다.
+
+**`git worktree add`를 직접 호출하지 말 것** — 필수 symlink(`base/batch/dev/ndb/tacf`)와 seed 파일(`make/config.local`, `make/cflags.local`, `include/build_info_aim.h`)이 누락되어 빌드 실패한다.
+
+#### Option B: Branch only (경량)
+
+단일 작업 흐름이거나 워크트리 인프라가 부담스러울 때. 원본 `<ofsrc>/aim` 디렉토리에서 직접 작업한다.
+
+```bash
+dx git checkout -b <new_branch>
+```
+
 ### Step 2: Verify
 
 ```bash
 dx git branch --show-current
 # Should show your new branch, NOT rb_73
 ```
+
+워크트리의 경우 `<ofsrc>/aim_worktrees/<wt_name>/aim` 디렉토리 안에서 실행하면 해당 워크트리의 branch가 표시된다.
 
 ### Step 3: Work
 
@@ -144,8 +177,10 @@ Token: see `../agent/info/access.md`
 
 | Situation | Action |
 |-----------|--------|
-| On `rb_73`, about to commit | Create feature branch first |
-| Already on feature branch | Proceed with work |
+| On `rb_73`, about to commit | Set up workspace first (worktree or branch) |
+| 병렬 작업 / 원본 격리 필요 | `./script/worktree_add.sh <wt> <branch> rb_73` |
+| 단일 작업, 경량 | `dx git checkout -b <branch>` |
+| Already on feature branch (or in worktree) | Proceed with work |
 | Need branch name, have IMS/Jira | `<keyword>_<IMS>_<Jira>` |
 | Need branch name, no ticket | `<keyword>_<brief_desc>` |
 | Ready to push | `dx git push -u origin <branch>` |
@@ -167,6 +202,11 @@ Token: see `../agent/info/access.md`
 
 - **Problem:** Stages unintended files (local configs, build artifacts)
 - **Fix:** Always `dx git add <specific-files>`
+
+### `git worktree add` 직접 호출
+
+- **Problem:** 필수 symlink(`base`/`batch`/`dev`/`ndb`/`tacf`)와 seed 파일(`make/config.local`, `make/cflags.local`, `include/build_info_aim.h`) 누락으로 빌드 실패
+- **Fix:** 항상 `./script/worktree_add.sh` 경유. 제거도 `./script/worktree_remove.sh` 경유 (메타데이터 정합)
 
 ## Red Flags
 

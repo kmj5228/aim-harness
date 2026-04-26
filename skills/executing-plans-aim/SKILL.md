@@ -55,10 +55,10 @@ After all tasks complete:
 
 1. **Verify everything** (전체 회귀는 여기서 1회):
    ```bash
-   dx tmdown -y     # Text file busy 방지 (필수)
    dx make gtest    # 전체 회귀 테스트
    dx make          # clean build
    ```
+   `make`/`make gtest`는 install을 트리거하지 않으므로 `dx tmdown -y` 선행 불필요. `make install`을 별도 수행하는 경우에만 install 직전에 `dx tmdown -y`.
 2. **Check coverage:**
    ```bash
    dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh"
