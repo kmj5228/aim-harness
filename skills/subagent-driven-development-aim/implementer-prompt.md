@@ -52,10 +52,10 @@ Agent tool (general-purpose):
     Once clear on requirements:
     1. Follow TDD: write failing gtest first, then minimal C code to pass
     2. Verify (빌드 스코프 최소화):
-       - `dx tmdown -y` (Text file busy 방지, 필수)
        - RED: **방금 추가한 테스트 바이너리만** 빌드/실행 (전체 `dx make gtest` 금지)
        - GREEN: **해당 모듈 테스트만** 빌드/실행
        - `dx make` (production clean build)
+       - ※ `make`/`make gtest`는 install을 트리거하지 않으므로 `dx tmdown -y` 선행 불필요. `make install`을 별도 수행하는 경우에만 install 직전에 `dx tmdown -y`.
        - ※ 전체 `dx make gtest`(전 모듈 회귀)는 오케스트레이터가 모든 태스크 완료 후 1회 수행. 여기서 실행하지 말 것.
     3. `clang-format -i` on changed files
     4. Commit your work
@@ -93,10 +93,10 @@ Agent tool (general-purpose):
 If this dispatch is to fix review findings (spec or code-quality):
 1. Apply fixes to the specific issues listed
 2. **반드시 재검증 재실행** (이전 통과 결과 재사용 금지):
-   - `dx tmdown -y`
    - 해당 모듈 테스트 재빌드/재실행
    - `dx make`
-   (전체 `dx make gtest`는 오케스트레이터 최종 gate에서만 수행)
+   - (전체 `dx make gtest`는 오케스트레이터 최종 gate에서만 수행)
+   - (`make`/`make gtest`는 install 안 하므로 `tmdown` 선행 불필요)
 3. 검증 실패 시 즉시 BLOCKED 리포트 (리뷰 재요청 금지)
 4. 검증 통과 시에만 DONE 리포트
 

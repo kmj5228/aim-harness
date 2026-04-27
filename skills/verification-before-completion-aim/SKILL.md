@@ -41,7 +41,7 @@ Skip any step = lying, not verifying
 
 | Claim | Command | Evidence Required |
 |-------|---------|-------------------|
-| Tests pass | `dx tmdown -y && dx make gtest` | Output: 0 failures |
+| Tests pass | `dx make gtest` | Output: 0 failures |
 | Build succeeds | `dx make` | Output: exit 0, no errors |
 | Coverage meets 80% | `dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh"` | Output: >= 80% |
 | Code formatted | `clang-format -i <files>` then `dx git diff` | No diff |
@@ -49,7 +49,7 @@ Skip any step = lying, not verifying
 
 **전체 `dx make gtest`는 이 스킬에서 1회만 수행한다.** 각 태스크 중간에 반복 실행하지 말 것 — 모듈 전체 재컴파일이 누적되어 전체 소요 시간의 40% 이상을 차지한다. 태스크 중간 검증은 test-driven-development-aim 가이드에 따라 해당 모듈 테스트만 실행한다.
 
-**`dx tmdown -y` 필수:** 실행 중인 서버 바이너리가 `Text file busy` 에러를 유발한다. `tmdown -s <server>` 개별 종료는 의존 서버가 많아 불완전하므로 `-y`(전체)를 사용한다.
+**`dx tmdown -y`는 `make install`을 별도 수행할 때만 필요하다.** `make`/`make gtest`는 install을 트리거하지 않으므로 tmdown 불필요. install 시에는 실행 중 서버 바이너리가 `Text file busy`를 유발하므로 전체 종료(`-y`)를 사용한다.
 
 **미커버 라인 식별:** `gcov`를 직접 `grep`/`awk`로 파싱하지 말 것 (메타데이터 5줄만 출력되는 재현성 있는 현상). `measure_diff_cov.sh` 출력 + `dx git diff --unified=0 <base>..HEAD` 조합으로 확인한다.
 
@@ -87,9 +87,6 @@ Skip any step = lying, not verifying
 Before claiming ANY work complete (모든 태스크 완료 후 1회):
 
 ```bash
-# 0. 실행 중인 서버 종료 (Text file busy 방지)
-dx tmdown -y
-
 # 1. All tests pass (전체 회귀는 여기서 1회)
 dx make gtest
 
@@ -102,6 +99,8 @@ dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/
 # 4. Code formatted
 # (verify no unformatted changes)
 ```
+
+`make`/`make gtest`는 install을 트리거하지 않으므로 `dx tmdown -y` 선행 불필요. `make install`을 별도 수행하는 경우에만 install 직전에 `dx tmdown -y`를 적용한다.
 
 **All 3 (or 4) must pass. Partial is not complete.**
 
