@@ -13,13 +13,13 @@ Load plan, review critically, execute all tasks with TDD cycle and phase gates, 
 
 ## The Process
 
-### Step 0: Verify Branch
+### Step 0: Verify Workspace
 
 ```bash
 dx git branch --show-current
 ```
 
-If on `rb_73`, STOP. Create feature branch first (see using-feature-branches-aim).
+If on `rb_73`, STOP. Use using-feature-branches-aim to set up workspace. 사용자는 writing-plans-aim의 Execution Handoff에서 **Workspace 옵션(Worktree / Branch only)을 이미 선택**했으므로 그 답을 그대로 honor한다 (default 강제 없음, 미결정이면 사용자에게 다시 묻고 진행).
 
 ### Step 1: Load and Review Plan
 

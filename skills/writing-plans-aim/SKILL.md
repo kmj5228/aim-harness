@@ -162,18 +162,31 @@ Fix issues inline. If a spec requirement has no task, add the task.
 
 ## Execution Handoff
 
-After saving the plan:
+After saving the plan, present two independent choices to the user (둘 다 default 강제 없이 사용자가 명시적으로 선택):
 
-> "Plan saved to `../agent/prompt/<topic>/plan_tasks.md`. Execution options:
+> "Plan saved to `../agent/prompt/<topic>/plan_tasks.md`.
 >
+> ### Workspace
+> **1. Worktree** — 격리 디렉토리(`<ofsrc>/aim_worktrees/<wt>/aim`), 병렬 작업 안전, 빌드 산출물 분리
+> **2. Branch only** — 원본 트리에서 `git checkout -b`, 경량 셋업
+>
+> ### Execution approach
 > **1. Subagent-Driven (recommended)** — fresh subagent per task, review between tasks
->
 > **2. Inline Execution** — execute tasks in this session with checkpoints
 >
-> Which approach?"
+> Which workspace? Which approach?"
 
-**Subagent-Driven:** Use subagent-driven-development-aim
-**Inline:** Use executing-plans-aim
+두 답변을 받은 뒤:
+
+**Workspace setup:** Use using-feature-branches-aim
+- 사용자가 Worktree 선택 → Option A 흐름(`./script/worktree_add.sh`)
+- 사용자가 Branch only 선택 → Option B 흐름(`dx git checkout -b`)
+
+**Execution:**
+- **Subagent-Driven:** Use subagent-driven-development-aim
+- **Inline:** Use executing-plans-aim
+
+워크스페이스 결정은 사용자 답변 그대로 다음 실행 스킬의 Step 0에 전달한다(plan 본문에 박지 않음 — plan은 워크스페이스 중립으로 유지).
 
 ## Integration
 
@@ -181,5 +194,6 @@ After saving the plan:
 - **brainstorming-aim** — 설계 승인 후
 
 **Feeds into (user selects):**
+- **using-feature-branches-aim** — Workspace 옵션(Worktree / Branch only) 셋업
 - **subagent-driven-development-aim** (recommended) — fresh subagent per task
 - **executing-plans-aim** — inline execution
