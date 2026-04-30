@@ -21,9 +21,14 @@ Execute plan by dispatching fresh subagent per task, with two-stage review after
 
 ## The Process
 
-### Step 0: Verify Branch
+### Step 0: Verify Workspace
 
-Not on `rb_73`. If so, use using-feature-branches-aim first.
+1. Check current branch:
+   ```bash
+   dx git branch --show-current
+   ```
+2. If on `rb_73`: use using-feature-branches-aim to set up workspace. 사용자는 writing-plans-aim의 Execution Handoff에서 **Workspace 옵션(Worktree / Branch only)을 이미 선택**했으므로 그 답을 그대로 honor한다 (default 강제 없음, plan 자체에 결정이 박혀 있지 않으면 사용자에게 다시 묻고 진행).
+3. If already on a feature branch (or inside a worktree): proceed.
 
 ### Step 1: Load Plan
 
