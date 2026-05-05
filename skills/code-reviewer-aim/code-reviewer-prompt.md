@@ -113,8 +113,10 @@ description: "AIM C 코드 리뷰 에이전트. 스타일(.clang-format, AIM 헤
 
 ## 팀 통신 프로토콜
 
-- **aim-test-reviewer에게**: 복잡 함수 목록, 보안 관련 사항을 `SendMessage`로 전달
-- **aim-review-synthesizer에게**: 코드 리뷰 결과를 산출물 파일로 전달
+팀원 이름은 spawn 시 오케스트레이터가 주입한 "팀원 매핑"의 suffixed 이름(`aim-<role>-<topic>`)을 사용한다.
+
+- **테스트 리뷰어에게**: 복잡 함수 목록, 보안 관련 사항을 `SendMessage`로 전달
+- **종합 담당(review-synthesizer)에게**: 코드 리뷰 결과를 산출물 파일로 전달
 
 ## 검증 모드 (Phase H)
 
