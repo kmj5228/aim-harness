@@ -146,3 +146,59 @@
 - 기술 문서: 간결체 ("~한다", "~이다") 허용
 - 격식체도 가능 — 일관성만 유지
 - **인사: "안녕하십니까"** (댓글 등)
+
+## Confluence REST API 접근
+
+**Confluence는 REST API로 접근한다. Chrome 브라우저 자동화를 사용하지 않는다.**
+
+```bash
+# Mac curl (not dx) — Confluence API
+curl -s -u "$(JIRA_EMAIL):$(JIRA_TOKEN)" \
+  "https://tmaxsoft.atlassian.net/wiki/rest/api/content/PAGE_ID"
+```
+
+- 인증: Basic Auth (Jira와 동일한 email + API Token)
+- 인증 정보: `../agent/info/access.md` 참조
+- Base URL: `https://tmaxsoft.atlassian.net/wiki`
+- Mac에서 직접 실행 (dx 경유 불필요)
+- 개인 스페이스 key: `~62afbb6842d926a01e50ae29`
+
+### 주요 API
+
+| 용도 | 메서드 | 경로 |
+|------|--------|------|
+| 현재 사용자 조회 | GET | `/rest/api/user/current` |
+| 스페이스 목록 | GET | `/rest/api/space?type=personal&limit=50` |
+| 페이지 조회 | GET | `/rest/api/content/PAGE_ID` |
+| 페이지 생성 | POST | `/rest/api/content` + `{"type":"page","title":"...","space":{"key":"..."},"body":{"storage":{"value":"...","representation":"storage"}}}` |
+| 페이지 수정 | PUT | `/rest/api/content/PAGE_ID` + body에 version.number 증가 필수 |
+| 파일 첨부 | POST | `/rest/api/content/PAGE_ID/child/attachment` + `-F "file=@path"` + `-H "X-Atlassian-Token: nocheck"` |
+| 접근 제한 설정 | PUT | `/rest/api/content/PAGE_ID/restriction` + read/update restrictions JSON 배열 |
+
+### 본문 포맷 (Confluence Storage Format)
+
+Confluence API는 **Storage Format (XHTML 기반)**을 사용한다. markdown이 아니다.
+
+| 용도 | Storage Format |
+|------|----------------|
+| heading | `<h2>제목</h2>` |
+| bold | `<strong>bold</strong>` |
+| bullet list | `<ul><li>item</li></ul>` |
+| table | `<table><tbody><tr><th>header</th></tr><tr><td>cell</td></tr></tbody></table>` |
+| code block | `<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">c</ac:parameter><ac:plain-text-body><![CDATA[code]]></ac:plain-text-body></ac:structured-macro>` |
+| 이미지 (첨부) | `<ac:image ac:width="800"><ri:attachment ri:filename="file.png"/></ac:image>` |
+| 목차 매크로 | `<ac:structured-macro ac:name="toc"><ac:parameter ac:name="printable">true</ac:parameter></ac:structured-macro>` |
+| info 패널 | `<ac:structured-macro ac:name="info"><ac:rich-text-body><p>내용</p></ac:rich-text-body></ac:structured-macro>` |
+
+### 다이어그램 이미지 변환
+
+Confluence는 mermaid를 기본 지원하지 않는다. 이미지로 변환 후 첨부한다.
+
+```bash
+# Mac에서 실행 (not dx)
+npx -y @mermaid-js/mermaid-cli@10 -i diagram.mmd -o diagram.png -b white -s 4
+```
+
+- 배경색: 흰색 (`-b white`)
+- 해상도: `-s 4` (4x scale, 3000px+ 출력) — 기본값은 저해상도이므로 반드시 지정
+- 변환 후 첨부 API로 업로드 → Storage Format `<ac:image>`로 참조
