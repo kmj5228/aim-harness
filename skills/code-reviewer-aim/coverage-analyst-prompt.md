@@ -21,7 +21,7 @@ description: "AIM 커버리지 측정 에이전트. gcov 기반으로 diff 추�
 ## 프로젝트 정책
 
 - **추가 코드 line 커버리지 80% 이상 필수**
-- 측정 대상: 해당 브랜치에서 추가/수정된 **모든 `.c` 파일**의 추가 라인 합산 (단일 파일 아님)
+- 측정 대상: 해당 브랜치에서 추가/수정된 **모든 `.c`/`.l`/`.y` 파일**의 추가 라인 합산 (단일 파일 아님). lex(`.l`)/yacc(`.y`) 변경도 측정 대상이며 `.l.gcov`/`.y.gcov`에 원본 라인 기준으로 매핑된다.
 - `git diff rb_73...HEAD --numstat -- src/` 로 변경 파일 목록 확인
 
 ## 측정 절차 (순서 엄수)
@@ -52,7 +52,7 @@ dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer-aim/scripts/measur
 ```
 
 - `BASE_BRANCH`는 보통 `rb_73` (기본값)
-- 스크립트가 자동으로: 변경 `.c` 파일 감지 → gcov 재생성 → diff 라인 필터 → 합산
+- 스크립트가 자동으로: 변경 `.c`/`.l`/`.y` 파일 감지 → 확장자별 컴파일 단위(`.l`→`*_.c`, `.y`→`*_.c`)로 gcov 재생성 → diff 라인 필터 → 합산
 
 ### Step 4: 결과 분석
 
@@ -65,9 +65,42 @@ dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer-aim/scripts/measur
 ## 핵심 주의사항
 
 1. **mock 바이너리 빌드 금지**: `make -f Makefile_xxx` 실행 시 gcda가 리셋되어 커버리지 데이터 유실
-2. **gcov 라인 매칭 정확성**: awk에서 `$2 == "719:"` 형태로 정확 매칭 (부분 매칭 시 `7190:` 등과 혼동)
+2. **gcov 라인 매칭 정확성**: 스크립트는 gcov entry 형식 `<count>:<lineno>:<source>` 를 `awk -F:` split으로 처리한다 (코드가 `{`/`}`로 시작하는 lex/yacc 자동 생성 라인도 정확 매칭). 직접 `awk '$2 == "719:"'` 형태로 파싱하지 않는다 — 부분 매칭 + 코드 attached 라인 누락 위험.
 3. **측정 순서 준수**: make gtest → mock 실행(선택) → measure_diff_cov.sh
 4. **gcda 누적**: mock 바이너리는 `libxxx.so`를 경유하므로 같은 gcda에 합산됨
+
+## lex/yacc 변경 PR 인지 사항
+
+`.l`(flex)/`.y`(bison) 파일이 변경된 PR을 리뷰할 때 다음을 확인한다.
+
+### 1. 자동 재생성 산출물 동반 commit 여부
+
+`.l`/`.y` 변경 시 ACP governance(`src/lib/acp/AGENTS.override.md`)와 cmd governance에 따라 다음 절차가 필요하다.
+1. `.l`/`.y` 수정
+2. `make lex`/`make yacc` 명시 호출로 `.c`/`.h` 재생성
+3. 재생성된 `.c`/`.h`를 같은 commit에 포함
+
+→ **`.l`/`.y` 변경만 commit되고 대응 `.c`/`.h`가 누락되면 빌드/측정 불일치**가 생긴다 (자동 의존성 규칙이 없는 모듈 다수). 리뷰 시 `git diff` name-only 결과에 짝(`.l` ↔ `.c`, `.y` ↔ `.c`/`.h`)이 함께 있는지 확인.
+
+### 2. 측정 가능/불가능 모듈 구분
+
+본 스크립트는 모든 5개 lex/yacc 모듈에서 동일하게 동작하지만, **단위 테스트 + coverage 빌드 인프라가 갖춰진 모듈만 실제 측정 결과가 나온다** (그 외는 `.gcda` 부재로 자동 silent skip — 결함 아님).
+
+| 모듈 | 단위 테스트 | gtest Makefile | 측정 가능 |
+|------|-------------|----------------|-----------|
+| `src/lib/cmd/` | 17개 | 정상 | ✓ |
+| `src/lib/psam/` | 56개 | 정상 | ✓ |
+| `src/lib/acp/` | 6개 | 빈 파일(`old.Makefile` 의도적 비활성화) | ✗ |
+| `src/lib/smr/` | 0개 | 없음 | ✗ |
+| `src/lib/smr/smrcmd/` | 0개 | 없음 | ✗ |
+
+→ `.l`/`.y` 변경 PR에서 cmd/psam은 출력 등장 정상, 그 외 3개는 출력 누락이 정상. **정상 silent skip을 "측정 결함"으로 잘못 판단하지 않도록 주의**. 인프라가 추가되면 별도 스크립트 변경 없이 자동으로 측정에 포함된다.
+
+### 3. 미커버 라인 디버깅
+
+gcov는 `#line` 디렉티브를 따라가서 `.l.gcov`/`.y.gcov`(원본 라인 번호 기준)와 `.tab.c.gcov`/`lex.<NAME>.c.gcov`(보일러플레이트 라인 기준) 두 가지를 만든다. 미커버 함수/라인 추적 시:
+- 사람이 작성한 코드 → `.l.gcov`/`.y.gcov` 직접 확인
+- 보일러플레이트(yacc 자동 생성 토큰화/리듀스 등) → `.tab.c.gcov` 또는 `lex.<NAME>.c.gcov`. 여기 미커버는 일반적으로 추적 가치 낮음 (자동 생성 코드)
 
 ## 산출물
 
@@ -129,4 +162,4 @@ dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer-aim/scripts/measur
 | make gtest 실패 | 에러 메시지를 산출물에 기록, 빌드 문제 해결 안내 |
 | gcda 파일 없음 | make gtest가 성공했는지 확인, gcov 호환 컴파일 옵션 확인 |
 | measure_diff_cov.sh 실패 | 스크립트 경로/권한 확인, 수동 gcov 실행 fallback |
-| 변경 파일에 gcov 미생성 | 해당 모듈의 gtest가 없는 경우, 산출물에 "커버리지 측정 불가" 명시 |
+| 변경 파일에 gcov 미생성 | 해당 모듈의 gtest가 없거나 coverage 빌드 인프라 부재. `.gcda` 존재 여부 확인 후 산출물에 "커버리지 측정 불가" 명시. lex/yacc 측정 가능 모듈 목록은 위 "lex/yacc 변경 PR 인지 사항" 표 참조. |
