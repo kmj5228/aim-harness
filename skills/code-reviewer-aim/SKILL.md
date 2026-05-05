@@ -18,15 +18,17 @@ IMS/Jira/GitLab 정보 수집부터 코드/테스트/커버리지 리뷰, 종합
 
 ## 에이전트 구성 (스킬 동봉 prompt 5개)
 
-| 에이전트 | prompt 파일 | 역할 | Phase |
-|---------|------------|------|-------|
-| aim-info-collector | `./info-collector-prompt.md` | IMS/Jira/GitLab/git 정보 수집 | B |
-| aim-code-reviewer | `./code-reviewer-prompt.md` | C 코드 리뷰 (스타일+보안+성능+아키텍처 통합) | D |
-| aim-test-reviewer | `./test-reviewer-prompt.md` | GoogleTest 리뷰 | D |
-| aim-coverage-analyst | `./coverage-analyst-prompt.md` | gcov 커버리지 측정 | D |
-| aim-review-synthesizer | `./review-synthesizer-prompt.md` | 종합/문서화/GitLab 코멘트 초안 | E |
+base role name과 prompt 파일 매핑. 실제 spawn 시 이름은 `aim-<role>-<topic>` (아래 "네이밍 규칙" 참조).
 
-에이전트 스폰 시 해당 prompt 파일을 Read하여 내용을 Agent 도구의 prompt에 포함한다.
+| base role | prompt 파일 | 역할 | Phase |
+|-----------|------------|------|-------|
+| `aim-info-collector` | `./info-collector-prompt.md` | IMS/Jira/GitLab/git 정보 수집 | B |
+| `aim-code-reviewer` | `./code-reviewer-prompt.md` | C 코드 리뷰 (스타일+보안+성능+아키텍처 통합) | D |
+| `aim-test-reviewer` | `./test-reviewer-prompt.md` | GoogleTest 리뷰 | D |
+| `aim-coverage-analyst` | `./coverage-analyst-prompt.md` | gcov 커버리지 측정 | D |
+| `aim-review-synthesizer` | `./review-synthesizer-prompt.md` | 종합/문서화/GitLab 코멘트 초안 | E |
+
+에이전트 스폰 시 해당 prompt 파일을 Read하여 내용을 Agent 도구의 prompt에 포함하고, 팀원 매핑 블록(아래)을 함께 append한다.
 
 ## 입력 파싱
 
@@ -40,6 +42,38 @@ IMS/Jira/GitLab 정보 수집부터 코드/테스트/커버리지 리뷰, 종합
 - **추가 컨텍스트** (선택)
 
 topic에서 IMS 번호를 자동 추출: `<keyword>_<IMS번호>_<Jira번호>` 패턴에서 두 번째 숫자 그룹.
+
+## 네이밍 규칙 (동시 세션 격리, 필수)
+
+**왜 필요한가**: 여러 세션에서 동시에 코드 리뷰 스킬을 수행하면 동일 `team_name`을 공유해 `~/.claude/teams/<team>/inboxes/<member>.json` 디렉토리/inbox가 충돌한다. cross-session SendMessage 라우팅·컨텍스트 오염이 발생할 수 있다. **반드시 topic 접미사로 격리**한다.
+
+**규칙**:
+- `team_name` = `aim-code-review-<topic>`
+- 멤버 `name` = `aim-<role>-<topic>`
+  - role 매핑: `info-collector`, `code-reviewer`, `test-reviewer`, `coverage-analyst`, `review-synthesizer`
+  - 예 (`topic = display_prc_outer_join_353568_6396`):
+    - 팀: `aim-code-review-display_prc_outer_join_353568_6396`
+    - 멤버: `aim-code-reviewer-display_prc_outer_join_353568_6396`, `aim-test-reviewer-display_prc_outer_join_353568_6396`, ...
+
+**spawn 시 팀원 매핑 주입 (필수)**: 각 Agent spawn prompt 끝에 아래 블록을 항상 append한다. 이는 prompt 파일 안의 peer 호명(예: "테스트 리뷰어")이 실제 SendMessage 타겟 이름으로 해석될 수 있게 한다.
+
+```
+## 팀원 매핑 (오케스트레이터 주입)
+
+너의 팀: aim-code-review-<topic>
+너의 이름: aim-<role>-<topic>
+
+팀원:
+- 정보 수집 (info-collector): aim-info-collector-<topic>
+- 코드 리뷰 (code-reviewer): aim-code-reviewer-<topic>
+- 테스트 리뷰 (test-reviewer): aim-test-reviewer-<topic>
+- 커버리지 분석 (coverage-analyst): aim-coverage-analyst-<topic>
+- 종합 (review-synthesizer): aim-review-synthesizer-<topic>
+
+다른 팀원에게 SendMessage 시 위 suffixed 이름으로 호출한다. prompt 본문에 등장하는 역할명(예: "테스트 리뷰어")은 위 매핑으로 해석한다.
+```
+
+**SendMessage / Agent 재호출**: Phase F·G·H에서 기존 팀원에게 다시 지시할 때도 suffixed 이름으로 호출한다. 같은 이름의 팀원이 이미 존재하면 `Agent` 재스폰 금지(중복 인스턴스 생성), `SendMessage`로 재활용한다.
 
 ## 워크플로우
 
@@ -109,7 +143,7 @@ dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh review_<MR번호> rev
 - main 사용 시: `/Users/mjkang/company/dev_sshfs/aim/`
 - worktree 사용 시: `/Users/mjkang/company/dev_sshfs/aim_worktrees/review_<MR번호>/aim/`
 
-오케스트레이터는 Phase B~F의 모든 spawn prompt에 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). aim-coverage-analyst를 포함한 5명 모두 같은 `WORKSPACE_AIM`에서 동작한다 (aim repo MR !597 머지로 워크트리 측정이 main과 동등하게 가능).
+오케스트레이터는 Phase B~F의 모든 spawn prompt에 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). 커버리지 분석가를 포함한 5명 모두 같은 `WORKSPACE_AIM`에서 동작한다 (aim repo MR !597 머지로 워크트리 측정이 main과 동등하게 가능).
 
 운영 규칙(install/서버기동 금지 등)과 셋업 절차 상세는 SSoT 참조:
 - 운영 규칙: `aim/AGENTS.md` "Worktree Operations" 섹션
@@ -119,18 +153,20 @@ dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh review_<MR번호> rev
 
 ---
 
-### Phase B: 정보 수집 (aim-info-collector 에이전트)
+### Phase B: 정보 수집 (info-collector 에이전트)
 
-**반드시 Agent 도구로 aim-info-collector를 스폰한다. 오케스트레이터가 직접 수행하지 않는다.**
+**반드시 Agent 도구로 info-collector를 스폰한다. 오케스트레이터가 직접 수행하지 않는다.**
 
 ```
 Agent(
-  name: "aim-info-collector",
+  name: "aim-info-collector-<topic>",
   subagent_type: "general-purpose",
-  team_name: "aim-code-review",
-  prompt: "<aim-info-collector.md의 내용> + <00_input.md의 내용>"
+  team_name: "aim-code-review-<topic>",
+  prompt: "<info-collector-prompt.md의 내용> + <00_input.md의 내용> + <팀원 매핑 블록>"
 )
 ```
+
+`<팀원 매핑 블록>`은 위 "네이밍 규칙" 섹션 참조. 모든 spawn에 append 필수.
 
 에이전트 완료를 기다린 후 산출물을 확인한다.
 
@@ -160,24 +196,24 @@ Agent(
 **반드시 Agent 도구로 3개 리뷰어를 동시에 스폰한다. 오케스트레이터가 직접 리뷰하지 않는다.**
 
 ```
-Agent(name: "aim-code-reviewer",    subagent_type: "general-purpose", team_name: "aim-code-review", ...)
-Agent(name: "aim-test-reviewer",    subagent_type: "general-purpose", team_name: "aim-code-review", ...)
-Agent(name: "aim-coverage-analyst", subagent_type: "general-purpose", team_name: "aim-code-review", ...)
+Agent(name: "aim-code-reviewer-<topic>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic>", ...)
+Agent(name: "aim-test-reviewer-<topic>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic>", ...)
+Agent(name: "aim-coverage-analyst-<topic>", subagent_type: "general-purpose", team_name: "aim-code-review-<topic>", ...)
 ```
 
-각 에이전트의 prompt에 `01_info_collection.md`의 내용과 해당 에이전트 정의(`.claude/agents/aim-*.md`)를 포함한다.
+각 에이전트의 prompt에 `01_info_collection.md`의 내용, 해당 에이전트 prompt 파일 내용, 그리고 **팀원 매핑 블록**(위 "네이밍 규칙" 참조)을 포함한다.
 
-**작업 경로 주입(필수)**: 각 spawn prompt에 Phase A에서 결정된 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). aim-coverage-analyst를 포함한 모든 에이전트가 같은 워크스페이스에서 동작한다. (aim repo MR !597의 `measure_diff_cov.sh` PWD 인지 + `env.sh` LD prepend로 워크트리 측정이 main과 동등.)
+**작업 경로 주입(필수)**: 각 spawn prompt에 Phase A에서 결정된 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). coverage-analyst를 포함한 모든 에이전트가 같은 워크스페이스에서 동작한다. (aim repo MR !597의 `measure_diff_cov.sh` PWD 인지 + `env.sh` LD prepend로 워크트리 측정이 main과 동등.)
 
-에이전트 간 통신 (필요 시 `SendMessage`):
-- aim-code-reviewer → aim-test-reviewer: 복잡 함수 목록, 보안 관련 사항
-- aim-test-reviewer → aim-coverage-analyst: 테스트 실행 경로/필터
+에이전트 간 통신 (필요 시 `SendMessage`, 타겟은 spawn 시 주입된 suffixed 이름):
+- 코드 리뷰어 → 테스트 리뷰어: 복잡 함수 목록, 보안 관련 사항
+- 테스트 리뷰어 → 커버리지 분석가: 테스트 실행 경로/필터
 
-| 에이전트 | 산출물 |
-|---------|--------|
-| aim-code-reviewer | `../agent/prompt/<topic>/02_code_review.md` |
-| aim-test-reviewer | `../agent/prompt/<topic>/03_test_review.md` |
-| aim-coverage-analyst | `../agent/prompt/<topic>/04_coverage.md` |
+| 역할 | 산출물 |
+|------|--------|
+| 코드 리뷰어 (`aim-code-reviewer-<topic>`) | `../agent/prompt/<topic>/02_code_review.md` |
+| 테스트 리뷰어 (`aim-test-reviewer-<topic>`) | `../agent/prompt/<topic>/03_test_review.md` |
+| 커버리지 분석가 (`aim-coverage-analyst-<topic>`) | `../agent/prompt/<topic>/04_coverage.md` |
 
 **3개 에이전트 모두 완료될 때까지 대기한다.**
 
@@ -185,9 +221,9 @@ Agent(name: "aim-coverage-analyst", subagent_type: "general-purpose", team_name:
 
 ---
 
-### Phase E: 종합 (aim-review-synthesizer 에이전트)
+### Phase E: 종합 (review-synthesizer 에이전트)
 
-**반드시 Agent 도구로 aim-review-synthesizer를 스폰한다. 오케스트레이터가 직접 종합하지 않는다.**
+**반드시 Agent 도구로 review-synthesizer를 스폰한다. 오케스트레이터가 직접 종합하지 않는다.**
 
 스폰 전에 오케스트레이터가 **반드시** 아래 4개 파일을 Read하여 전체 내용을 확보한다:
 1. `../agent/prompt/<topic>/01_info_collection.md`
@@ -195,14 +231,14 @@ Agent(name: "aim-coverage-analyst", subagent_type: "general-purpose", team_name:
 3. `../agent/prompt/<topic>/03_test_review.md`
 4. `../agent/prompt/<topic>/04_coverage.md`
 
-읽은 내용을 **전부** prompt에 포함하여 synthesizer를 스폰한다:
+읽은 내용을 **전부** prompt에 포함하여 synthesizer를 스폰한다 (팀원 매핑 블록도 함께 append):
 ```
 Agent(
-  name: "aim-review-synthesizer",
+  name: "aim-review-synthesizer-<topic>",
   subagent_type: "general-purpose",
-  team_name: "aim-code-review",
+  team_name: "aim-code-review-<topic>",
   prompt: """
-    <aim-review-synthesizer.md 에이전트 정의>
+    <review-synthesizer-prompt.md 내용>
 
     아래는 리뷰 입력 산출물이다. 이 내용을 빠짐없이 종합하라.
 
@@ -272,9 +308,9 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 ### Phase G: 대기 (오케스트레이터)
 
 1. 모든 Phase 완료 후에도 팀원 에이전트를 **종료하지 않고 대기**
-2. 사용자가 추가 질문/분석 요청 시 해당 팀원에게 `SendMessage`로 전달
-   - 예: "보안 쪽 더 자세히" → aim-code-reviewer에게 전달
-   - 예: "이 테스트 추가해줘" → aim-test-reviewer에게 전달
+2. 사용자가 추가 질문/분석 요청 시 해당 팀원에게 `SendMessage`로 전달 (타겟은 spawn 시 사용한 suffixed 이름)
+   - 예: "보안 쪽 더 자세히" → `aim-code-reviewer-<topic>`에게 전달
+   - 예: "이 테스트 추가해줘" → `aim-test-reviewer-<topic>`에게 전달
 3. 사용자가 명시적으로 종료 요청할 때만 팀 shutdown 수행. **Phase A에서 worktree를 사용한 경우** 종료 시 함께 정리한다:
 ```bash
 dx bash -c "cd /root/ofsrc/aim && ./script/worktree_remove.sh review_<MR번호>"
@@ -306,8 +342,9 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 
 #### Step 2: 에이전트 병렬 스폰 (검증 모드)
 
-Phase D와 동일한 3개 에이전트를 **검증 모드**로 스폰한다.
-각 에이전트의 prompt에 다음을 포함한다:
+Phase D와 동일한 3명의 팀원을 **검증 모드**로 재활용한다. 이미 팀에 존재하는 팀원이므로 `Agent` 재스폰 금지 — 반드시 `SendMessage`로 호출(타겟은 Phase D에서 사용한 suffixed 이름).
+
+각 메시지에 다음을 포함한다:
 - **검증 모드** 명시: "Phase D에서 작성한 리뷰의 반영 여부를 검증하라"
 - 이전 산출물 (02/03/04): 본인이 작성한 finding 목록
 - 새 커밋 diff: 담당자의 수정 내용
@@ -315,20 +352,21 @@ Phase D와 동일한 3개 에이전트를 **검증 모드**로 스폰한다.
 - 05_review_summary.md: 통합 finding 상태
 
 ```
-Agent(name: "aim-code-reviewer",    검증 모드, prompt: 이전 02 + diff + reply)
-Agent(name: "aim-test-reviewer",    검증 모드, prompt: 이전 03 + diff + reply)
-Agent(name: "aim-coverage-analyst", 검증 모드, prompt: make gtest + 재측정)
+SendMessage(to: "aim-code-reviewer-<topic>",    message: "검증 모드 ... 이전 02 + diff + reply")
+SendMessage(to: "aim-test-reviewer-<topic>",    message: "검증 모드 ... 이전 03 + diff + reply")
+SendMessage(to: "aim-coverage-analyst-<topic>", message: "검증 모드 ... make gtest + 재측정")
 ```
 
-각 에이전트의 검증 산출물:
-| 에이전트 | 산출물 | 내용 |
-|---------|--------|------|
-| aim-code-reviewer | `02_code_review.md` 업데이트 | 🔴/🟡 항목별: ✅반영 / ⚠️부분반영 / ❌미반영 / 🆕추가발견 |
-| aim-test-reviewer | `03_test_review.md` 업데이트 | 테스트 수정 검증, Mock 구조 확인, 추가 발견 |
-| aim-coverage-analyst | `04_coverage.md` 업데이트 | 커버리지 재측정 결과, 정책 충족 여부 |
+각 팀원의 검증 산출물:
+| 역할 (suffixed name) | 산출물 | 내용 |
+|---------------------|--------|------|
+| 코드 리뷰어 (`aim-code-reviewer-<topic>`) | `02_code_review.md` 업데이트 | 🔴/🟡 항목별: ✅반영 / ⚠️부분반영 / ❌미반영 / 🆕추가발견 |
+| 테스트 리뷰어 (`aim-test-reviewer-<topic>`) | `03_test_review.md` 업데이트 | 테스트 수정 검증, Mock 구조 확인, 추가 발견 |
+| 커버리지 분석가 (`aim-coverage-analyst-<topic>`) | `04_coverage.md` 업데이트 | 커버리지 재측정 결과, 정책 충족 여부 |
 
-#### Step 3: 종합 (aim-review-synthesizer)
+#### Step 3: 종합 (review-synthesizer 재활용)
 
+`SendMessage(to: "aim-review-synthesizer-<topic>", ...)`로 종합을 지시한다 (재스폰 금지).
 3개 검증 결과를 종합하여 `05_review_summary.md`를 업데이트한다.
 - finding 상태 업데이트 (✅ 해결 / ⚠️ 부분 해결 / 🆕 추가 발견)
 - 커버리지 재측정 결과 반영

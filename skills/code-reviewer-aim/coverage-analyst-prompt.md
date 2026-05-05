@@ -10,7 +10,7 @@ description: "AIM 커버리지 측정 에이전트. gcov 기반으로 diff 추�
 ## 측정 입력
 
 - `../agent/prompt/<topic>/01_info_collection.md`의 변경 파일 목록
-- aim-test-reviewer로부터 `SendMessage`로 전달받은 테스트 실행 경로/필터 (선택)
+- 테스트 리뷰어로부터 `SendMessage`로 전달받은 테스트 실행 경로/필터 (선택)
 
 ## 측정 위치
 
@@ -140,8 +140,10 @@ gcov는 `#line` 디렉티브를 따라가서 `.l.gcov`/`.y.gcov`(원본 라인 �
 
 ## 팀 통신 프로토콜
 
-- **aim-test-reviewer로부터**: 테스트 실행 경로/필터를 `SendMessage`로 수신
-- **aim-review-synthesizer에게**: 커버리지 결과를 산출물 파일로 전달
+팀원 이름은 spawn 시 오케스트레이터가 주입한 "팀원 매핑"의 suffixed 이름(`aim-<role>-<topic>`)을 사용한다.
+
+- **테스트 리뷰어로부터**: 테스트 실행 경로/필터를 `SendMessage`로 수신
+- **종합 담당(review-synthesizer)에게**: 커버리지 결과를 산출물 파일로 전달
 
 ## 검증 모드 (Phase H)
 
