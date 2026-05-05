@@ -47,28 +47,34 @@ topic에서 IMS 번호를 자동 추출: `<keyword>_<IMS번호>_<Jira번호>` �
 
 **왜 필요한가**: 여러 세션에서 동시에 코드 리뷰 스킬을 수행하면 동일 `team_name`을 공유해 `~/.claude/teams/<team>/inboxes/<member>.json` 디렉토리/inbox가 충돌한다. cross-session SendMessage 라우팅·컨텍스트 오염이 발생할 수 있다. **반드시 topic 접미사로 격리**한다.
 
+**topic-slug 변환 (필수)**:
+- `<topic-slug>` = topic의 모든 `_`를 `-`로 치환한 값
+- 예: topic `display_prc_outer_join_353568_6396` → slug `display-prc-outer-join-353568-6396`
+- 이유: Claude teams 인프라가 `team_name`의 underscore를 처리할 때, `~/.claude/teams/<team>/`(config dir)는 `_`→`-` 정규화하지만 `~/.claude/teams/<team>/inboxes/`(메시지 라우팅 시 생성)는 underscore를 보존한다. 결과적으로 동일 논리 team_name이 두 물리 디렉토리(`...-test_topic.../config.json`과 `...-test-topic.../inboxes/`)로 분기되어 cleanup·existence-check가 깨진다. **slug에서 underscore를 사전에 제거**해 단일 디렉토리만 사용한다.
+- 산출물 디렉토리(`../agent/prompt/<topic>/`)는 일반 파일시스템 경로라 underscore 그대로 유지 — slug 변환은 **Claude teams 식별자(`team_name`, 멤버 `name`)에만 적용**한다.
+
 **규칙**:
-- `team_name` = `aim-code-review-<topic>`
-- 멤버 `name` = `aim-<role>-<topic>`
+- `team_name` = `aim-code-review-<topic-slug>`
+- 멤버 `name` = `aim-<role>-<topic-slug>`
   - role 매핑: `info-collector`, `code-reviewer`, `test-reviewer`, `coverage-analyst`, `review-synthesizer`
-  - 예 (`topic = display_prc_outer_join_353568_6396`):
-    - 팀: `aim-code-review-display_prc_outer_join_353568_6396`
-    - 멤버: `aim-code-reviewer-display_prc_outer_join_353568_6396`, `aim-test-reviewer-display_prc_outer_join_353568_6396`, ...
+  - 예 (`topic = display_prc_outer_join_353568_6396` → slug `display-prc-outer-join-353568-6396`):
+    - 팀: `aim-code-review-display-prc-outer-join-353568-6396`
+    - 멤버: `aim-code-reviewer-display-prc-outer-join-353568-6396`, `aim-test-reviewer-display-prc-outer-join-353568-6396`, ...
 
 **spawn 시 팀원 매핑 주입 (필수)**: 각 Agent spawn prompt 끝에 아래 블록을 항상 append한다. 이는 prompt 파일 안의 peer 호명(예: "테스트 리뷰어")이 실제 SendMessage 타겟 이름으로 해석될 수 있게 한다.
 
 ```
 ## 팀원 매핑 (오케스트레이터 주입)
 
-너의 팀: aim-code-review-<topic>
-너의 이름: aim-<role>-<topic>
+너의 팀: aim-code-review-<topic-slug>
+너의 이름: aim-<role>-<topic-slug>
 
 팀원:
-- 정보 수집 (info-collector): aim-info-collector-<topic>
-- 코드 리뷰 (code-reviewer): aim-code-reviewer-<topic>
-- 테스트 리뷰 (test-reviewer): aim-test-reviewer-<topic>
-- 커버리지 분석 (coverage-analyst): aim-coverage-analyst-<topic>
-- 종합 (review-synthesizer): aim-review-synthesizer-<topic>
+- 정보 수집 (info-collector): aim-info-collector-<topic-slug>
+- 코드 리뷰 (code-reviewer): aim-code-reviewer-<topic-slug>
+- 테스트 리뷰 (test-reviewer): aim-test-reviewer-<topic-slug>
+- 커버리지 분석 (coverage-analyst): aim-coverage-analyst-<topic-slug>
+- 종합 (review-synthesizer): aim-review-synthesizer-<topic-slug>
 
 다른 팀원에게 SendMessage 시 위 suffixed 이름으로 호출한다. prompt 본문에 등장하는 역할명(예: "테스트 리뷰어")은 위 매핑으로 해석한다.
 ```
@@ -159,9 +165,9 @@ dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh review_<MR번호> rev
 
 ```
 Agent(
-  name: "aim-info-collector-<topic>",
+  name: "aim-info-collector-<topic-slug>",
   subagent_type: "general-purpose",
-  team_name: "aim-code-review-<topic>",
+  team_name: "aim-code-review-<topic-slug>",
   prompt: "<info-collector-prompt.md의 내용> + <00_input.md의 내용> + <팀원 매핑 블록>"
 )
 ```
@@ -196,9 +202,9 @@ Agent(
 **반드시 Agent 도구로 3개 리뷰어를 동시에 스폰한다. 오케스트레이터가 직접 리뷰하지 않는다.**
 
 ```
-Agent(name: "aim-code-reviewer-<topic>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic>", ...)
-Agent(name: "aim-test-reviewer-<topic>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic>", ...)
-Agent(name: "aim-coverage-analyst-<topic>", subagent_type: "general-purpose", team_name: "aim-code-review-<topic>", ...)
+Agent(name: "aim-code-reviewer-<topic-slug>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic-slug>", ...)
+Agent(name: "aim-test-reviewer-<topic-slug>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic-slug>", ...)
+Agent(name: "aim-coverage-analyst-<topic-slug>", subagent_type: "general-purpose", team_name: "aim-code-review-<topic-slug>", ...)
 ```
 
 각 에이전트의 prompt에 `01_info_collection.md`의 내용, 해당 에이전트 prompt 파일 내용, 그리고 **팀원 매핑 블록**(위 "네이밍 규칙" 참조)을 포함한다.
@@ -211,9 +217,9 @@ Agent(name: "aim-coverage-analyst-<topic>", subagent_type: "general-purpose", te
 
 | 역할 | 산출물 |
 |------|--------|
-| 코드 리뷰어 (`aim-code-reviewer-<topic>`) | `../agent/prompt/<topic>/02_code_review.md` |
-| 테스트 리뷰어 (`aim-test-reviewer-<topic>`) | `../agent/prompt/<topic>/03_test_review.md` |
-| 커버리지 분석가 (`aim-coverage-analyst-<topic>`) | `../agent/prompt/<topic>/04_coverage.md` |
+| 코드 리뷰어 (`aim-code-reviewer-<topic-slug>`) | `../agent/prompt/<topic>/02_code_review.md` |
+| 테스트 리뷰어 (`aim-test-reviewer-<topic-slug>`) | `../agent/prompt/<topic>/03_test_review.md` |
+| 커버리지 분석가 (`aim-coverage-analyst-<topic-slug>`) | `../agent/prompt/<topic>/04_coverage.md` |
 
 **3개 에이전트 모두 완료될 때까지 대기한다.**
 
@@ -234,9 +240,9 @@ Agent(name: "aim-coverage-analyst-<topic>", subagent_type: "general-purpose", te
 읽은 내용을 **전부** prompt에 포함하여 synthesizer를 스폰한다 (팀원 매핑 블록도 함께 append):
 ```
 Agent(
-  name: "aim-review-synthesizer-<topic>",
+  name: "aim-review-synthesizer-<topic-slug>",
   subagent_type: "general-purpose",
-  team_name: "aim-code-review-<topic>",
+  team_name: "aim-code-review-<topic-slug>",
   prompt: """
     <review-synthesizer-prompt.md 내용>
 
@@ -309,8 +315,8 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 
 1. 모든 Phase 완료 후에도 팀원 에이전트를 **종료하지 않고 대기**
 2. 사용자가 추가 질문/분석 요청 시 해당 팀원에게 `SendMessage`로 전달 (타겟은 spawn 시 사용한 suffixed 이름)
-   - 예: "보안 쪽 더 자세히" → `aim-code-reviewer-<topic>`에게 전달
-   - 예: "이 테스트 추가해줘" → `aim-test-reviewer-<topic>`에게 전달
+   - 예: "보안 쪽 더 자세히" → `aim-code-reviewer-<topic-slug>`에게 전달
+   - 예: "이 테스트 추가해줘" → `aim-test-reviewer-<topic-slug>`에게 전달
 3. 사용자가 명시적으로 종료 요청할 때만 팀 shutdown 수행. **Phase A에서 worktree를 사용한 경우** 종료 시 함께 정리한다:
 ```bash
 dx bash -c "cd /root/ofsrc/aim && ./script/worktree_remove.sh review_<MR번호>"
@@ -352,21 +358,21 @@ Phase D와 동일한 3명의 팀원을 **검증 모드**로 재활용한다. 이
 - 05_review_summary.md: 통합 finding 상태
 
 ```
-SendMessage(to: "aim-code-reviewer-<topic>",    message: "검증 모드 ... 이전 02 + diff + reply")
-SendMessage(to: "aim-test-reviewer-<topic>",    message: "검증 모드 ... 이전 03 + diff + reply")
-SendMessage(to: "aim-coverage-analyst-<topic>", message: "검증 모드 ... make gtest + 재측정")
+SendMessage(to: "aim-code-reviewer-<topic-slug>",    message: "검증 모드 ... 이전 02 + diff + reply")
+SendMessage(to: "aim-test-reviewer-<topic-slug>",    message: "검증 모드 ... 이전 03 + diff + reply")
+SendMessage(to: "aim-coverage-analyst-<topic-slug>", message: "검증 모드 ... make gtest + 재측정")
 ```
 
 각 팀원의 검증 산출물:
 | 역할 (suffixed name) | 산출물 | 내용 |
 |---------------------|--------|------|
-| 코드 리뷰어 (`aim-code-reviewer-<topic>`) | `02_code_review.md` 업데이트 | 🔴/🟡 항목별: ✅반영 / ⚠️부분반영 / ❌미반영 / 🆕추가발견 |
-| 테스트 리뷰어 (`aim-test-reviewer-<topic>`) | `03_test_review.md` 업데이트 | 테스트 수정 검증, Mock 구조 확인, 추가 발견 |
-| 커버리지 분석가 (`aim-coverage-analyst-<topic>`) | `04_coverage.md` 업데이트 | 커버리지 재측정 결과, 정책 충족 여부 |
+| 코드 리뷰어 (`aim-code-reviewer-<topic-slug>`) | `02_code_review.md` 업데이트 | 🔴/🟡 항목별: ✅반영 / ⚠️부분반영 / ❌미반영 / 🆕추가발견 |
+| 테스트 리뷰어 (`aim-test-reviewer-<topic-slug>`) | `03_test_review.md` 업데이트 | 테스트 수정 검증, Mock 구조 확인, 추가 발견 |
+| 커버리지 분석가 (`aim-coverage-analyst-<topic-slug>`) | `04_coverage.md` 업데이트 | 커버리지 재측정 결과, 정책 충족 여부 |
 
 #### Step 3: 종합 (review-synthesizer 재활용)
 
-`SendMessage(to: "aim-review-synthesizer-<topic>", ...)`로 종합을 지시한다 (재스폰 금지).
+`SendMessage(to: "aim-review-synthesizer-<topic-slug>", ...)`로 종합을 지시한다 (재스폰 금지).
 3개 검증 결과를 종합하여 `05_review_summary.md`를 업데이트한다.
 - finding 상태 업데이트 (✅ 해결 / ⚠️ 부분 해결 / 🆕 추가 발견)
 - 커버리지 재측정 결과 반영
