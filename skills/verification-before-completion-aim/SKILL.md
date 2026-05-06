@@ -62,6 +62,8 @@ Skip any step = lying, not verifying
 | "Bug fixed" | Code changed, assumed fixed |
 | "Coverage OK" | "I added enough tests" without measuring |
 | "Ready for MR" | Tests pass but coverage not checked |
+| **"이 코드가 빌드/실행된다"** | **Filesystem 존재(디렉토리/Makefile/소스 파일이 git에 있음)는 build graph 활성 증거 아님. SRC_DIRS 진입 경로 / `.gcno`·`.o` 산출물 / build log 진입 흔적 / report 결과 등 측정으로 확인 필요.** |
+| **"두 모듈이 충돌한다"** | **MODULE 이름이 같다는 file-based 추론만으로 격상 금지. 실제 빌드 graph 진입과 lib link 결과를 측정 (사고 사례: MR !602 aimocs landmine — jxalocsi가 `aim/src/ulib/Makefile SRC_DIRS`에 미포함 = stranded, swap 미발현).** |
 
 ## Red Flags - STOP
 

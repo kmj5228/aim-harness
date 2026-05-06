@@ -76,6 +76,27 @@ Complete each phase before proceeding.
    dx bash -c "gdb -batch -ex 'bt' -ex 'quit' /path/to/binary core"
    ```
 
+5. **Filesystem 존재 ≠ build graph 활성 (measurement-first)**
+
+   파일/디렉토리/Makefile이 git에 있다는 사실만으로 그 코드가 빌드·실행된다고 추론하지 말 것. AIM은 SRC_DIRS 기반 traversal Makefile 시스템이라 stranded code(어떤 SRC_DIRS에도 미포함된 디렉토리)가 흔하다.
+
+   추론 → 측정으로 검증:
+   ```bash
+   # 진입 경로 확인 (SRC_DIRS grep)
+   dx bash -c "rg -n '<dir_name>' /root/ofsrc/aim/src --glob 'Makefile'"
+
+   # 빌드 산출물 확인
+   dx bash -c "find /root/ofsrc/aim/<path> -name '*.gcno' -o -name '*.o' | head -5"
+
+   # 실제 호출/실행 경로 확인
+   dx bash -c "rg '<function_or_module>' /root/ofsrc/aim --glob '!*.bak'"
+
+   # 테스트 결과 확인
+   dx bash -c "ls /root/ofsrc/aim/test/unit/gtest/report/xml/ | grep <suite>"
+   ```
+
+   사고 사례 (MR !602): code-reviewer + test-reviewer가 `MODULE = aimocs` 두 곳 file presence로 swap 발현 추론 → 🔴 Critical 격상. 실제로는 jxalocsi가 SRC_DIRS 미포함 = stranded → 측정으로 dormant 확정. 추론 채널과 측정 채널이 독립이어야 false-positive cycle을 깬다.
+
 5. **Use Debugging Tools**
    ```bash
    dx bash -c "gdb /root/ofsrc/aim/bin/program"    # interactive debugger

@@ -223,6 +223,22 @@ Agent(name: "aim-coverage-analyst-<topic-slug>", subagent_type: "general-purpose
 
 **3개 에이전트 모두 완료될 때까지 대기한다.**
 
+**🔴 Critical 격상 시 measurement-first cross-check (필수)**
+
+리뷰어가 finding을 🔴 Critical로 격상하기 전에는 **filesystem 존재(파일/디렉토리/Makefile/코드가 git에 있다는 사실)로부터 build graph 활성을 추론하지 말고 측정으로 검증**한다. 추론 채널과 측정 채널이 독립이어야 false-positive cycle을 깰 수 있다.
+
+| 추론 (file presence) | 측정 (independent channel) |
+|---------------------|---------------------------|
+| `grep MODULE=` 결과 두 디렉토리 같음 | `grep -rn <dir>` 으로 SRC_DIRS 진입 경로 확인 |
+| 디렉토리/소스 파일 존재 | 빌드 산출물 (`.gcno` / `.o` / `bin/`) 존재 확인 |
+| Makefile 정의 됨 | build log에서 진입 흔적 확인 |
+| 함수 정의 존재 | 호출 경로 (rg/lsp/실행 로그) 확인 |
+| 테스트 파일 존재 | `report/xml/<suite>.xml` 또는 `report/log/` 결과 확인 |
+
+오케스트레이터는 코드/테스트 리뷰어가 🔴 Critical을 보고하면 **coverage-analyst에게 measurement cross-check를 명시 요청**한다. coverage-analyst가 측정으로 활성을 confirm하기 전까지는 종합 단계에서 Critical을 잠정으로 표기하고 머지 차단 사유로 단정하지 않는다.
+
+> ⚠️ **사고 사례 (2026-05-06 MR !602)**: code-reviewer + test-reviewer가 file presence(`grep MODULE=aimocs` 두 곳, jxalocsi 디렉토리 존재)로 "swap 발현" 추론 → 🔴 Critical 격상. 두 명이 같은 file-based 채널로 verify-each-other하여 false-positive 강화 cycle. coverage-analyst의 `grep -rn jxalocsi` (build graph 측정) + `.gcno` 0개 + `report/xml/gtest_aimocs.xml` 14 PASS 확인으로 stranded code 확정 → DORMANT로 정정. 측정 채널 부재 시 Critical 격상은 false-positive 위험.
+
 **Phase D gate**: `02_code_review.md`, `03_test_review.md`, `04_coverage.md` 3개 파일이 모두 존재해야 Phase E 진행. (모드에 따라 해당 파일만 확인)
 
 ---
