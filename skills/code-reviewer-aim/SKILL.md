@@ -223,6 +223,22 @@ Agent(name: "aim-coverage-analyst-<topic-slug>", subagent_type: "general-purpose
 
 **3개 에이전트 모두 완료될 때까지 대기한다.**
 
+**🔴 Critical 격상 시 measurement-first cross-check (필수)**
+
+리뷰어가 finding을 🔴 Critical로 격상하기 전에는 **filesystem 존재(파일/디렉토리/Makefile/코드가 git에 있다는 사실)로부터 build graph 활성을 추론하지 말고 측정으로 검증**한다. 추론 채널과 측정 채널이 독립이어야 false-positive cycle을 깰 수 있다.
+
+| 추론 (file presence) | 측정 (independent channel) |
+|---------------------|---------------------------|
+| `grep MODULE=` 결과 두 디렉토리 같음 | `grep -rn <dir>` 으로 SRC_DIRS 진입 경로 확인 |
+| 디렉토리/소스 파일 존재 | 빌드 산출물 (`.gcno` / `.o` / `bin/`) 존재 확인 |
+| Makefile 정의 됨 | build log에서 진입 흔적 확인 |
+| 함수 정의 존재 | 호출 경로 (rg/lsp/실행 로그) 확인 |
+| 테스트 파일 존재 | `report/xml/<suite>.xml` 또는 `report/log/` 결과 확인 |
+
+오케스트레이터는 코드/테스트 리뷰어가 🔴 Critical을 보고하면 **coverage-analyst에게 measurement cross-check를 명시 요청**한다. coverage-analyst가 측정으로 활성을 confirm하기 전까지는 종합 단계에서 Critical을 잠정으로 표기하고 머지 차단 사유로 단정하지 않는다.
+
+> ⚠️ **사고 사례 (2026-05-06 MR !602)**: code-reviewer + test-reviewer가 file presence(`grep MODULE=aimocs` 두 곳, jxalocsi 디렉토리 존재)로 "swap 발현" 추론 → 🔴 Critical 격상. 두 명이 같은 file-based 채널로 verify-each-other하여 false-positive 강화 cycle. coverage-analyst의 `grep -rn jxalocsi` (build graph 측정) + `.gcno` 0개 + `report/xml/gtest_aimocs.xml` 14 PASS 확인으로 stranded code 확정 → DORMANT로 정정. 측정 채널 부재 시 Critical 격상은 false-positive 위험.
+
 **Phase D gate**: `02_code_review.md`, `03_test_review.md`, `04_coverage.md` 3개 파일이 모두 존재해야 Phase E 진행. (모드에 따라 해당 파일만 확인)
 
 ---
@@ -311,16 +327,91 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 
 ---
 
-### Phase G: 대기 (오케스트레이터)
+### Phase G: 작성자 반영 대기 (active monitor 옵션)
 
-1. 모든 Phase 완료 후에도 팀원 에이전트를 **종료하지 않고 대기**
-2. 사용자가 추가 질문/분석 요청 시 해당 팀원에게 `SendMessage`로 전달 (타겟은 spawn 시 사용한 suffixed 이름)
-   - 예: "보안 쪽 더 자세히" → `aim-code-reviewer-<topic-slug>`에게 전달
-   - 예: "이 테스트 추가해줘" → `aim-test-reviewer-<topic-slug>`에게 전달
-3. 사용자가 명시적으로 종료 요청할 때만 팀 shutdown 수행. **Phase A에서 worktree를 사용한 경우** 종료 시 함께 정리한다:
+Phase F 등록 완료 후 사용자에게 monitor 진입 여부를 묻는다. "예" 시 active monitor + Phase H 자동 트리거를 활성화한다. "아니오" 시 단순 idle 대기(기존 동작).
+
+#### Step 0: 사용자 의향 확인 (필수)
+
+```
+AskUserQuestion(questions: [{
+  question: "작성자 응답을 active monitor 할까요? (60s polling, 머지/수정/코멘트 자동 감지)",
+  header: "Phase G monitor",
+  options: [
+    { label: "예 (Recommended)", description: "MR head_sha/notes/state 60s polling, 변화 시 Phase H 자동 진입 또는 보고" },
+    { label: "아니오", description: "단순 idle 대기. 사용자가 명시적으로 요청할 때만 처리" }
+  ],
+  multiSelect: false
+}])
+```
+
+"아니오" 선택 시: 팀원 idle 유지 + 사용자 명시 요청 처리(`SendMessage`로 해당 팀원 호출). Step 1~4 skip하고 Step 5만 적용.
+
+#### Step 1: Monitor 설정 (Bash `run_in_background`, persistent)
+
+GitLab MR API를 60초 간격 polling하여 다음 변화 감지:
+- `head_sha` 변화 (새 commit push)
+- `user_notes_count` 증가 (새 코멘트)
+- `state` opened → merged / closed
+- `pipeline_status` 변화 (정보성)
+
+```bash
+prev_sha="<HEAD_SHA>"
+prev_count=<USER_NOTES_COUNT>
+while true; do
+  resp=$(curl -s --header "PRIVATE-TOKEN: $TOKEN" "$BASE/merge_requests/<IID>" 2>/dev/null || echo '{}')
+  cur_sha=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null)
+  cur_count=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('user_notes_count',0))" 2>/dev/null)
+  state=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state',''))" 2>/dev/null)
+  [ "$cur_sha" != "$prev_sha" ] && [ -n "$cur_sha" ] && echo "NEW_COMMIT: $prev_sha -> $cur_sha" && prev_sha="$cur_sha"
+  [ "$cur_count" -gt "$prev_count" ] 2>/dev/null && echo "NEW_NOTE: count $prev_count -> $cur_count" && prev_count="$cur_count"
+  [ "$state" = "merged" ] && echo "MR_MERGED" && break
+  [ "$state" = "closed" ] && echo "MR_CLOSED" && break
+  sleep 60
+done
+```
+
+`run_in_background: true`, `timeout: 43200000` (12시간) 또는 horizon에 맞게.
+
+#### Step 2: ScheduleWakeup fallback (max 1시간)
+
+Monitor가 죽거나 멈췄을 때 안전망. 작성자 수정은 분~시간 단위이므로 짧은 polling으로 cache 유지를 시도하는 것은 비용 비효율 (cache TTL 5분 vs 작성자 응답 시간 단위).
+
+```
+ScheduleWakeup(
+  delaySeconds: 3600,
+  reason: "Phase G monitor liveness 점검 (작성자 응답 시간 단위 horizon)",
+  prompt: "Phase G monitor 상태 점검"
+)
+```
+
+> ⚠️ **사고 사례 (2026-05-06 MR !602)**: ScheduleWakeup의 `prompt`를 `/loop continue` 같은 슬래시 커맨드로 걸면 fire 시 자동으로 dynamic mode가 부팅되어 자기 강화 루프가 형성된다(의도치 않은 비용 누적·통제 손실). **fallback heartbeat 용도 ScheduleWakeup의 `prompt`는 반드시 평문 사용**.
+
+매 wakeup 도착 시: Monitor 살아있는지 확인 → 죽었으면 재시작 → 다음 fallback ScheduleWakeup 재예약.
+
+#### Step 3: 이벤트별 처리
+
+| 이벤트 (Monitor 알림) | 처리 |
+|----------------------|------|
+| 새 commit + 새 코멘트 (양쪽 동시) | **Phase H 자동 진입** (반영 검증) |
+| 새 commit만 | 사용자 보고 + Phase H 진입 의사 확인 |
+| 새 코멘트만 (작성자 reply 등) | 사용자 보고 + Phase H 진입 또는 추가 응답 의사 확인 |
+| `state=merged` | Monitor TaskStop + PushNotification + Phase I 진입 또는 사용자 명시 종료 대기 |
+| `state=closed` | Monitor TaskStop + 사용자 보고 + 종료 |
+| `pipeline_status` 변화만 (예: failed→success는 LGTM gate 자동 통과) | 정보성 보고만, Phase H 진입 안 함 |
+
+#### Step 4: 종료 (monitor 모드)
+
+- merged/closed 감지 시: Monitor TaskStop + PushNotification, 팀원 idle 유지하되 사용자에게 다음 단계(워크트리/팀 정리, Phase I 진행) 결정 요청.
+
+#### Step 5: 정리 (공통 — monitor 여부 무관)
+
+사용자가 명시적으로 종료/정리 요청하면 Monitor TaskStop(있다면) + 팀 shutdown + worktree 정리:
+
 ```bash
 dx bash -c "cd /root/ofsrc/aim && ./script/worktree_remove.sh review_<MR번호>"
 ```
+
 정리 절차 상세는 **using-feature-branches-aim** 스킬 참조.
 
 ---
@@ -328,7 +419,10 @@ dx bash -c "cd /root/ofsrc/aim && ./script/worktree_remove.sh review_<MR번호>"
 ### Phase H: 리뷰 반영 검증 (오케스트레이터 + 기존 에이전트 재활용)
 
 담당자가 GitLab 코멘트를 확인하고 코드를 수정한 뒤, 반영 결과를 검토하는 단계.
-사용자가 "담당자가 반영했다", "추가 리뷰", "반영 확인" 등을 요청하면 이 Phase를 수행한다.
+
+**진입 조건 (둘 중 하나)**:
+1. 사용자가 "담당자가 반영했다", "추가 리뷰", "반영 확인" 등을 요청한 경우.
+2. **Phase G monitor가 새 commit + 새 코멘트를 동시에 감지하여 자동 진입한 경우** (사용자 입력 없이도 진입 가능).
 
 **기존 에이전트를 검증 모드로 재활용한다.** Phase D에서 각 에이전트가 축적한 컨텍스트(본인이 지적한 finding, 제안한 수정 방향)를 활용하여 본인의 영역을 재검증한다.
 
@@ -397,15 +491,29 @@ SendMessage(to: "aim-coverage-analyst-<topic-slug>", message: "검증 모드 ...
 - **Approve**: 모든 🔴 해결, 커버리지 정책 충족, 추가 발견 없음
 - **추가 수정 요청**: Phase H에서 미해결 항목이 남아있는 경우 → Phase H 반복
 
-#### 수행
-1. GitLab에 LGTM 코멘트 등록 (판정 요약 포함)
-2. MR Approve: `POST /api/v4/projects/211/merge_requests/<iid>/approve`
+#### 진입 경로별 분기
+
+Phase I의 수행 절차는 진입 경로에 따라 달라진다.
+
+##### 경로 A — Phase H 완료 후 정식 진입 (reviewer 머지 전 Approve)
+1. GitLab에 LGTM 코멘트 등록 (판정 요약 포함, Phase F에서 미등록 시)
+2. MR Approve API 호출: `POST /api/v4/projects/211/merge_requests/<iid>/approve`
 3. plan 파일 Phase I 완료 체크
-4. `../agent/` git push
-5. (Phase A에서 worktree를 사용한 경우) 정리:
+4. `../agent/` git push (산출물 보존)
+5. (Phase A에서 worktree를 사용한 경우) 워크트리 정리:
 ```bash
 dx bash -c "cd /root/ofsrc/aim && ./script/worktree_remove.sh review_<MR번호>"
 ```
+
+##### 경로 B — Phase G monitor가 `state=merged` 자동 감지 후 진입 (작성자 자체 머지)
+이미 merged 상태이므로 Approve API와 LGTM 추가 등록은 무의미. 정리 작업만 수행.
+
+1. ~~LGTM 코멘트 등록~~: skip (Phase F에서 이미 등록됐고 mr_lgtm_gate가 자동 인식하여 머지가 된 상태)
+2. ~~MR Approve API 호출~~: skip (이미 merged)
+3. plan 파일 Phase I 완료 체크
+4. `../agent/` git push (산출물 보존)
+5. 워크트리 정리 (위와 동일)
+6. 팀 shutdown (사용자 명시 시)
 
 ## 작업 규모별 모드
 
