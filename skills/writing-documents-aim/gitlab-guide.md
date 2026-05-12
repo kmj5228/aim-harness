@@ -123,6 +123,22 @@ curl -s --request POST \
 
 상세는 finishing-a-development-branch-aim SKILL.md를 참조할 것.
 
+## docs-only governance MR
+
+**조건**: product source(`.c`/`.h`/`.cpp`) 변경 및 unit test 영향이 전혀 없는 governance·문서·dev 도구 전용 MR (`git diff rb_73..HEAD --name-only` 결과가 `AGENTS.md` / `*/AGENTS.override.md` / `.gitmessage` / `.gitlab/*` / `script/*` / `test/**/AGENTS.override.md` 등만 포함, production 소스 없음). IMS/Jira 미연결인 경우가 많다.
+
+**면제/대체 항목**:
+
+- `## Test ### 추가/### 기존`: 체크박스를 `[x]`로 두고 `N/A — 코드/테스트 영향 없음 (governance·문서·도구 변경)` 명시 + 코드 블록에 `N/A: product source 변경 없음. gtest 추가/실행 대상 없음.` 1줄. `dx make gtest` 실행 불요.
+- `<details>` 안 verbatim stdout: 면제. `N/A: 본 MR은 governance·문서·도구 변경뿐이라 dx make gtest 실행 대상이 아니다.` 1줄로 대체.
+- `## Squash Commit Message`: 설치 산출물이 없으면 `* module` / `* version` 라인 생략 가능. IMS/Jira 미연결이면 헤더를 `<type> Korean description` 약식으로 (`IMS#`·`#OFV7-` 생략).
+- `manual-check` marker (finishing-branch에서 삽입): IMS/Jira 둘 다 없으면 키 없이 `<!-- aim-harness:manual-check status=done checked=YYYY-MM-DD reason=governance-docs-only -->`. product source 미변경이라 매뉴얼 판단은 자명히 "불필요" → `status=done` 고정 (상세 형식은 `manual-guide.md` "Marker 형식").
+- MR Check List: `coding convention 확인` / `테스트 추가` 등 코드 전제 항목은 `[x] — N/A(코드 변경 없음)` 부기. 5개 모두 체크해 리뷰 가능 상태 유지. 체크박스 표기 예: `- [x] 테스트가 추가 되었는가? — N/A(코드 변경 없음)` (한 줄에 부기).
+- `## 내용` / `## 수정 사항`: generic 규칙대로 작성 (변경 파일 경로·이유·결과 요약).
+- `> #OFV7-XXXX, #Deadline:` trailer: IMS/Jira 없으면 `> #Deadline: -` (마감 있으면 날짜만 기재).
+
+**Self-review checklist 적용**: `<details>` verbatim/`BIN_DIR=` 시작 라인/`== Module Summary ==` N/A 행/`== Unmatched module aliases ==`/`* module` 산출물 이름 — 이 stdout·산출물 강제 항목들은 docs-only governance MR에서 **자동 N/A**로 간주한다. `[Check Fail]`이 아니라 N/A로 보고한다 (DONE_WITH_CONCERNS에 `[Check Fail]` 기재 불요).
+
 ## MR 코멘트
 
 MR 코멘트 등록은 **code-reviewer-aim** 스킬 (Phase F)이 담당한다.
@@ -153,7 +169,7 @@ curl -s --request POST \
 
 ## Self-review checklist (적신호)
 
-MR description 작성/갱신 PUT **직전** 아래 항목을 확인한다. 위반 시 재작성 후 재PUT.
+MR description 작성/갱신 PUT **직전** 아래 항목을 확인한다. 위반 시 재작성 후 재PUT. (docs-only governance MR은 `## docs-only governance MR` 섹션의 면제 항목을 먼저 적용 — stdout·산출물 강제 항목은 N/A로 처리, `[Check Fail]` 아님.)
 
 - [ ] `## Test ### 추가`가 `### 기존`보다 위에 있는가?
 - [ ] `<details>` 안이 요약본이 아닌 `dx make gtest` stdout **verbatim 전체**인가? (`BIN_DIR=` 시작 라인 존재)

@@ -532,7 +532,7 @@ MR description 맨 아래에 HTML 주석으로 삽입. finishing-branch가 쓰�
 | `jira` | 선택 | `OFV7-<num>` | Jira 키 (IMS 없으면 필수, 둘 다 있어도 OK) |
 | `status` | 필수 | `pending-merge` / `done` | 상태 |
 | `checked` | 필수 | ISO date | 판단 수행일 |
-| `reason` | 선택 | `not-needed` / `already-reflected` / `written-now` / `user-skip` | `done` 상태일 때 구체 사유 |
+| `reason` | 선택 | `not-needed` / `already-reflected` / `written-now` / `user-skip` / `governance-docs-only` | `done` 상태일 때 구체 사유 |
 
 **상태 값**:
 - `pending-merge`: 매뉴얼 추가 필요 + merge 후 작성 (completing-patch Step 6에서 실행)
@@ -550,6 +550,11 @@ MR description 맨 아래에 HTML 주석으로 삽입. finishing-branch가 쓰�
 **IMS 없이 Jira만 있는 commit** (aim repo 관례 혼재 — `fa468669 [#OFV7-1596]` 같은 경우):
 ```html
 <!-- aim-harness:manual-check jira=OFV7-1596 status=pending-merge checked=2026-04-15 -->
+```
+
+**IMS/Jira 둘 다 없는 governance docs-only MR** (코드/테스트 영향 없는 governance·문서·도구 전용 MR — `gitlab-guide.md` "docs-only governance MR" 참조): `ims`/`jira` 키 없이 `status=done reason=governance-docs-only`. product source 미변경이라 매뉴얼 판단이 자명히 "불필요"이므로 `pending-merge`가 아닌 `done` 고정. 단일 MR 1개 marker만 사용.
+```html
+<!-- aim-harness:manual-check status=done checked=2026-05-12 reason=governance-docs-only -->
 ```
 
 **marker 조회 규칙 (completing-patch Step 0)**:
