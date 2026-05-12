@@ -106,15 +106,19 @@ Now safe to commit:
 
 ```bash
 dx git add <specific-files>
-# 한글 커밋: 파일(-F)로 전달 (dx가 한글을 이중 이스케이프하여 깨뜨림)
-cat > /tmp/commit_msg.txt << 'EOF'
+# 한글 커밋: 메시지 파일은 repo 내부(SSHFS-공유 경로)에 **Mac 측에서** 작성한 뒤 `dx git commit -F` 로 참조한다.
+#   - Mac `/tmp` ↔ Docker `/tmp` 는 비공유 → `/tmp/commit_msg.txt` 에 작성하면 dx 가 다른 파일을 보거나 못 찾는다.
+#   - `dx bash -c "cat > ... << EOF ...한글... EOF"` 처럼 dx 안에서 heredoc 으로 작성하면 dx 가 한글을 이중 이스케이프하여 깨뜨린다.
+#   - 따라서 heredoc 작성은 dx 없이(Mac shell) repo 내부 경로에 하고, dx 는 `git commit -F` 만 맡긴다.
+cat > .commit_msg.tmp << 'EOF'
 <feat> 기능 설명
 
     - 변경사항
 
  #OFV7-XXXX
 EOF
-dx bash -c "git commit -F /tmp/commit_msg.txt"
+dx git commit -F .commit_msg.tmp
+rm .commit_msg.tmp
 ```
 
 **Remember:** `git add .` / `git add -A` prohibited. Always specify files.
@@ -149,8 +153,9 @@ IMS#XXXXXX:<type> summary
 - Jira 티켓: `#OFV7-XXXX` (브랜치명의 Jira 번호 참조)
 
 ```bash
-# 예시 (한글은 파일로 전달):
-cat > /tmp/commit_msg.txt << 'EOF'
+# 예시 — 메시지 파일을 repo 내부(SSHFS-공유)에 Mac 측에서 작성한 뒤 dx 로 commit:
+#   (Mac `/tmp` 는 Docker 와 비공유, `dx bash -c` 안의 heredoc 은 한글 깨짐 — 둘 다 피한다)
+cat > .commit_msg.tmp << 'EOF'
 <fix> SMQN recovery 판정 로직 수정
 
     - mqn recovery 테이블 검사 누락 수정
@@ -158,7 +163,8 @@ cat > /tmp/commit_msg.txt << 'EOF'
 
  #OFV7-6293
 EOF
-dx bash -c "git commit -F /tmp/commit_msg.txt"
+dx git commit -F .commit_msg.tmp
+rm .commit_msg.tmp
 ```
 
 ## Push
