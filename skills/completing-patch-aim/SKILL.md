@@ -28,6 +28,7 @@ After MR merge, write the patch verification document in IMS for QA review.
 3. **사용자 검토** — 초안 확인 후 승인
 4. **HTML 변환** — X-Free Editor 호환 HTML로 변환
 5. **IMS 등록** — 브라우저 자동화로 IMS 에디터에 반영
+5.5. **IMS 액션 등록** — 패치 검증서 저장 후 이슈에 액션(담당자→QA / 상태→Resolved / 패치 등록 안내 + git log) 등록
 6. **매뉴얼 후속 작업 실행** — 상태(0번에서 확인)에 따라 분기
 
 ## Step 0: 매뉴얼 필요성 상태 확인
@@ -207,6 +208,49 @@ window.confirm = origConfirm;
 
 저장 후 페이지 새로고침 → iframe ID 변경됨.
 
+## IMS 액션 등록
+
+패치 검증서를 저장한 뒤, 처리 대상 IMS 이슈에 **액션(Action)**을 등록한다. 검증서 작성(Step 1~5)과 별개로, 이슈 상태를 정리하고 QA에 패치 등록을 알리는 단계다 (Checklist Step 5.5).
+
+### 절차
+
+검증서가 IMS에 저장된 뒤 수행한다 (Step 5 완료가 전제; Step 6 매뉴얼과의 선후는 무관). 이미 액션이 등록돼 있으면 (재실행 시) skip.
+
+1. 이슈 페이지로 이동 → "Action Registration" 링크
+2. 핸들러 변경 (보통 QA 담당자 — 누구로 변경할지 사용자에게 확인)
+3. 상태 변경 (보통 Resolved)
+4. 에디터에 액션 내용 입력 (HTML — `<br>` 줄바꿈, `<p>` 금지)
+5. 사용자 확인 후 저장 (`fileUpload()` + confirm 우회)
+
+절차·HTML 변환 규칙·"작성" vs "저장" 트리거 규칙의 SSoT는 **`writing-documents-aim/ims-guide.md`**의 "IMS 액션 (Action) 작성" + "IMS 액션 등록 (Chrome 자동화)" 섹션이다. **Read 필수.** 본 스킬은 시퀀스 위치(검증서 저장 → 액션 등록)와 "패치 등록 완료" 유형 내용 골격만 기술한다.
+
+### 액션 내용 골격 (패치 등록 완료 유형)
+
+동작 관점 작성(`<HARD-GATE>`)은 액션 내용에도 동일 적용 — 상수명/함수명/코드 레벨 설명 금지.
+
+```
+안녕하십니까.
+{팀명} {이름}입니다.
+
+본건 {기능 요약}을 개발 완료하여 패치를 등록하였습니다.
+
+1. 변경 내용
+   - {동작 관점 bullet}
+   - ...
+
+자세한 내용은 패치검증서 확인 부탁드립니다.
+
+감사합니다.
+
+
+<<git log>>
+{squash commit log 전체}
+```
+
+> `<<git log>>` 본문: merge된 MR의 squash commit 메시지(또는 merge commit의 `git log`)를 그대로 붙인다.
+>
+> "작성해"·"써줘"·"입력해" → 에디터 입력만, `fileUpload()` 호출 금지. "저장해"·"submit" → 호출 허용. `fileUpload()`는 내용 입력과 같은 턴에서 호출 금지 (ims-guide.md "IMS 액션 등록" 참조).
+
 ## Step 6: 매뉴얼 후속 작업
 
 Step 0에서 저장한 marker 상태에 따라 매뉴얼 작업을 진행한다.
@@ -245,6 +289,7 @@ push 완료 후 MR description의 marker를 `status=done`으로 갱신(선택).
 - **Step 0 marker 확인 생략** → 매뉴얼 중복 작업 또는 누락 발생
 - **`pending-merge` 상태를 무시하고 판단부터 재실행** → 사용자가 이미 내린 결정을 뒤집는 행위
 - **marker 없음 상태에서 매뉴얼 판단 자체 생략** → 매뉴얼 누락의 주 원인
+- **패치 검증서만 등록하고 IMS 액션(담당자/상태/git log 댓글) 등록 생략** → 이슈가 정리되지 않고 QA에 패치 등록이 통지되지 않음 (IMS 액션 등록 섹션 참조)
 
 ## Integration
 
@@ -253,6 +298,7 @@ push 완료 후 MR description의 marker를 `status=done`으로 갱신(선택).
 
 **Uses:**
 - **writing-documents-aim** — 공통 문서 작성 규칙 (독자/톤/두괄식)
+- **writing-documents-aim / ims-guide.md** — IMS 액션(Action) 작성·등록 절차 (Step 5.5)
 - **writing-documents-aim / manual-guide.md** — Step 0 marker 확인 + Step 6 매뉴얼 후속 작업
 
 **Requires:**
