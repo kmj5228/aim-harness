@@ -573,6 +573,7 @@ Phase F 등록 전 또는 후에 오프라인 리뷰가 진행되어 담당자�
 | Jira/GitLab API 실패 | 토큰/네트워크 확인 요청 후 재시도 1회 |
 | 에이전트 실패 | 1회 재시도 → 실패 시 해당 영역 없이 진행, 종합 보고서에 누락 명시 |
 | 커버리지 스크립트 실패 | gcda 존재 여부 확인, make gtest 재실행 안내 |
+| 커버리지 스크립트 출력이 비어 있음 (특히 .l/.y 변경 PR) | .l/.y가 측정 후보에 포함됐는지, 대상 모듈이 mock-separated(.gcda 생성 대상)인지 확인. "환경 전제"의 lex/yacc 커버리지 항목 참조 |
 | 대용량 diff | 변경 파일 또는 핵심 파일에 집중, 범위를 보고서에 명시 |
 
 ## 환경 전제
@@ -584,3 +585,4 @@ Phase F 등록 전 또는 후에 오프라인 리뷰가 진행되어 담당자�
 - 커버리지 스크립트: `aim/script/measure_diff_cov.sh`
 - 커버리지 측정은 worktree에서도 사용 가능 (aim repo MR !597 머지로 `measure_diff_cov.sh` PWD 인지 + `env.sh` LD prepend가 자동 처리). 측정 영역은 main과 동등하다 — `aim/AGENTS.md` "Worktree Operations" 참조. `make`/`make gtest`는 install 안 하므로 `tmdown` 선행 불필요. 별도 `make install` 시에만 `dx tmdown -y` 선행.
 - 미커버 라인 식별은 `measure_diff_cov.sh` 출력 + `dx git diff --unified=0 <base>..HEAD`로 확인. `gcov`를 직접 `grep`/`awk`로 파싱하면 메타데이터 5줄만 출력되는 재현성 있는 현상이 있으므로 금지.
+- lex/yacc 변경 PR(`*.l`/`*.y`)의 커버리지: gcov가 `#line` 디렉티브를 따라 원본 `.l`/`.y` 라인 기준으로 `foo.l.gcov`/`foo.y.gcov`를 생성하므로 측정 단위는 `.l`/`.y`다(자동 재생성 `foo.c`는 측정 대상 아님 — `measure_diff_cov.sh`가 `.l`/`.y`를 후보에 포함하고 컴파일 단위 `foo.c`로 gcov 호출). lex 정규식이 입력 형식을 이미 보장한 뒤 도달하는 sscanf 실패 분기 같은 unreachable defensive guard 라인은 미커버를 정당화할 수 있으니 Critical/Major로 격상하지 말 것 — 상세는 `aim/test/unit/gtest/AGENTS.override.md` "커버리지 측정" 참조.
