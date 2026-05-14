@@ -355,19 +355,30 @@ GitLab MR API를 60초 간격 polling하여 다음 변화 감지:
 - `state` opened → merged / closed
 - `pipeline_status` 변화 (정보성)
 
-**중요 — auto-trigger 패턴**: `run_in_background` task는 *완료될 때만* 자동으로 turn에 진입한다. 중간 stdout echo는 누적만 되고 사용자가 직접 묻기 전까지 turn 미진입. 따라서 monitor가 NEW_COMMIT/NEW_NOTE를 stdout echo만 하고 sleep을 계속하면 이벤트를 잡았어도 Phase H 자동 진입이 안 된다. **이벤트 감지 시 즉시 `exit 0`** 하여 task 완료 notification으로 다음 phase를 trigger한다.
+**중요 — auto-trigger 패턴**: `run_in_background` task는 *완료될 때만* 자동으로 turn에 진입한다. 중간 stdout echo는 누적만 되고 사용자가 직접 묻기 전까지 turn 미진입. 따라서 monitor가 NEW_COMMIT/NEW_NOTE를 stdout echo만 하고 sleep을 계속하면 이벤트를 잡았어도 Phase H 자동 진입이 안 된다. **이벤트 감지 시 settle window를 거쳐 `exit 0`** 하여 task 완료 notification으로 다음 phase를 trigger한다.
+
+**Settle window (point-stable polling)**: 첫 이벤트 감지 후 즉시 exit하지 않고 `SETTLE_SECS`(default 60s) 동안 추가 변화를 기다린다. 작성자가 commit + 여러 reply를 순차 등록하는 경우 첫 이벤트로 exit하면 나머지가 누락된 채 Phase H가 시작되는 위험이 있다. 변화가 settle window 동안 멈출 때까지 반복하여 모든 이벤트를 누적한 후 exit. 절대 상한 `SETTLE_MAX`(default 1800s)로 무한 대기 방지.
 
 ```bash
+SETTLE_SECS=60     # 추가 이벤트 누적 대기 window
+SETTLE_MAX=1800    # 절대 상한 (작성자가 무한정 작성하는 극단 케이스 방지)
+
 prev_sha="<HEAD_SHA>"
 prev_count=<USER_NOTES_COUNT>
 prev_pipe=""
-while true; do
+
+# 한 번의 polling, 결과를 전역 변수에 저장
+poll() {
+  local resp
   resp=$(curl -s --header "PRIVATE-TOKEN: $TOKEN" "$BASE/merge_requests/<IID>" 2>/dev/null || echo '{}')
   cur_sha=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha') or '')" 2>/dev/null)
   cur_count=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('user_notes_count') or 0)" 2>/dev/null)
   state=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state') or '')" 2>/dev/null)
   pipe=$(echo "$resp" | python3 -c "import json,sys; p=json.load(sys.stdin).get('pipeline') or {}; print(p.get('status') or '')" 2>/dev/null)
+}
 
+while true; do
+  poll
   ts=$(date '+%Y-%m-%dT%H:%M:%S')
   event=""
 
@@ -387,9 +398,51 @@ while true; do
   [ "$state" = "merged" ] && echo "[$ts] MR_MERGED" && exit 0
   [ "$state" = "closed" ] && echo "[$ts] MR_CLOSED" && exit 0
 
-  # 이벤트 감지 시 즉시 exit → harness가 turn trigger → Phase H 자동 진입
+  # 이벤트 감지 시 settle 진입 (point-stable polling)
   if [ -n "$event" ]; then
-    echo "[$ts] EXIT_FOR_REVIEW event=$event"
+    settle_elapsed=0
+    while [ "$settle_elapsed" -lt "$SETTLE_MAX" ]; do
+      baseline_sha="$cur_sha"
+      baseline_count="$cur_count"
+      ts=$(date '+%Y-%m-%dT%H:%M:%S')
+      echo "[$ts] settling ${SETTLE_SECS}s (elapsed=${settle_elapsed}s, baseline_count=$baseline_count, baseline_sha=$baseline_sha)"
+      sleep "$SETTLE_SECS"
+      settle_elapsed=$((settle_elapsed + SETTLE_SECS))
+      poll
+      ts=$(date '+%Y-%m-%dT%H:%M:%S')
+
+      [ "$state" = "merged" ] && echo "[$ts] MR_MERGED" && exit 0
+      [ "$state" = "closed" ] && echo "[$ts] MR_CLOSED" && exit 0
+
+      # settle window 동안 변화 있으면 누적 echo + event 라벨 갱신 + 재 settle
+      change=""
+      if [ -n "$cur_sha" ] && [ "$cur_sha" != "$baseline_sha" ]; then
+        echo "[$ts] ALSO_NEW_COMMIT: $baseline_sha -> $cur_sha"
+        change="commit"
+      fi
+      if [ "$cur_count" -gt "$baseline_count" ] 2>/dev/null; then
+        echo "[$ts] ALSO_NEW_NOTE: $baseline_count -> $cur_count"
+        [ -z "$change" ] && change="note" || change="commit_and_note"
+      fi
+      if [ -z "$change" ]; then
+        # settle window 안에 변화 없음 → 안정 → exit
+        echo "[$ts] SETTLED (no change in ${SETTLE_SECS}s)"
+        echo "[$ts] EXIT_FOR_REVIEW event=$event final_count=$cur_count final_sha=$cur_sha"
+        exit 0
+      fi
+      # 변화 있음 → event 라벨 갱신 후 재 settle
+      if [ "$event" = "commit" ] && [ "$change" = "note" ]; then
+        event="commit_and_note"
+      elif [ "$event" = "note" ] && [ "$change" = "commit" ]; then
+        event="commit_and_note"
+      elif [ "$change" = "commit_and_note" ]; then
+        event="commit_and_note"
+      fi
+    done
+    # SETTLE_MAX 도달 → 강제 exit
+    ts=$(date '+%Y-%m-%dT%H:%M:%S')
+    echo "[$ts] SETTLE_MAX (${SETTLE_MAX}s) reached, force exit"
+    echo "[$ts] EXIT_FOR_REVIEW event=$event final_count=$cur_count final_sha=$cur_sha"
     exit 0
   fi
 
@@ -399,7 +452,7 @@ done
 
 `run_in_background: true`, `timeout: 43200000` (12시간) 또는 horizon에 맞게.
 
-> Step 3 "이벤트별 처리" 표의 분기 판정은 monitor 종료 후 turn 진입 시점에 오케스트레이터가 출력 로그를 보고 결정한다 (event=commit/note/commit_and_note/merged/closed).
+> Step 3 "이벤트별 처리" 표의 분기 판정은 monitor 종료 후 turn 진입 시점에 오케스트레이터가 출력 로그를 보고 결정한다. event 라벨은 settle 누적 결과(`final_count` / `final_sha` 포함)를 사용한다 — settle 중 `ALSO_NEW_COMMIT`/`ALSO_NEW_NOTE` 라인을 확인해 누적 이벤트 전체를 검증 대상으로 삼는다.
 
 #### Step 2: ScheduleWakeup fallback (max 1시간)
 
