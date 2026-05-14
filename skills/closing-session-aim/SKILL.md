@@ -40,12 +40,32 @@ narrative 금지. 짧고 사실만.
 발견 시 → 사용자 noti + "이대로 종료 / 지금 처리" 확인.
 
 ### Step 3 — 산출물 정리 점검
-- TODO 작업 산출물이 `DONE/`으로 이동됐는지
+
+#### 3-A. 세션 작업 디렉토리 DONE 이동
+이번 세션의 작업 디렉토리(`prompt/<topic>/`)가 완료되었으면 `prompt/DONE/<topic>/`으로 이동했는지 점검.
+- 위치: `agent/prompt/DONE/`
+- 패턴: `agent/prompt/<topic>/` → `agent/prompt/DONE/<topic>/`
+- 적용 대상: 코드 리뷰 산출물, 디버깅 보고서, 매뉴얼 작업물 등 완료된 모든 topic 디렉토리
+- 미이동 시 → `prompt/` 직접 ls 시 진행 중 topic과 시각 분리 안 됨 → 다음 세션 컨텍스트 회복 비용 증가
+- **자동 이동 금지**. 발견 시 noti + `git mv prompt/<topic> prompt/DONE/<topic>` 확인 후 진행
+
+#### 3-B. TODO 항목 DONE 이동
+본 세션이 *발견 → 처리*한 skill gap/후속 보강 항목이 `prompt/TODO/`에 있다면 `prompt/TODO/DONE/`으로 이동했는지 점검.
+- 위치: `agent/prompt/TODO/DONE/` (3-A와 다른 위치 — `TODO` 폴더 *내부*의 DONE)
+- 패턴: `agent/prompt/TODO/<item>.md` → `agent/prompt/TODO/DONE/<item>.md`
+- 적용 대상: 이전 세션이 등록한 skill gap 중 본 세션이 PR/메모리 등으로 완료한 항목
+- 미이동 시 → 다음 세션이 이미 처리된 TODO를 중복 작업 위험
+
+#### 3-C. Repo 변경사항 점검
 - 변경된 파일이 각 repo에 commit/push 됐는지 (`git status --short`로 stale 잔여 점검)
-  - **모든 관련 repo 검사**: `aim`, `agent`, `aim-harness`, 그 외 본 세션이 건드린 모든 git repo
-- 임시 파일(`tmp/` 안 commit_msg/payload 등) 알림 (강제 아님)
+- **모든 관련 repo 검사**: `aim`, `agent`, `aim-harness`, 그 외 본 세션이 건드린 모든 git repo
+
+#### 3-D. 임시 파일 알림
+- `tmp/` 안 commit_msg/payload 등 임시 파일 (강제 아님)
 
 미반영 발견 시 → noti + 진행 여부 확인.
+
+> ⚠️ **사고 사례 (2026-05-14 ld_write_354377_6919 세션)**: 본 Step 3가 "TODO 작업 산출물이 `DONE/`으로 이동됐는지" 한 줄로만 명시되어 (3-A)/(3-B) 두 layer를 묶어 표현. 작업자가 (3-B) TODO/DONE만 인지하고 (3-A) 작업 디렉토리 DONE을 떠올리지 못해 새 TODO를 잘못 등록하는 재 retro 발생. 사용자 지적으로 (3-A) 누락 발견. 본 보강은 그 사고 후속.
 
 ### Step 4 — 브랜치/워크트리 정리 점검
 - merge된 feature branch 로컬 잔존: `git branch --merged rb_73 | grep -v 'rb_73\|^\*'`
@@ -91,7 +111,7 @@ narrative 금지. 짧고 사실만.
 |------|------|--------|
 | 1 | 세션 message scan | 사실 보고만 |
 | 2 | 사용자 요청 vs 처리 결과 비교 | noti + confirm |
-| 3 | `git status --short` (모든 관련 repo) | noti + confirm |
+| 3 | (3-A) `ls prompt/` 진행 중 topic + (3-B) `ls prompt/TODO/` 처리 항목 + (3-C) `git status --short` (모든 관련 repo) + (3-D) 임시 파일 | noti + confirm |
 | 4 | `git branch --merged` / `git worktree list` | noti + confirm |
 | 5 | gh/curl (GitLab MR API) | 상태 + 신규 댓글 명시 |
 | 6 | memory dir review | noti + confirm |
