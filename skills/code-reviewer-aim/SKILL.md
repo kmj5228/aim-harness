@@ -355,23 +355,51 @@ GitLab MR API를 60초 간격 polling하여 다음 변화 감지:
 - `state` opened → merged / closed
 - `pipeline_status` 변화 (정보성)
 
+**중요 — auto-trigger 패턴**: `run_in_background` task는 *완료될 때만* 자동으로 turn에 진입한다. 중간 stdout echo는 누적만 되고 사용자가 직접 묻기 전까지 turn 미진입. 따라서 monitor가 NEW_COMMIT/NEW_NOTE를 stdout echo만 하고 sleep을 계속하면 이벤트를 잡았어도 Phase H 자동 진입이 안 된다. **이벤트 감지 시 즉시 `exit 0`** 하여 task 완료 notification으로 다음 phase를 trigger한다.
+
 ```bash
 prev_sha="<HEAD_SHA>"
 prev_count=<USER_NOTES_COUNT>
+prev_pipe=""
 while true; do
   resp=$(curl -s --header "PRIVATE-TOKEN: $TOKEN" "$BASE/merge_requests/<IID>" 2>/dev/null || echo '{}')
-  cur_sha=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null)
-  cur_count=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('user_notes_count',0))" 2>/dev/null)
-  state=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state',''))" 2>/dev/null)
-  [ "$cur_sha" != "$prev_sha" ] && [ -n "$cur_sha" ] && echo "NEW_COMMIT: $prev_sha -> $cur_sha" && prev_sha="$cur_sha"
-  [ "$cur_count" -gt "$prev_count" ] 2>/dev/null && echo "NEW_NOTE: count $prev_count -> $cur_count" && prev_count="$cur_count"
-  [ "$state" = "merged" ] && echo "MR_MERGED" && break
-  [ "$state" = "closed" ] && echo "MR_CLOSED" && break
+  cur_sha=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha') or '')" 2>/dev/null)
+  cur_count=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('user_notes_count') or 0)" 2>/dev/null)
+  state=$(echo "$resp" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state') or '')" 2>/dev/null)
+  pipe=$(echo "$resp" | python3 -c "import json,sys; p=json.load(sys.stdin).get('pipeline') or {}; print(p.get('status') or '')" 2>/dev/null)
+
+  ts=$(date '+%Y-%m-%dT%H:%M:%S')
+  event=""
+
+  if [ -n "$cur_sha" ] && [ "$cur_sha" != "$prev_sha" ]; then
+    echo "[$ts] NEW_COMMIT: $prev_sha -> $cur_sha"
+    event="commit"
+  fi
+  if [ "$cur_count" -gt "$prev_count" ] 2>/dev/null; then
+    echo "[$ts] NEW_NOTE: count $prev_count -> $cur_count"
+    [ -z "$event" ] && event="note" || event="commit_and_note"
+  fi
+  if [ -n "$pipe" ] && [ "$pipe" != "$prev_pipe" ]; then
+    echo "[$ts] PIPELINE: $prev_pipe -> $pipe"
+    prev_pipe="$pipe"
+    # pipeline 변화만 발생한 경우는 exit 안 함 (정보성)
+  fi
+  [ "$state" = "merged" ] && echo "[$ts] MR_MERGED" && exit 0
+  [ "$state" = "closed" ] && echo "[$ts] MR_CLOSED" && exit 0
+
+  # 이벤트 감지 시 즉시 exit → harness가 turn trigger → Phase H 자동 진입
+  if [ -n "$event" ]; then
+    echo "[$ts] EXIT_FOR_REVIEW event=$event"
+    exit 0
+  fi
+
   sleep 60
 done
 ```
 
 `run_in_background: true`, `timeout: 43200000` (12시간) 또는 horizon에 맞게.
+
+> Step 3 "이벤트별 처리" 표의 분기 판정은 monitor 종료 후 turn 진입 시점에 오케스트레이터가 출력 로그를 보고 결정한다 (event=commit/note/commit_and_note/merged/closed).
 
 #### Step 2: ScheduleWakeup fallback (max 1시간)
 
