@@ -72,7 +72,20 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 - **추상화**: 핵심 코드 삽입까지 허용 (함수명, 코드 블록 OK)
 - **톤**: description은 간결체/명사형 허용, 댓글은 격식체
 - **설계/개발 깊이**: 큰 그림(접근 방식, 영향 모듈, 변경 방향) 필수 작성. 흐름도는 이미지 첨부로 포함. 필요 시 세부 내용까지 기술
-- **분량 초과 시**: 방대한 내용은 Confluence 페이지에 작성하고, Jira에서 링크
+- **분량 초과 시**: Jira description은 32,767자 하드 한계 — 아래 "Description 분량 한계 — Confluence 이관" 참조
+
+### Description 분량 한계 — Confluence 이관
+
+Jira description은 **32,767자 하드 한계**가 있다 (초과 PUT은 HTTP 400). 한계에 근접/초과하면 분리한다:
+
+| 구분 | 대상 |
+|------|------|
+| Jira 잔류 | `h1. Problem` + `h1. Goal` (티켓 본질) + `h1. 상세 문서` (Confluence 링크) |
+| Confluence 이관 | `h1. Analysis` 이하 전체 (Design/Development/Test/Document/Reference + 보존본) |
+
+**Confluence 위치**: AIM IMS 문서는 "AIM IMS" 페이지(space `OFV7`, pageId `6783134`) 하위에 생성한다. 제목은 `[IMS#<번호>] <요약>`.
+
+**절차**: ① `POST /wiki/rest/api/content` (`ancestors`에 `6783134`)로 페이지 생성 ② Jira wiki → storage 변환은 `POST /wiki/rest/api/contentbody/convert/storage` (`representation: wiki`) — 변환기가 `{X}`를 매크로로 해석하므로 비-매크로 brace(중첩 `{{...{X}...}}`, 스트레이 리터럴 `{`)는 사전 escape/치환 필요 ③ Confluence 페이지 PUT 후 Jira description을 Problem/Goal + 링크로 PUT 축소.
 
 ## Jira API 접근
 
