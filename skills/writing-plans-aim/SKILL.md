@@ -120,7 +120,7 @@ Plan에 적는 함수 시그니처, 에러 상수, 헤더 가드는 **의도를 
 
 **단, 경로와 스크립트는 정확해야 한다:**
 - 파일 경로, 스크립트 경로, 바이너리 이름은 plan 작성 시 **실제 존재하는지 확인**하고 기재한다.
-- 예: 커버리지 스크립트는 `./script/measure_diff_cov.sh`가 아니라 `.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh`이다.
+- 예: 커버리지 스크립트의 실제 경로는 `aim/script/measure_diff_cov.sh`다 (SSoT: verification-before-completion-aim 명령표). 추측 경로를 쓰지 말고 실제 위치를 확인한다.
 - 추측으로 쓰지 말 것. 찾기 어려우면 메모리의 `reference_*`를 확인한다.
 
 **gtest 스케치의 예외:**

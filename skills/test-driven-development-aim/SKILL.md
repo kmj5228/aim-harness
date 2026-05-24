@@ -267,8 +267,9 @@ canonical template, 파일/Mock/Fixture 네이밍, 섹션 마커, Suite/TEST_F �
 
 ```bash
 dx bash -c "cd /root/ofsrc/aim && make clean && make gtest"
-dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh"
 ```
+
+이후 추가 코드 커버리지 측정은 verification-before-completion-aim의 측정 명령(`script/measure_diff_cov.sh`)으로 수행한다.
 
 **미커버 라인 식별:** `gcov`를 직접 `grep`/`awk`로 파싱하지 말 것. gcov 출력이 메타데이터 5줄만 나오는 재현성 있는 현상이 관찰됨. `measure_diff_cov.sh` 출력 + `dx git diff --unified=0 <base>..HEAD` 조합으로 추가 라인을 직접 확인한다.
 

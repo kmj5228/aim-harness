@@ -48,7 +48,7 @@ mock 바이너리 목록은 해당 모듈의 gtest 디렉토리에서 `Makefile_
 ### Step 3: 커버리지 측정
 
 ```bash
-dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh [BASE_BRANCH]"
+dx bash -c "bash /root/ofsrc/aim/script/measure_diff_cov.sh [BASE_BRANCH]"
 ```
 
 - `BASE_BRANCH`는 보통 `rb_73` (기본값)
@@ -68,6 +68,29 @@ dx bash -c "bash /root/ofsrc/aim/.claude/skills/code-reviewer-aim/scripts/measur
 2. **gcov 라인 매칭 정확성**: 스크립트는 gcov entry 형식 `<count>:<lineno>:<source>` 를 `awk -F:` split으로 처리한다 (코드가 `{`/`}`로 시작하는 lex/yacc 자동 생성 라인도 정확 매칭). 직접 `awk '$2 == "719:"'` 형태로 파싱하지 않는다 — 부분 매칭 + 코드 attached 라인 누락 위험.
 3. **측정 순서 준수**: make gtest → mock 실행(선택) → measure_diff_cov.sh
 4. **gcda 누적**: mock 바이너리는 `libxxx.so`를 경유하므로 같은 gcda에 합산됨
+
+## cross-module 의존 측정 (base swap → 측정 → 복원)
+
+오케스트레이터가 `base_mr_sha`를 주입했다면, AIM MR이 **미머지 base MR의 신규 심볼**(매크로/타입/함수)에 의존하는 경우다. base 미머지 상태에서는 AIM 빌드가 깨지므로 측정 전 base 파일을 일시 swap한다.
+
+**절차 (반드시 복원으로 종료):**
+
+1. base 변경 파일 목록 확보 (오케스트레이터 전달 또는 base MR diff에서 추출).
+2. base repo에서 **해당 파일만** swap (전체 branch switch 금지 — 무관한 modified 파일 보호):
+   ```bash
+   dx bash -c "cd /root/ofsrc/base && git checkout <base_mr_sha> -- <파일1> <파일2> ..."
+   ```
+3. AIM 워크스페이스에서 측정 (위 "측정 절차"와 동일): `make gtest` → `measure_diff_cov.sh`.
+4. **즉시 복원 + 검증** (측정 성공/실패 무관):
+   ```bash
+   dx bash -c "cd /root/ofsrc/base && git checkout HEAD -- <파일1> <파일2> ... && git rev-parse HEAD"
+   ```
+   swap 전 HEAD SHA와 동일한지 확인하고 산출물에 기록한다.
+
+**주의:**
+- `base`는 워크트리 간 **symlink 공유**다. swap 동안 다른 워크트리/원본도 영향받으므로 측정 직후 즉시 복원이 필수다.
+- swap은 측정용 일시 조작이며 절대 commit하지 않는다 (형제 제품 수정 금지 규칙 위반 아님).
+- 복원 누락 시 다른 작업이 오염된다. 복원 검증(`git rev-parse HEAD` 동일성)을 `04_coverage.md`에 명시한다.
 
 ## lex/yacc 변경 PR 인지 사항
 
@@ -113,7 +136,7 @@ gcov는 `#line` 디렉티브를 따라가서 `.l.gcov`/`.y.gcov`(원본 라인 �
 - 비교 기준: `<BASE_BRANCH>...HEAD`
 - 변경 파일 목록:
   - `<path>` (+X lines)
-- 측정 스크립트: `.claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh`
+- 측정 스크립트: `aim/script/measure_diff_cov.sh`
 
 ## 테스트 실행 결과
 - make gtest 결과: N tests from M suites, PASSED/FAILED

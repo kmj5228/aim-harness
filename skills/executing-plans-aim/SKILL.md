@@ -59,11 +59,7 @@ After all tasks complete:
    dx make          # clean build
    ```
    `make`/`make gtest`는 install을 트리거하지 않으므로 `dx tmdown -y` 선행 불필요. `make install`을 별도 수행하는 경우에만 install 직전에 `dx tmdown -y`.
-2. **Check coverage:**
-   ```bash
-   dx bash -c "cd /root/ofsrc/aim && bash .claude/skills/code-reviewer-aim/scripts/measure_diff_cov.sh"
-   ```
-   Must be >= 80% on added code.
+2. **Check coverage** (must be >= 80% on added code): verification-before-completion-aim의 "AIM Verification Commands" 표에 있는 커버리지 측정 명령(`script/measure_diff_cov.sh`)을 실행한다.
 
 3. **Transition:** Use finishing-a-development-branch-aim to push, create MR.
 

@@ -155,6 +155,16 @@ dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh review_<MR번호> rev
 - 운영 규칙: `aim/AGENTS.md` "Worktree Operations" 섹션
 - 셋업 절차: **using-feature-branches-aim** 스킬
 
+#### cross-module 의존 인지 (오케스트레이터 직접)
+
+AIM MR이 **미머지 base MR의 신규 심볼**(매크로/타입/함수)에 의존하면, base 미머지 상태에서 AIM 단독 빌드·커버리지 측정이 불가능하다 → CI red는 코드 결함이 아니라 **구조적 의존**이다. 다음을 점검한다.
+
+1. AIM MR description에 base cross-link이 있으면 그 base MR을 사용한다.
+2. 링크가 없으면 OFV7 Jira description "Design > BASE" + 작성자 comment에서 base MR을 식별한다.
+3. 식별한 base MR의 head SHA를 `base_mr_sha`로 확보한다 (`GET .../merge_requests/<base_iid>` 응답 `diff_refs.head_sha`, 또는 base repo `git rev-parse <base_branch>`).
+
+cross-module 의존이 식별되면 Phase D에서 coverage-analyst에 `base_mr_sha`를 함께 주입한다(측정 전 base swap 필요). 측정 mechanics는 coverage-analyst-prompt.md "cross-module 의존 측정" 참조.
+
 **Phase A gate**: `00_input.md` 파일이 존재하고 워크스페이스가 결정되어야 Phase B 진행.
 
 ---
@@ -210,6 +220,8 @@ Agent(name: "aim-coverage-analyst-<topic-slug>", subagent_type: "general-purpose
 각 에이전트의 prompt에 `01_info_collection.md`의 내용, 해당 에이전트 prompt 파일 내용, 그리고 **팀원 매핑 블록**(위 "네이밍 규칙" 참조)을 포함한다.
 
 **작업 경로 주입(필수)**: 각 spawn prompt에 Phase A에서 결정된 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). coverage-analyst를 포함한 모든 에이전트가 같은 워크스페이스에서 동작한다. (aim repo MR !597의 `measure_diff_cov.sh` PWD 인지 + `env.sh` LD prepend로 워크트리 측정이 main과 동등.)
+
+**cross-module 의존 주입(해당 시)**: Phase A에서 base MR 의존이 식별됐으면 coverage-analyst prompt에 `base_mr_sha`와 base 변경 파일 목록도 명시한다. coverage-analyst가 측정 전 base 파일을 swap하고 측정 후 즉시 복원한다(절차는 coverage-analyst-prompt.md "cross-module 의존 측정" 참조).
 
 에이전트 간 통신 (필요 시 `SendMessage`, 타겟은 spawn 시 주입된 suffixed 이름):
 - 코드 리뷰어 → 테스트 리뷰어: 복잡 함수 목록, 보안 관련 사항
@@ -317,7 +329,7 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 - MR 전체 리뷰 코멘트 1건 (요약/finding목록/커버리지/판정/수정권고안)
 - MR 라인별 코멘트 N건 (심각도/문제/수정제안/근거 포함)
 
-**라인별 코멘트 라인 번호 제약**: GitLab API는 MR diff 범위 내의 라인에만 inline comment를 달 수 있다. diff 범위 밖의 라인(예: 기존 코드의 strcpy)에 대한 코멘트는 일반 노트(note)로 fallback하고, 본문에 파일:라인을 명시한다.
+**라인별 코멘트 (인라인)**: actionable 지적은 `/discussions`(resolvable)로 등록한다. `position`은 JSON content-type 필수이며, 라인 키는 **추가 라인=`new_line`, 삭제 라인=`old_line`, context=둘 다**다 — 본 PR이 삭제한 라인에 `new_line`을 쓰면 `400 Bad - line code must be valid`로 실패한다. diff 범위 밖의 라인(예: 기존 코드의 strcpy)은 inline 불가 → 일반 노트(`/notes`)로 fallback하고 본문에 파일:라인을 명시한다. 전체 규칙·payload 예시는 writing-documents-aim/gitlab-guide.md "MR 코멘트 > 인라인 코멘트" 참조.
 
 #### Step 5: 등록 결과 검증
 - notes/discussions 증가 확인

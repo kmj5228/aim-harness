@@ -152,14 +152,55 @@ MR 코멘트 등록은 **code-reviewer-aim** 스킬 (Phase F)이 담당한다.
 
 ### API
 
+actionable 리뷰 지적(라인별)은 `/discussions`(resolvable thread)로 등록한다. MR 본문 일반 코멘트나 diff 범위 밖 지적은 `/notes`(resolve 불가)로 등록한다.
+
 ```bash
-# 일반 노트
+# 일반 노트 (MR 본문, resolve 불가)
 curl -s --request POST \
   --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
   --header "Content-Type: application/json" \
   --data '{"body": "코멘트 내용"}' \
   "http://192.168.51.106/api/v4/projects/211/merge_requests/<IID>/notes"
 ```
+
+#### 인라인 코멘트 (라인별, resolvable)
+
+diff 범위 내 라인에만 가능하다. 다음 두 가지를 반드시 지킨다.
+
+**1. Content-Type 필수**: `position`은 nested dict이므로 `Content-Type: application/json` + JSON body로 보낸다. form-urlencoded는 nested dict가 flatten되지 않아 `400 position[base_sha] is missing` 류로 실패한다.
+
+**2. 라인 키 선택 (`new_line` vs `old_line`)** — diff 라인 종류에 따라 다르다:
+
+| diff 라인 종류 | position 키 |
+|---|---|
+| 추가된 라인 (`+`) | `new_line`만 |
+| 삭제된 라인 (`-`) | `old_line`만 — `new_line`을 쓰면 `400 Bad - line code must be valid` |
+| context 라인 (변경 없음) | `new_line` + `old_line` 둘 다 |
+
+삭제 라인(본 PR이 제거한 코드: fallback 제거 등)에 `new_line`을 쓰는 게 대표 실수다 — 코드가 변경 후 파일에 없어 가리킬 수 없다. diff 범위 밖 라인은 inline 불가 → `/notes`로 fallback하고 본문에 `파일:라인`을 명시한다.
+
+`diff_refs`(`base_sha`/`head_sha`/`start_sha`)는 `GET .../merge_requests/<IID>` 응답에서 확보한다.
+
+```bash
+# 인라인 (라인별, JSON 필수). 삭제 라인이면 new_line 대신 old_line.
+curl -s --request POST \
+  --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "body": "**[🔴 High]** 문제: ...",
+    "position": {
+      "base_sha": "<diff_refs.base_sha>",
+      "head_sha": "<diff_refs.head_sha>",
+      "start_sha": "<diff_refs.start_sha>",
+      "position_type": "text",
+      "new_path": "src/lib/ap/ap.c",
+      "new_line": 84
+    }
+  }' \
+  "http://192.168.51.106/api/v4/projects/211/merge_requests/<IID>/discussions"
+```
+
+> thread resolve는 작성자/maintainer만 가능하다(MR 작성자도 리뷰어가 연 thread는 resolve 불가, 답글만 가능). 등록 라우팅 상세는 code-reviewer-aim Phase F.
 
 ## 참고 MR (작성 예시)
 
