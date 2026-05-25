@@ -47,7 +47,7 @@ Skip any step = lying, not verifying
 | Code formatted | `clang-format -i <files>` then `dx git diff` | No diff |
 | Bug fixed | Failing gtest now passes | RED→GREEN verified |
 
-> **커버리지 측정 명령 SSoT**: 위 표의 `script/measure_diff_cov.sh`(aim 루트 기준)가 메인-에이전트용 단일 정의처다. executing-plans-aim·test-driven-development-aim·writing-plans-aim은 경로 리터럴을 복제하지 말고 이 표를 참조한다. 측정 절차 상세 및 서브에이전트용 정의는 code-reviewer-aim/coverage-analyst-prompt.md.
+> **커버리지 측정 명령 SSoT**: 위 표의 `script/measure_diff_cov.sh`(aim 루트 기준)가 메인-에이전트용 단일 정의처다. executing-plans-aim·test-driven-development-aim·writing-plans-aim·finishing-a-development-branch-aim은 경로 리터럴을 복제하지 말고 이 표(또는 아래 "Full Verification Sequence")를 참조한다. 측정 절차 상세 및 서브에이전트용 정의는 code-reviewer-aim/coverage-analyst-prompt.md.
 
 **전체 `dx make gtest`는 이 스킬에서 1회만 수행한다.** 각 태스크 중간에 반복 실행하지 말 것 — 모듈 전체 재컴파일이 누적되어 전체 소요 시간의 40% 이상을 차지한다. 태스크 중간 검증은 test-driven-development-aim 가이드에 따라 해당 모듈 테스트만 실행한다.
 

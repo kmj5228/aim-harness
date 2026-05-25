@@ -25,18 +25,7 @@ Guide completion of development work: verify → clean up → push → create MR
 
 ### Step 1: Verify Everything
 
-**REQUIRED:** Use verification-before-completion-aim first.
-
-```bash
-# All tests pass
-dx make gtest
-
-# Production build clean
-dx make
-
-# Coverage meets 80%
-dx bash -c "cd /root/ofsrc/aim && ./script/measure_diff_cov.sh"
-```
+**REQUIRED:** Use verification-before-completion-aim first — 거기 "Full Verification Sequence"(test → build → coverage → format)를 그대로 따른다. 명령·경로는 그 스킬이 SSoT이므로 여기 복제하지 않는다.
 
 **If any fails:** Stop. Fix before proceeding.
 
