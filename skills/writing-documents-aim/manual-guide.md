@@ -338,6 +338,23 @@ find docs/modules/<guide> -name 'sect-*.adoc' | head
 
 라이브러리의 경우 tool-reference가 아닌 해당 guide(`resource-guide` 등)에서 동일 패턴. sect 신규 작성만 하고 표/include 추가를 놓치면 렌더링 누락 발생.
 
+### 기존 기능의 ACS 호환 확장 케이스
+
+이미 PF/MF 기준으로 작성된 매뉴얼이 있는 기능에 ACS 호환 프러시저 동작이 추가될 때:
+
+* **별도 챕터/페이지 신설 금지**. 기존 절에 inline 추가한다.
+* 차이점이 1~2 문장 수준이면 기존 bullet 리스트에 ACS 항목을 추가한다.
+* 별도 설명이 필요하면 `[NOTE]` 블록 또는 새 sub-bullet을 기존 절 내부에 둔다.
+* 표기는 **"ACS 호환 프러시저"** 로 통일 (단독 `ACS`, `ACS 시스템` 등 다른 표기 혼용 금지). 매뉴얼 내 기존 출현 표기와 일치 유지.
+* PF/MF 와 ACS 의 동작이 *조건만 다르고 결과가 같은* 경우, 기존 일반 설명은 그대로 두고 환경별 진입 조건만 분기 표기한다 (예: "송신 시 메시지가 ... 인식되는 조건" 같이 환경별 bullet 리스트).
+
+근거 사례:
+
+* IMS#353696 (commit `2a41142`): 기존 메시지 복구 절(admin-guide chapter-system-configuration.adoc)에 송신 후보 인식 조건 bullet 리스트를 PF/MF / ACS 호환 프러시저로 분기 추가
+* IMS#352569 (commit `66a6dbc`): 기존 chapter-adl.adoc DCMS 커맨드 절에 `[NOTE]` 블록으로 ACS DCPRES 정의문 참조 추가 + 신규 sect-jxgmuais.adoc 에 DCPRES 절 작성
+
+별도 챕터 신설로 가면 *같은 기능의 PF/MF/ACS 설명이 다른 위치로 분기*되어 사용자 탐색 비용이 증가한다.
+
 ## Antora/AsciiDoc Cheat Sheet
 
 ```asciidoc
