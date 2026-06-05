@@ -254,6 +254,11 @@ curl -s -u "$(JIRA_EMAIL):$(JIRA_TOKEN)" \
 | 파일 첨부 | POST | `/rest/api/content/PAGE_ID/child/attachment` + `-F "file=@path"` + `-H "X-Atlassian-Token: nocheck"` |
 | 접근 제한 설정 | PUT | `/rest/api/content/PAGE_ID/restriction` + read/update restrictions JSON 배열 |
 
+> ⚠️ **이미지 참조 본문은 첨부 *이후* 에 PUT한다.** `<ac:image><ri:attachment ri:filename="x.png"/></ac:image>` 가 포함된 본문을 첨부가 존재하기 전에 생성(POST)하면, Confluence가 미해결 파일명을 `ri:filename="UNKNOWN_ATTACHMENT"` 로 *고정*해버려, 이후 같은 이름으로 첨부해도 이미지가 깨진 채("미리 보기를 사용할 수 없음") 남는다.
+>
+> **올바른 순서**: ① 이미지 매크로 *없이*(또는 빈 placeholder) 페이지 생성 → ② 첨부 POST → ③ `<ac:image>` 포함 본문으로 PUT(version+1).
+> **검증**: PUT 후 `?expand=body.storage`의 `ri:filename`에 `UNKNOWN_ATTACHMENT` 0개 확인.
+
 ### 본문 포맷 (Confluence Storage Format)
 
 Confluence API는 **Storage Format (XHTML 기반)**을 사용한다. markdown이 아니다.
@@ -285,3 +290,40 @@ npx -y @mermaid-js/mermaid-cli@10 -i diagram.mmd -o diagram.png -b white -s 4
 ### 데이터 차트 (정량) 첨부
 
 분포·시계열·비교·box plot 등 **정량 데이터**는 mermaid가 아닌 **matplotlib**로 렌더한 PNG를 같은 첨부 파이프라인으로 올린다(첨부 API → `<ac:image>` 참조). 차트 종류 매핑과 gnuplot-style 레시피는 `markdown-guide.md` "그림 우선 (다이어그램 + 데이터 차트)" 절을 SSoT로 따른다.
+
+## wiki → storage 이관 노하우 (Jira → Confluence)
+
+Jira wiki markup을 `contentbody/convert/storage`(`representation: wiki`)로 변환할 때 변환기가 `{...}`를 매크로로, `[...]`를 링크로 해석해 C 코드·로그·식별자가 깨진다. 다음을 사전 보호한다.
+
+### 1. 매크로 토큰 + brace 보호
+
+`{code}`/`{{monospace}}` 블록 *안의* C 코드 brace(`{ {"SIS",...} }`, `struct {...}`)는 `UnknownMacroMigrationException: The macro '...' is unknown`(HTTP 500)으로 변환을 실패시킨다. `{code}` 블록만 보호하면 monospace `{{...}}` 안 brace에서 재실패한다.
+
+robust 절차:
+
+1. 매크로 토큰(`{code...}`, `{noformat}`, `{color...}`, `{toc...}`, `{{`, `}}`, `{panel...}`, `{quote}`)을 고유 마커로 치환.
+2. 남은 *모든* `{`·`}` 를 placeholder(예: U+E010 / U+E011)로 치환.
+3. 마커 복원 → wiki→storage 변환 실행 → placeholder를 `{`·`}` 로 복원.
+
+(코드 매크로 CDATA에서 verbatim 복원되므로 위치 무관하게 안전)
+
+### 2. 링크 `[...]` 보호
+
+brace뿐 아니라 wiki `[t]`, `[ADL_TYPE_MAX]`, 로그 `[oframe1@UKAOF01 ~]`, 타임스탬프 `[2026-02-16T09:34:37]` 가 broken link(`<ac:link><ri:page .../></ac:link>` 등)로 변환된다. `{code}` 블록 안은 CDATA로 보존되나 monospace/평문의 `[...]`는 깨진다.
+
+- **진짜 링크(`[text|url]`, `[~accountid]`, `[url]`)만 보호**하고 나머지 `[...]`도 placeholder 처리한다.
+- 이미 게시된 경우 사후 복원 regex: `<ri:shortcut ri:key="K" ri:parameter="P"/>`→`[P@K]`, `<ri:page ri:space-key="A" ri:content-title="B"/>`→`[A:B]`, `<ri:page ri:content-title="X"/>`→`[X]` (복원 시 monospace는 잃고 평문화 — 사전 보호가 상책).
+
+### 3. code 매크로 language 보정
+
+wiki `{code:c}` 변환 시 storage code 매크로에 `language` 파라미터가 누락되어 모든 코드 블록이 syntax 미지정으로 렌더된다. 변환 후 `<ac:structured-macro ac:name="code"...>` 여는 태그 직후 `<ac:parameter ac:name="language">c</ac:parameter>` 를 삽입한다. CDATA 내용으로 판별: `TEST(`/`TEST_F`/`MOCK_METHOD`/`::testing`/`EXPECT_` → `cpp`, 그 외 C 코드 → `c`.
+
+### 4. 작성자 멘션 변환 실패
+
+wiki `[~accountid:xxx]` 는 user 멘션이 아니라 raw accountId 텍스트의 page 링크(`<ri:page ri:space-key="~accountid" .../>`)로 오변환된다.
+
+- 해법: 본문 작성자 줄은 **생략**(페이지 메타가 작성자 자동 표시)하거나 평문 이름을 쓴다. 진짜 멘션이 필요하면 storage `<ac:link><ri:user ri:account-id="..."/></ac:link>` 를 직접 작성한다.
+
+### 5. 이미지 첨부 순서
+
+mermaid/matplotlib PNG는 위 "이미지 참조 본문은 첨부 이후 PUT" 규칙을 따른다(생성 → 첨부 → 이미지 본문 PUT). 한글 라벨은 폰트 렌더 이슈가 있을 수 있으므로 식별자/영어 위주로 둔다.
