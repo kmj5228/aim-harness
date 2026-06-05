@@ -139,10 +139,14 @@ dx bash -c "cd /root/ofsrc/aim && [ \"\$(git branch --show-current)\" = \"<대�
 
 worktree 사용 시:
 - 명명: `review_<MR번호>` (work용 `<keyword>_<IMS>_<Jira>`와 구분, 충돌 회피)
-- 생성:
+- **fetch 선행 (필수)**: 타인 MR의 리뷰 대상 branch는 거의 항상 원격(origin) 전용이라 로컬 ref가 없다. worktree_add.sh는 base를 로컬 ref로 요구하므로, fetch 없이 실행하면 `fatal: not a valid object name: '<대상_branch>'`로 실패한다. 생성 전에 대상 branch를 로컬로 fetch한다:
 ```bash
+# 1. 리뷰 대상 branch를 로컬로 fetch (원격 전용 대비)
+dx bash -c "cd /root/ofsrc/aim && git fetch origin <대상_branch>:<대상_branch>"
+# 2. worktree 생성
 dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh review_<MR번호> review_<topic>_<MR번호> <대상_branch>"
 ```
+- **실패 시 cleanup**: worktree_add.sh가 중간 실패하면 `aim_worktrees/review_<MR번호>/` 빈 디렉토리가 잔존하여 재시도가 `Worktree directory already exists`로 다시 실패한다. 빈 잔여 디렉토리는 `worktree_remove.sh`가 처리하지 못하므로 `rmdir <empty_dir>` 후 재시도한다(내용이 있으면 `rmdir`가 거부하므로 안전).
 - 본 worktree는 throwaway 용도로, Phase G/I 종료 시 정리한다.
 
 이후 **본 스킬이 사용하는 작업 경로(WORKSPACE_AIM)** 가 결정된다:
