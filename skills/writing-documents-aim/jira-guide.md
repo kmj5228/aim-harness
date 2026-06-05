@@ -60,6 +60,7 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 - 배경색: 검은색 (`-b black`)
 - 해상도: `-s 4` (4x scale, 3000px+ 출력) — 기본값은 저해상도이므로 반드시 지정
 - 변환 후 첨부 API로 업로드 → description에서 참조: `!filename.png|thumbnail!`
+- **정량 데이터(분포·시계열·비교)** 도 같은 방식으로 PNG 첨부한다. 차트는 mermaid가 아닌 matplotlib로 렌더한다(차트 종류·gnuplot-style 레시피는 `markdown-guide.md` "그림 우선" 참조).
 
 ### 기 작성 내용 규칙
 

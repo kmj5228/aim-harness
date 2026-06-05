@@ -281,3 +281,7 @@ npx -y @mermaid-js/mermaid-cli@10 -i diagram.mmd -o diagram.png -b white -s 4
 - 배경색: 흰색 (`-b white`)
 - 해상도: `-s 4` (4x scale, 3000px+ 출력) — 기본값은 저해상도이므로 반드시 지정
 - 변환 후 첨부 API로 업로드 → Storage Format `<ac:image>`로 참조
+
+### 데이터 차트 (정량) 첨부
+
+분포·시계열·비교·box plot 등 **정량 데이터**는 mermaid가 아닌 **matplotlib**로 렌더한 PNG를 같은 첨부 파이프라인으로 올린다(첨부 API → `<ac:image>` 참조). 차트 종류 매핑과 gnuplot-style 레시피는 `markdown-guide.md` "그림 우선 (다이어그램 + 데이터 차트)" 절을 SSoT로 따른다.

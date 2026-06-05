@@ -8,11 +8,65 @@
 - 배경 → 분석 → 결론 순서 금지
 - 두괄식이 아닌 문단은 삭제하고 재작성
 
-### 다이어그램 우선
+### 그림 우선 (다이어그램 + 데이터 차트)
 
-- 흐름/구조를 텍스트로 설명하기 전에 **mermaid로 먼저 그린다**
-- ASCII art 금지 — mermaid flowchart, sequence diagram 등 렌더링 가능한 도구 사용
-- 큰 그림(아키텍처, 처리 흐름, 모듈 관계)은 **반드시 다이어그램**
+그림은 두 종류로 나누며 역할이 다르다. 둘 다 PNG로 렌더해 첨부한다.
+
+- **정성(관계·흐름·구조)** → mermaid (flowchart, sequence, ERD)
+- **정량(분포·시계열·비교·상관)** → matplotlib (히스토그램, box plot, bar, 시계열)
+
+규칙:
+
+- 흐름/구조를 텍스트로 설명하기 전에 **mermaid로 먼저 그린다**.
+- ASCII art / ASCII 차트 금지 — 렌더링 가능한 도구 사용.
+- 큰 그림(아키텍처, 처리 흐름, 모듈 관계)은 **반드시 다이어그램**.
+- 정량 데이터는 mermaid로 그릴 수 없다(xychart 한계). mermaid로 억지로 그리거나 표만으로 끝내지 말고 **matplotlib 차트**로 그린다.
+
+#### 데이터 차트 종류 → 용도 매핑
+
+| 목적 | 차트 | matplotlib |
+|---|---|---|
+| 분포(편향·꼬리) | 히스토그램(+백분위 수직선, 그룹별 stacked) | `ax.hist(arrs, stacked=True)` + `axvline` |
+| 그룹별 산포·이상값 | box plot + 개별 점(strip) | `ax.boxplot(...)` + `ax.scatter(jitter)` |
+| 구성 분해(A vs B 누적) | stacked bar | `ax.bar(a)` + `ax.bar(b, bottom=a)` |
+| 두 지표 시계열 동시 | 이중축(막대 + 선) | `ax.bar` + `ax.twinx().plot` |
+| 조건 비교(배율 큼) | grouped bar(log scale) | `ax.bar(x-w/2)`, `ax.bar(x+w/2)`, `set_yscale("log")` |
+
+#### 통계 요소 권장
+
+평균만 쓰지 않는다. 분포가 비대칭이면 **중앙값·표준편차·변동계수(CV)·왜도(skew)·백분위(p50/p95/p99)** 를 함께 제시한다. 간헐적 경합은 *중앙값/평균 괴리*로만 드러나는 경우가 많다(평균이 꼬리값에 끌려감). box plot에 개별 점을 얹으면 이상값 유무 오해도 방지된다.
+
+#### gnuplot-style matplotlib 레시피
+
+matplotlib의 풍부한 주석(값 라벨·배율·설명 박스)을 유지하면서 gnuplot의 클래식 룩을 입힌다. 3요소: ① 안쪽 틱 + 4면 박스, ② 점선 가로 그리드, ③ 얇은 선/작은 점.
+
+```python
+import matplotlib.pyplot as plt, matplotlib.font_manager as fm
+
+# 한글 폰트: 환경에 설치된 폰트 중 첫 번째 사용 (특정 OS 폰트명 하드코딩 금지)
+KF = next((f.name for c in ["Noto Sans CJK KR", "NanumGothic", "Malgun Gothic"]
+           for f in fm.fontManager.ttflist if f.name == c), None)
+plt.rcParams.update({
+    "font.family": KF, "axes.unicode_minus": False, "font.size": 11,
+    "figure.facecolor": "white", "axes.facecolor": "white",
+    "axes.edgecolor": "black", "axes.linewidth": 0.9,
+    "axes.grid": True, "axes.grid.axis": "y", "axes.axisbelow": True,   # 가로 그리드만
+    "grid.color": "#9aa0a6", "grid.linestyle": ":", "grid.linewidth": 0.6,
+    "xtick.direction": "in", "ytick.direction": "in",                  # 틱 안쪽
+    "xtick.top": True, "ytick.right": True,                            # 4면 틱
+    "xtick.major.size": 5, "ytick.major.size": 5,
+    "xtick.major.width": 0.9, "ytick.major.width": 0.9,
+    "legend.frameon": True, "legend.edgecolor": "black",
+    "legend.fancybox": False, "legend.framealpha": 1.0,                # 각진 범례 박스
+    "axes.titlesize": 13, "axes.titleweight": "bold",
+})
+EDGE = dict(edgecolor="black", linewidth=0.6)   # 막대 얇은 테두리: ax.bar(..., **EDGE)
+# box plot 개별 점: ax.scatter(x, y, s=6, linewidths=0, alpha=0.75)
+# 각진 설명 박스: bbox=dict(boxstyle="square,pad=0.5", fc="white", ec="black", lw=0.7)
+```
+
+- 이중축(twinx)에선 `ytick.right` 강제 대신 축별 `tick_params(direction="in")`를 개별 적용한다.
+- 주석은 **데이터가 비어 있는 영역**에 배치한다. 고정 모서리(예: 0.02/0.95)에 두면 막대·선과 겹친다.
 
 ### 목차
 
