@@ -104,6 +104,43 @@ PF/MF/ACS 등 환경 라벨이 매뉴얼에 함께 등장할 때, *각 환경별
 - [ ] 환경 중 하나라도 처리 분기가 없으면 해당 라벨을 라인에서 제거하거나 별도 절로 분리
 - [ ] 코드 내 `TODO` 주석으로 향후 지원 예정인 환경은 사용자 노출 매뉴얼에 포함하지 않음
 
+### 8. 서브에이전트 분석 = point-in-time, 현재 rb_73 재검증 필수
+
+대용량 커밋 분석을 서브에이전트에 위임(Step 4)할 때 결과는 **지시한 커밋 시점의 스냅샷**이다. 같은 모듈에 후속 변경이 있었다면 결론이 stale일 수 있다. 매뉴얼 작성 직전 핵심 결론(분기 조건, 필수 요구, 지원 범위)을 현재 rb_73 코드로 재검증한다.
+
+**실사례 (295332 VLD/LD 매뉴얼)**:
+- 서브에이전트에 295332 3개 커밋(2024) 분석 위임 → 결론 "LD 라우팅은 제어권 첨부(WITH CONTROL)만 지원"
+- 사용자 catch: *"지금(rb_73)은 제어권 미첨부 ld도 가능할거거든? 코드로 확인해줘"*
+- 현재 rb_73 `_verify_ld` 재확인: CTRL 비트 검사는 `mqn_mode == MQN_WITH_CONTROL`일 때만 enforce → 제어권 미첨부도 지원
+- 원인: 2024 커밋 분석은 그 시점 코드만 본 결과. 이후 mqn_mode 조건 추가 변경이 누락됨
+- 결과: 매뉴얼 방향 전면 재작성 (양쪽 모두 지원)
+
+**체크리스트**:
+- [ ] 서브에이전트가 명시한 동작 결론(분기 조건/필수 요구/지원 범위)을 현재 rb_73 해당 함수로 재확인
+- [ ] 핵심 검증 함수의 시그니처/분기가 분석 시점과 다르면 결론 재구성
+- [ ] 차이 발견 시 사용자에게 즉시 noti, 매뉴얼 방향 수정 후 작성
+
+### 9. 약어·명칭·교차 제품 매뉴얼명은 추정 금지 — 사양/repo에서 직접 확인
+
+코드 토큰/구조체명은 약어로만 등장하고 풀이 주석이 없는 경우가 많다. 서브에이전트나 자체 추정으로 약어 풀이를 매뉴얼에 게재하면 사실 오류 위험. **사양(XSP NotebookLM, [[reference-notebooklm-xsp]])** 또는 **기존 매뉴얼**에서 직접 확인한다. 교차 제품(TACF 등) 안내서명/섹션명 인용도 해당 repo의 `nav.adoc`·`pages/...`에서 직접 확인한다.
+
+**실사례 (295332 RLD 약어)**:
+- 서브에이전트 표현 "RLD(원격 LD)"를 매뉴얼에 "RLD(Remote Logical Destination)"로 게재
+- 사용자 catch: *"RLD 약어가 Remote가 맞아? 근거가 뭐야?"*
+- 코드/yacc 검색 결과 약어 풀이 없음(토큰 `RLD`만 존재) — 추정이었음
+- XSP 사양 조회: **RLD = Read Logical Destination**(요미다시/Read), WLD = Write LD
+- 결과: "Remote" → "Read" 정정 push
+
+**실사례 (302019 TACF 매뉴얼명)**:
+- "OpenFrame TACF "환경설정 안내서""로 일반화 게재 → 사용자가 TACF repo URL 제공
+- TACF repo `docs/modules/configuration-guide/nav.adoc` title 확인 → "환경설정 안내서" 맞음(우연히 일치)
+- 일반 원칙: 추정으로 통과 가능하더라도 검증 안 하면 다른 케이스에서 사고 → 항상 nav에서 직접 확인
+
+**체크리스트**:
+- [ ] 매뉴얼에 약어 풀이를 적기 전, 코드/주석에 풀이가 있는지 grep 우선
+- [ ] 없으면 XSP 사양 조회(NotebookLM) 또는 기존 매뉴얼 검색
+- [ ] 교차 제품 매뉴얼명/섹션명 인용은 해당 repo `nav.adoc` + `pages/...`에서 직접 확인 (TACF repo: [[reference-tacf-manual-repo]])
+
 ## 8-Step Workflow
 
 ### Step 1: 매뉴얼 필요성 판단 (GATE)
@@ -509,6 +546,8 @@ git -c credential.helper='!f() { echo "username=oauth2"; echo "password=<PAT>"; 
 | "파서가 지원하니 전체 문서화" | 파서 지원 ≠ 검증된 지원. 사용자 테스트 자산에 포함된 필드만 확정. 차이는 사용자 질의 (Iron Rule 6) |
 | "상태 순서는 enum 선언 순으로 쓰면 됨" | 전이 방향이 enum 순서와 다를 수 있다 (루프, 역진). set 사이트 + SQL UPDATE 전수 확인 (Step 5c) |
 | "같은 개념이라도 파일마다 표현이 약간 달라도 됨" | 다중 파일 wording 불일치는 사용자 지적 대상. 한 파일에서 확정한 뒤 복사-붙여넣기 + `grep -rn`으로 동기화 (Step 7) |
+| "서브에이전트가 명확히 결론 냈으니 그대로 OK" | 분석은 지시한 커밋 시점 스냅샷. 후속 변경 누락 위험. 현재 rb_73 핵심 함수 재확인 (Iron Rule 8). 295332 LD 미첨부 사고 |
+| "약어 풀이가 자연스러워 보이니 그대로 사용" | 코드/사양 근거 없으면 추정. XSP 사양·기존 매뉴얼·repo nav에서 직접 확인 (Iron Rule 9). 295332 RLD=Remote→Read 사고 |
 
 ## Red Flags — STOP
 
@@ -531,6 +570,8 @@ git -c credential.helper='!f() { echo "username=oauth2"; echo "password=<PAT>"; 
 - 상태/enum 나열 순서가 파일마다 다름 → 실제 전이 순서(정상 → 예외) 기반으로 통일 (Step 7 chronological 원칙)
 - `git push` 실패 시 `git push --force` 시도 → 다른 작업자 커밋 삭제 위험. `git rebase origin/7.3_main` 후 재push (Remote divergence 섹션)
 - 신규 CLI 툴 `sect-*.adoc` 작성 후 `chapter-aim-tool-list.adoc` 표/include 갱신 누락 → 렌더링 누락 (신규 툴/라이브러리 추가 케이스 섹션)
+- 서브에이전트 분석 결과를 현재 rb_73 코드 재확인 없이 매뉴얼에 반영 → Iron Rule 8 위반 (295332 LD 미첨부 사고)
+- 약어 풀이 / 교차 제품 매뉴얼명을 사양·repo 검증 없이 게재 → Iron Rule 9 위반 (295332 RLD 사고)
 
 ## Integration
 
