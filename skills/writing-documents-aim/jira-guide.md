@@ -1,5 +1,7 @@
 # Jira 작성 가이드
 
+> 가독성 공통 규칙(인라인 열거 분리, 한 단락 한 개념, blockquote 강조, 구조적 데이터→표/list, 빈 줄 호흡)은 `markdown-guide.md`의 "가독성 핵심 원칙"을 참조한다. 아래는 Jira 특수 규칙만 다룬다.
+
 ## Description 작성
 
 ### 구조
