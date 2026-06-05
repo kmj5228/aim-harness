@@ -127,8 +127,8 @@ QA가 검증해야 할 항목.
 ### Best Practice 참조
 
 작성 전 반드시 아래 파일을 Read하여 톤/구조/상세도를 참고:
-- **Rnd 섹션:** `../agent/prompt/msgrcv_sum#2.html`
-- **Verification 섹션:** `../agent/prompt/msgrcv_verification#5.html`
+- **Rnd 섹션:** `../agent/prompt/DONE/msgrcv/msgrcv_sum#2.html`
+- **Verification 섹션:** `../agent/prompt/DONE/msgrcv/msgrcv_verification#5.html`
 
 ## HTML 변환 규칙 (X-Free Editor v5)
 
