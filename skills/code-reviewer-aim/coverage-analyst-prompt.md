@@ -47,11 +47,15 @@ mock 바이너리 목록은 해당 모듈의 gtest 디렉토리에서 `Makefile_
 
 ### Step 3: 커버리지 측정
 
+**Base 우선순위 (origin/rb_73 우선)**: `measure_diff_cov.sh`의 base는 **원격 최신**을 기준으로 한다. local `rb_73`은 워크트리 생성 시점에 고정되어 stale일 수 있고, stale base는 분모 인플레이션(이전 머지 commit의 라인이 신규로 합산)을 일으켜 신규 코드 미커버가 희석된다. multi-MR-dependent branch(branch 재사용 force-push MR 등)에서는 이로 인한 false PASS가 발생할 수 있다. 따라서 **측정 전 `git fetch origin rb_73`을 선행하고 base로 `origin/rb_73`을 사용**한다.
+
 ```bash
-dx bash -c "bash /root/ofsrc/aim/script/measure_diff_cov.sh [BASE_BRANCH]"
+# 측정 전 base 동기화 (권장) → origin/rb_73 기준 측정
+dx bash -c "cd /root/ofsrc/aim && git fetch origin rb_73"
+dx bash -c "bash /root/ofsrc/aim/script/measure_diff_cov.sh origin/rb_73"
 ```
 
-- `BASE_BRANCH`는 보통 `rb_73` (기본값)
+- `BASE_BRANCH`는 가급적 `origin/rb_73`을 사용한다. local `rb_73`은 fetch로 동기화하지 않은 한 stale 가능성이 있다.
 - 스크립트가 자동으로: 변경 `.c`/`.l`/`.y` 파일 감지 → 확장자별 컴파일 단위(`.l`→`*_.c`, `.y`→`*_.c`)로 gcov 재생성 → diff 라인 필터 → 합산
 
 ### Step 4: 결과 분석

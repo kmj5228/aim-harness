@@ -65,6 +65,26 @@ narrative 금지. 짧고 사실만.
 
 미반영 발견 시 → noti + 진행 여부 확인.
 
+#### 3-E. 다른 세션 격리 점검 (agent repo commit/push 직전 필수 게이트)
+
+여러 세션이 동시에 `agent/` repo의 다른 디렉토리에서 작업할 수 있다(예: 본 세션=A, 다른 세션=B/C). `git add .`/`git add -A` 금지로 부분 방어되지만, **path 지정 add를 하더라도 이미 다른 세션이 staged해 둔 항목이 본 세션 commit에 함께 빨려 들어가는** 사고는 막지 못한다. agent repo commit 직전 다음을 수행한다.
+
+1. `git status --short` 전체 출력 점검.
+2. staged 항목(`R/M/D/A` 좌측 컬럼) 각각이 *본 세션의 작업 디렉토리* 또는 *본 세션이 손댄 공유 파일*에서 나왔는지 분류.
+   - 본 세션 식별 기준: 현재 세션의 topic prefix(예: `prompt/<topic>/`, `prompt/<ims_keyword_jira>/`) + 본 세션이 명시적으로 만진 공유 파일(`prompt/TODO/<this_session_artifact>.md`, memory 등).
+3. 다른 세션 흔적 **짝짓기 휴리스틱**(자동 식별은 어려우나 플래그 후보):
+   - **짝짓기 패턴**: `D prompt/TODO/<topic>.md` + `?? prompt/DONE/<topic_dir>/` + `?? prompt/TODO/<topic>_followups.md` → 다른 세션이 closing 진행 중. 분리 필수.
+   - **working tree only(`?M`)가 본 세션 작업 디렉토리 밖**이면 다른 세션 소유 → commit 대상 아님.
+   - **untracked 디렉토리**가 본 세션 외 topic이면 무시.
+4. 다른 세션 항목이 staged이거나 working tree에 섞여 있으면 본 세션 commit에서 분리한다. **(권장) pathspec commit**을 우선한다:
+   - **(권장) pathspec commit** — `git commit -- <본 세션 경로들>`로 지정 경로만 커밋한다. index에 남아 있는 다른 세션 staged 항목은 **건드리지 않고 그대로 보존**되므로, 그 세션이 자기 의도대로 이어서 commit할 수 있다. rename은 old·new 경로를 둘 다 pathspec에 명시한다(`git commit -- prompt/TODO/x.md prompt/TODO/DONE/x.md`).
+   - **(대안) `git restore --staged <path>`** — 다른 세션 staged 항목을 unstage한 뒤 본 세션분만 commit. 단 이는 *그 세션의 staged 상태를 변경(간섭)*하므로, pathspec으로 분리 가능하면 restore 대신 pathspec을 쓴다.
+5. commit 전 staged/대상 명단을 한 줄씩 시각 확인(restore 방식은 `git diff --cached --name-status`, pathspec 방식은 commit할 경로 목록) — 본 세션 의도와 일치하는지 사용자에게 보고 후 commit. **commit 후** 다른 세션 staged/untracked 항목이 보존됐는지 `git status --short`로 재확인한다.
+
+> ⚠️ **사고 사례 (2026-06-04 세미나 세션 종료)**: closing 중 `git status --short` 전수 점검에서 다른 세션(DCMS gtest 통합)이 staged해 둔 `D prompt/TODO/dcms_test_binary_unification.md`를 발견. 그대로 commit했다면 DCMS 세션이 *짝지어 add하려던* `?? prompt/DONE/dcms_gtest_unify_6751/`·`?? prompt/TODO/dcms_gtest_followups.md`와 분리되어 어색한 중간 상태로 push될 뻔했다. `git restore --staged`로 unstage 후 본 세션분만 commit하여 가로챔을 방지.
+
+> ✅ **검증 (2026-06-05 governance/skill 배치 세션)**: 동일 구도 재현 — agent repo에 DCMS(`D dcms_test_binary_unification.md` staged)와 NDB 세션의 미commit 작업이 다수 공존. 이번엔 `git restore --staged`(타 세션 간섭) 대신 `git commit -- <본 세션 9개 경로 + plan>`으로 **pathspec commit**하여 DCMS staged·NDB untracked를 무손상 보존했다. commit 후 `git status`로 `D dcms_test_binary_unification.md`가 그대로 staged임을 재확인. → pathspec commit이 restore보다 우월(타 세션 staged를 unstage하지 않음)함이 실증됨.
+
 > ⚠️ **사고 사례 (2026-05-14 ld_write_354377_6919 세션)**: 본 Step 3가 "TODO 작업 산출물이 `DONE/`으로 이동됐는지" 한 줄로만 명시되어 (3-A)/(3-B) 두 layer를 묶어 표현. 작업자가 (3-B) TODO/DONE만 인지하고 (3-A) 작업 디렉토리 DONE을 떠올리지 못해 새 TODO를 잘못 등록하는 재 retro 발생. 사용자 지적으로 (3-A) 누락 발견. 본 보강은 그 사고 후속.
 
 ### Step 4 — 브랜치/워크트리 정리 점검
@@ -111,7 +131,7 @@ narrative 금지. 짧고 사실만.
 |------|------|--------|
 | 1 | 세션 message scan | 사실 보고만 |
 | 2 | 사용자 요청 vs 처리 결과 비교 | noti + confirm |
-| 3 | (3-A) `ls prompt/` 진행 중 topic + (3-B) `ls prompt/TODO/` 처리 항목 + (3-C) `git status --short` (모든 관련 repo) + (3-D) 임시 파일 | noti + confirm |
+| 3 | (3-A) `ls prompt/` 진행 중 topic + (3-B) `ls prompt/TODO/` 처리 항목 + (3-C) `git status --short` (모든 관련 repo) + (3-D) 임시 파일 + (3-E) 다른 세션 격리 점검 (`git diff --cached --name-status`로 staged 명단 확인) | noti + confirm |
 | 4 | `git branch --merged` / `git worktree list` | noti + confirm |
 | 5 | gh/curl (GitLab MR API) | 상태 + 신규 댓글 명시 |
 | 6 | memory dir review | noti + confirm |

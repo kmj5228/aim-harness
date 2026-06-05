@@ -1,5 +1,7 @@
 # Jira 작성 가이드
 
+> 가독성 공통 규칙(인라인 열거 분리, 한 단락 한 개념, blockquote 강조, 구조적 데이터→표/list, 빈 줄 호흡)은 `markdown-guide.md`의 "가독성 핵심 원칙"을 참조한다. 아래는 Jira 특수 규칙만 다룬다.
+
 ## Description 작성
 
 ### 구조
@@ -58,6 +60,7 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 - 배경색: 검은색 (`-b black`)
 - 해상도: `-s 4` (4x scale, 3000px+ 출력) — 기본값은 저해상도이므로 반드시 지정
 - 변환 후 첨부 API로 업로드 → description에서 참조: `!filename.png|thumbnail!`
+- **정량 데이터(분포·시계열·비교)** 도 같은 방식으로 PNG 첨부한다. 차트는 mermaid가 아닌 matplotlib로 렌더한다(차트 종류·gnuplot-style 레시피는 `markdown-guide.md` "그림 우선" 참조).
 
 ### 기 작성 내용 규칙
 
@@ -83,9 +86,13 @@ Jira description은 **32,767자 하드 한계**가 있다 (초과 PUT은 HTTP 40
 | Jira 잔류 | `h1. Problem` + `h1. Goal` (티켓 본질) + `h1. 상세 문서` (Confluence 링크) |
 | Confluence 이관 | `h1. Analysis` 이하 전체 (Design/Development/Test/Document/Reference + 보존본) |
 
+> **Problem/Goal은 "이관"이 아니라 "복제"한다.** Confluence 페이지에는 Problem/Goal을 *맥락으로 복제*(개요/Abstract 두괄식 요건 충족)하고 Analysis 이하를 *이관 본체*로 둔다. Jira에는 Problem/Goal이 잔류한다. "이관(Jira에서 빼기)"과 "복제(Confluence에 맥락 추가)"는 다른 동작이므로 양쪽 존재는 모순이 아니다.
+
 **Confluence 위치**: AIM IMS 문서는 "AIM IMS" 페이지(space `OFV7`, pageId `6783134`) 하위에 생성한다. 제목은 `[IMS#<번호>] <요약>`.
 
-**절차**: ① `POST /wiki/rest/api/content` (`ancestors`에 `6783134`)로 페이지 생성 ② Jira wiki → storage 변환은 `POST /wiki/rest/api/contentbody/convert/storage` (`representation: wiki`) — 변환기가 `{X}`를 매크로로 해석하므로 비-매크로 brace(중첩 `{{...{X}...}}`, 스트레이 리터럴 `{`)는 사전 escape/치환 필요 ③ Confluence 페이지 PUT 후 Jira description을 Problem/Goal + 링크로 PUT 축소.
+**절차**: ① `POST /wiki/rest/api/content` (`ancestors`에 `6783134`)로 페이지 생성 ② Jira wiki → storage 변환은 `POST /wiki/rest/api/contentbody/convert/storage` (`representation: wiki`) — 변환기가 `{X}`/`[X]`를 매크로·링크로 오해석하므로 **매크로 토큰·링크 보호**가 필요(상세는 `confluence-guide.md` "wiki → storage 이관 노하우") ③ Confluence 페이지 게시·검증 **후에만** Jira description을 Problem/Goal + 링크로 PUT 축소(양쪽 동시 손상 방지).
+
+**이관은 복사가 아니라 보강·정정**: 부실한 Design/Development는 산출물로 보강하고, 1차 commit 기준 stale 내용은 최종 구현으로 갱신("설계 당시 X → 구현 중 Y 확정" drift bullet로 경위 명시), 검토 과정의 대안(AoS vs SoA 등)은 보존한다.
 
 ## Jira API 접근
 
