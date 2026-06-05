@@ -161,3 +161,37 @@ curl -s -w "\nHTTP_STATUS:%{http_code}\n" \
 
 - 상태 변경 사유를 댓글에 기록
 - 핸들러 변경 시 `@멘션`으로 호출 + 인수인계 내용 포함
+
+## Self-review checklist (적신호)
+
+description PUT / 댓글 등록 직전 다음을 점검한다. 하나라도 위반 시 PUT 보류 → 수정 → 재점검.
+
+### 형식 (Wiki markup)
+
+- [ ] markdown 잔존 없음: `#`/`**`/`-`/`1.`/`` ``` ``의 모든 markdown이 `h1.`/`*`/`*`/`#`/`{code}`로 변환됐는지 (v2는 wiki markup, markdown 그대로면 렌더 깨짐)
+- [ ] 표 헤더는 `||header||` (`|header|`는 헤더 행 아님)
+- [ ] 링크는 `[text|url]` (`[text](url)` 금지)
+- [ ] mention은 `[~accountid:<id>]` (Cloud v2). `[~user]`·plain `@name`은 알림 안 감
+
+### 내용
+
+- [ ] description PUT 시 기 작성 Problem/Goal 보존됨 (임의 수정 시 사용자 confirm 필수)
+- [ ] description 32,767자 한계 미초과 (초과 시 Confluence 이관 + Jira엔 링크만 잔류)
+- [ ] 다이어그램은 mermaid 원본이 아니라 이미지 변환본 (`-b black -s 4` 고해상도 PNG, `!filename.png|thumbnail!` 참조)
+- [ ] API 토큰 하드코딩 없음 (환경변수/`access.md` 참조 — memory `feedback_api_token_env_var`)
+
+### 댓글 (description과 다른 규칙)
+
+- [ ] 인사말 없이 본문부터 시작
+- [ ] 격식체 (`~합니다`/`~드립니다`)
+- [ ] 특정 사용자 호출 시 `[~accountid:<id>]` 멘션 포함
+
+### 상태/핸들러 변경
+
+- [ ] 상태 변경 사유를 댓글에 함께 기록
+- [ ] 핸들러 변경 시 인수인계 내용 + mention 포함
+
+### POST/PUT 검증
+
+- [ ] HTTP_STATUS 201/200 확인 (`-w '\nHTTP_STATUS:%{http_code}\n'`)
+- [ ] 리턴 JSON `id`/`self`로 생성된 댓글·페이지 URL 재확인
