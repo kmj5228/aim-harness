@@ -34,6 +34,9 @@ Agent tool (general-purpose):
     - Check for missing pieces they claimed to implement
     - Look for extra features they didn't mention
     - Verify AIM conventions: header organization, naming, copyright headers
+    - If the spec or report claims "X is already done in commit Y", verify it
+      with `git show Y -- <files>` (inspect the actual diff). Never proceed on
+      the assumption — spec-vs-state drift makes later tasks start RED.
 
     ## Your Job
 
