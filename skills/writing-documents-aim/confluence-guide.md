@@ -238,6 +238,7 @@ curl -s -u "$(JIRA_EMAIL):$(JIRA_TOKEN)" \
 
 - 인증: Basic Auth (Jira와 동일한 email + API Token)
 - 인증 정보: `../agent/info/access.md` 참조
+- access.md엔 `Atlassian API Token:`(Jira/Confluence)·`Jenkins API Token:` 두 줄이 있으므로, 추출 시 **`Atlassian API Token:` 라벨을 지정**해 grep한다 (bare `API Token:`은 둘 다 매칭 → 인증 깨짐).
 - Base URL: `https://tmaxsoft.atlassian.net/wiki`
 - Mac에서 직접 실행 (dx 경유 불필요)
 - 개인 스페이스 key: `~62afbb6842d926a01e50ae29`
