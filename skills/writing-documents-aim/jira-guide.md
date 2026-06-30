@@ -75,6 +75,7 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 - **추상화**: 핵심 코드 삽입까지 허용 (함수명, 코드 블록 OK)
 - **톤**: description은 간결체/명사형 허용, 댓글은 격식체
 - **설계/개발 깊이**: 큰 그림(접근 방식, 영향 모듈, 변경 방향) 필수 작성. 흐름도는 이미지 첨부로 포함. 필요 시 세부 내용까지 기술
+- **공유 범위 — 사설 산출물 참조 금지**: Jira는 **공유 문서**다. 개인/사설 repo(개인 GitHub 워크스페이스 등)의 산출물 — prompt 작업노트, 핸드오프(handoff_/exec_), issues_to_fix, 개인 메모리 파일명 등 — 의 **경로·내용을 description/댓글에 넣지 않는다**. Reference 등에 사설 경로(예: `prompt/<topic>/...`, 개인 repo명)를 적지 말 것. **공유 가능한 것만** 참조한다: 제품 코드 경로·함수명, GitLab MR, 다른 Jira/Confluence 이슈. (근거: 개인 작업노트는 팀 트래커의 독자에게 무의미하고 사설 정보가 유출됨.)
 - **분량 초과 시**: Jira description은 32,767자 하드 한계 — 아래 "Description 분량 한계 — Confluence 이관" 참조
 
 ### Description 분량 한계 — Confluence 이관
@@ -183,6 +184,7 @@ description PUT / 댓글 등록 직전 다음을 점검한다. 하나라도 위�
 ### 내용
 
 - [ ] description PUT 시 기 작성 Problem/Goal 보존됨 (임의 수정 시 사용자 confirm 필수)
+- [ ] **사설 산출물 미참조**: 개인/사설 repo 경로·내용(prompt 작업노트, handoff, issues 문서, 개인 repo명·메모리 파일명)이 description/댓글에 없음 — 공유 가능한 것(코드·MR·Jira/Confluence)만 참조
 - [ ] description 32,767자 한계 미초과 (초과 시 Confluence 이관 + Jira엔 링크만 잔류)
 - [ ] 다이어그램은 mermaid 원본이 아니라 이미지 변환본 (`-b black -s 4` 고해상도 PNG, `!filename.png|thumbnail!` 참조)
 - [ ] API 토큰 하드코딩 없음 (환경변수/`access.md` 참조 — memory `feedback_api_token_env_var`)
