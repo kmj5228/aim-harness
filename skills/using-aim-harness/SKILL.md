@@ -226,7 +226,7 @@ The skill itself tells you which.
 
 All work follows these rules (details in AGENTS.md/CLAUDE.md):
 
-- **Shell**: All commands via `dx` (dev_exec.sh)
+- **Shell (build/run)**: 빌드/실행은 `dx <cmd>` (포터블 wrapper; pc 분기는 `oexec.sh oframe`=docker compose exec 를 래핑). dev_exec.sh는 은퇴. git/편집은 host에서 직접(컨테이너 경유 불필요).
 - **Git**: Feature branch only, never `rb_73`. Branch: `<keyword>_<IMS>_<Jira>`
 - **Commit**: `<type> <Korean description>`. No `git add .`
 - **Test**: `dx make gtest`, coverage 80% (`measure_diff_cov.sh`)
