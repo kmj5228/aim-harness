@@ -1,0 +1,7 @@
+# MkDocs build output
+/site/
+/_site/
+
+# Local docs preview virtualenv
+/.venv/
+__pycache__/
