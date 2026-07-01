@@ -1,0 +1,68 @@
+site_name: AIM Harness
+site_description: AIM 프로젝트 전용 스킬/에이전트 체계 (Claude Code)
+site_url: https://kmj5228.github.io/aim-harness/
+repo_url: https://github.com/kmj5228/aim-harness
+repo_name: kmj5228/aim-harness
+docs_dir: .
+edit_uri: edit/main/
+
+theme:
+  name: material
+  language: ko
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: 다크 모드로 전환
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: 라이트 모드로 전환
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.view
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - same-dir
+  - awesome-pages
+
+# 문서가 아닌 파일은 사이트에 게시하지 않는다 (repo 원본에는 그대로 유지).
+exclude_docs: |
+  .github/
+  hooks/
+  *.json
+  *.sh
+  *.js
+  *.dot
