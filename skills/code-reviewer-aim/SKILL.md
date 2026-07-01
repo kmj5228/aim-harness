@@ -333,11 +333,14 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 - MR 전체 리뷰 코멘트 1건 (요약/finding목록/커버리지/판정/수정권고안)
 - MR 라인별 코멘트 N건 (심각도/문제/수정제안/근거 포함)
 
+> ⚠️ **리뷰 텍스트에 대문자 리터럴 `LGTM` 절대 금지** (전체/라인별 코멘트 본문·설명 문구 모두). CI `mr_lgtm_gate`는 approver allowlist 계정의 노트에서 **토큰 `LGTM`을 substring 스캔**해 승인을 판정하므로, 승인 의도가 없는 설명 문장(예: "판정(LGTM/approve)은 작성자가 직접")에 `LGTM`이 들어가면 **우발적으로 게이트를 통과**시킨다(`✅ LGTM approved by: <you>`). 필요 시 "승인 코멘트", "엘지티엠", "L-G-T-M" 등으로 우회 표기한다. (사고: 2026-07-01 MR !629 — 전체 노트의 설명 문구 `LGTM`이 게이트를 우발 통과 → 노트 PUT으로 토큰 제거 + 해당 pipeline `mr_lgtm_gate` job retry로 복구.)
+
 **라인별 코멘트 (인라인)**: actionable 지적은 `/discussions`(resolvable)로 등록한다. `position`은 JSON content-type 필수이며, 라인 키는 **추가 라인=`new_line`, 삭제 라인=`old_line`, context=둘 다**다 — 본 PR이 삭제한 라인에 `new_line`을 쓰면 `400 Bad - line code must be valid`로 실패한다. diff 범위 밖의 라인(예: 기존 코드의 strcpy)은 inline 불가 → 일반 노트(`/notes`)로 fallback하고 본문에 파일:라인을 명시한다. 전체 규칙·payload 예시는 writing-documents-aim/gitlab-guide.md "MR 코멘트 > 인라인 코멘트" 참조.
 
 #### Step 5: 등록 결과 검증
 - notes/discussions 증가 확인
 - 등록된 코멘트 수가 예상과 일치하는지 확인
+- **`mr_lgtm_gate`/approvals 우발 flip 점검**: 등록한 코멘트 때문에 LGTM 게이트가 의도치 않게 통과되지 않았는지 확인한다(`GET .../merge_requests/<iid>`의 `detailed_merge_status`, 또는 최신 pipeline `mr_lgtm_gate` job status/trace의 `✅ LGTM approved by`). flip됐으면 원인 노트에서 `LGTM` 토큰 제거(PUT `.../notes/<id>`) 후 해당 gate job retry로 원복한다. (Step 4의 `LGTM` 리터럴 금지 경고 참조)
 
 **Phase F gate**: GitLab 코멘트 등록 완료 (또는 사용자가 스킵 선택) 후 Phase G 진행.
 
