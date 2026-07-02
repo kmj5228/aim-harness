@@ -115,6 +115,7 @@ curl -s -u "$(JIRA_EMAIL):$(JIRA_TOKEN)" \
 | 용도 | 메서드 | 경로 |
 |------|--------|------|
 | 이슈 조회 | GET | `/rest/api/2/issue/OFV7-XXXX` |
+| 이슈 검색 (JQL) | GET | `/rest/api/3/search/jql?jql=...&fields=key,summary,status` — **검색만 v3 필수** (아래 참조) |
 | description 수정 | PUT | `/rest/api/2/issue/OFV7-XXXX` + `{"fields":{"description":"..."}}` |
 | 댓글 추가 | POST | `/rest/api/2/issue/OFV7-XXXX/comment` + `{"body":"..."}` |
 | 파일 첨부 | POST | `/rest/api/2/issue/OFV7-XXXX/attachments` + `-F "file=@path"` + `-H "X-Atlassian-Token: no-check"` |
@@ -131,6 +132,8 @@ Jira REST API는 v2와 v3가 공존한다. **v2 + wiki markup** 조합을 사용
 | 디버깅 | 문자열 비교 용이 | 구조 비교 어려움 |
 
 v3는 Atlassian이 새 포맷으로 밀지만 실무 비용이 커서 v2 우선. markdown 혼용 금지(위 wiki markup 표 참조).
+
+**예외 — 이슈 검색**: `/rest/api/2/search`(및 v3 classic `/rest/api/3/search`)는 **410 Gone으로 폐기**되었다(2026-06 실측). 검색만은 `/rest/api/3/search/jql`을 사용한다. 조회/수정/댓글은 v2 유지.
 
 ### POST 실용 패턴 (댓글 등록 예)
 

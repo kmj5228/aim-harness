@@ -228,7 +228,7 @@ PDF/이미지 등 첨부를 페이지의 *발표 자료* 섹션에 자동 목록
 
 ## Confluence REST API 접근
 
-**Confluence는 REST API로 접근한다. Chrome 브라우저 자동화를 사용하지 않는다.**
+**Confluence 페이지는 REST API로 접근한다. Chrome 브라우저 자동화를 사용하지 않는다.** (단일 예외: Databases 콘텐츠 — 아래 "Confluence Databases" 절 참조)
 
 ```bash
 # Mac curl (not dx) — Confluence API
@@ -254,6 +254,20 @@ curl -s -u "$(JIRA_EMAIL):$(JIRA_TOKEN)" \
 | 페이지 수정 | PUT | `/rest/api/content/PAGE_ID` + body에 version.number 증가 필수 |
 | 파일 첨부 | POST | `/rest/api/content/PAGE_ID/child/attachment` + `-F "file=@path"` + `-H "X-Atlassian-Token: nocheck"` |
 | 접근 제한 설정 | PUT | `/rest/api/content/PAGE_ID/restriction` + read/update restrictions JSON 배열 |
+
+### Confluence Databases (type=database) — row 데이터는 REST 미지원, Chrome MCP 예외
+
+Confluence **database** 콘텐츠(`/wiki/spaces/<KEY>/database/<ID>`)는 페이지와 달리 row 데이터를 REST로 조회·수정할 수 없다 (2026-07 실측):
+
+- `GET /rest/api/content/<ID>`, `GET /api/v2/databases/<ID>` — 제목/버전/parent 등 **메타데이터만** 반환. row/entry 엔드포인트는 존재하지 않음 (`/entries` 등 전부 404).
+- 따라서 row 데이터 읽기는 **Chrome MCP(브라우저 자동화)** 로 수행한다 — Confluence에서 Chrome 사용이 허용되는 유일한 예외. 행 추가/수정도 브라우저에서 직접 한다.
+
+Chrome MCP 추출 절차 (함정 3개 포함):
+
+1. 페이지 열고 렌더 대기 (스켈레톤 → 표, 5~15초). 표는 최상위 DOM이 아니라 `databases/standalone/index.html` **iframe**(same-origin) 안에 렌더된다. `get_page_text`·최상위 `document` 쿼리는 표 내용을 **못 본다**.
+2. javascript_tool로 `document.querySelector('iframe').contentDocument.body.innerText` 추출.
+3. **가상화 함정**: DOM에는 현재 스크롤 창 주변 row만 존재한다 — 화면상 표가 N행에서 끝나 보여도 실제로는 더 있을 수 있다. 스크롤로 렌더 창을 이동시키며 innerText를 반복 추출·병합한다 (innerText 총 길이가 비슷해도 담긴 row 범위는 바뀐다).
+4. **출력 잘림 함정**: javascript_tool 출력은 ~1,300자에서 잘린다. `.slice(a,b)` 청크로 나눠 가져온다 (browser_batch로 슬라이스 여러 개 일괄 실행 가능).
 
 > ⚠️ **이미지 참조 본문은 첨부 *이후* 에 PUT한다.** `<ac:image><ri:attachment ri:filename="x.png"/></ac:image>` 가 포함된 본문을 첨부가 존재하기 전에 생성(POST)하면, Confluence가 미해결 파일명을 `ri:filename="UNKNOWN_ATTACHMENT"` 로 *고정*해버려, 이후 같은 이름으로 첨부해도 이미지가 깨진 채("미리 보기를 사용할 수 없음") 남는다.
 >
