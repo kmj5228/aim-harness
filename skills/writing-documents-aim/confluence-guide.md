@@ -198,7 +198,11 @@ PDF/이미지 등 첨부를 페이지의 *발표 자료* 섹션에 자동 목록
 
 ### markdown → storage 변환 절차
 
-1. **markdown → HTML** — markdown 라이브러리(표/fenced code/sane lists 확장 포함).
+> **선행 설치 (pc host):** `markdown`/`pandoc` 기본 미설치 → `python3 -m pip install --user markdown` 후 사용(matplotlib과 동일 방식). 자작 파서보다 라이브러리 파싱이 표·중첩리스트·이스케이프에 견고하다.
+>
+> **구현 helper:** [`scripts/md2storage.py`](scripts/md2storage.py) — python-markdown 파싱 + 아래 절차(코드매크로·panel·이미지·TOC)를 얇게 후처리. 사용: `python3 scripts/md2storage.py <file.md>` → storage HTML(stdout). 이미지는 `<!--IMG:x.png-->` placeholder로 남으므로, 첨부 후 `<ac:image>`로 치환해 PUT(위 "이미지 첨부 순서" 참조).
+
+1. **markdown → HTML** — markdown 라이브러리(표/fenced code/sane lists 확장 포함). `html.unescape`로 code 블록 CDATA를 raw 복원.
 2. **코드 블록** → `<ac:structured-macro ac:name="code">` 매크로 (CDATA + `language` 파라미터).
 3. **언어 prefix 처리** — markdown 라이브러리는 `language-X` 형식으로 출력하므로, regex로 prefix를 제거해 `language` 파라미터에 넣는다.
 4. **블록 분류** — 본문 패턴 매칭으로 blockquote → panel 변환(위 표 참조).
