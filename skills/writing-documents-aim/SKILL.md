@@ -20,6 +20,8 @@ description: Use when writing any document for external audience — Jira ticket
 
 mermaid는 데이터 분포/시계열/box plot을 그리지 못하므로(xychart 한계), 정량 데이터를 mermaid로 억지로 그리거나 표만 넣고 끝내지 않는다. ASCII art·ASCII 차트 금지 — 렌더링 가능한 도구를 사용한다. 상세는 `markdown-guide.md` / `confluence-guide.md` 참조.
 
+**가독성 레이아웃 (줄바꿈):** 개조식(불릿)이 아닌 **산문 문단은 문장마다 줄바꿈**한다 (한 문장 = 한 줄, 마침표 뒤 개행). **개조식 항목도 길면 하위 불릿으로 나눈다** — 한 항목에 여러 문장이나 `→` 화살표 체인을 몰아넣지 않는다. 모든 플랫폼(Jira/GitLab/Confluence/메일/markdown) 공통이며, Jira wiki markup은 하위 불릿을 `**`/`***`로 표현한다. 근거: 한 줄에 여러 문장이 뭉치면 리뷰·재수정 시 가독성이 떨어진다(사용자 명시 선호).
+
 <HARD-GATE>
 문서를 발송/게시/등록하기 전에 반드시 사용자에게 초안을 보여주고 승인을 받는다. 승인 없이 send, post, publish, submit 하지 않는다.
 </HARD-GATE>

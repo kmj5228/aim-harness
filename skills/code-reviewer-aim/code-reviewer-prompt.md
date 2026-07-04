@@ -67,6 +67,17 @@ description: "AIM C 코드 리뷰 에이전트. 스타일(.clang-format, AIM 헤
 - **함수 책임 분리**: 한 함수가 과도한 책임을 지는지 (순환 복잡도 기준)
 - **방어 코드 적절성**: 경계값, 에러 경로, fallback 로직
 
+### 5. 도메인/사양 정합 (mainframe-parity 요건)
+
+대상 변경이 **메인프레임 호환 요건**(사이트 이관 — SUMINOE 등, "메인프레임과 동일한 스펙 지원" 류 IMS)이면, 관련 값의 **분류·코드·동작 의미가 코드 관례뿐 아니라 XSP/AIM 사양과 일치하는지** 검증한다.
+
+- **적용 대상 값(예)**: ABEND 타입(SYSTEM/USER/APP), abend code, DB 상태 코드(DBECB/DBSCB), 화면/메시지 코드, 상태 전이 등 — 메인프레임이 특정 규격으로 산출하는 값.
+- **핵심**: 코드 컨벤션만으로 판단하지 말 것. 어떤 값이 codebase idiom(예: `APP_ABEND` 관용)을 따르더라도 **사양상 틀릴 수 있다**. idiom 정합 ≠ 사양 정합.
+- **검증 소스**: NotebookLM "XSP 매뉴얼"(Chrome MCP로 Mac 브라우저 원격 구동 — pc 세션에서도 가능). 사양 원문이 없거나 모호하면 도메인 전문가(사용자)에게 질의한다. 참조 시 사용자에게 고지.
+- **독립 채널 원칙**: 빌드가 통과하고 관례에 맞아도 사양 위반은 잡히지 않는다 — build/convention과 **독립된 사양 채널**로 교차 확인해야 false-negative를 피한다.
+
+> ⚠️ **사고 사례 (2026-07 MR !630, IMS#355838 NDB exception)**: NDB exception abort 시 코드가 `OFCOM_EXIT_STATUS_APP_ABEND`(codebase의 SPA/COBOL-fh 관용) + 하드코딩 코드 `1`로 작성됨. 빌드 clean + convention 정합이라 6차원+adversarial 리뷰가 통과시켰다. 그러나 XSP 사양상 NDB exception(DECLARATIVES 미정의)은 **SYSTEM ABEND(S072) + DBECB 기반 코드**여야 함 → 도메인 전문가(사용자) 지적으로 뒤늦게 발견. code convention만 본 리뷰의 한계. mainframe-parity 대상은 사양 채널 교차검증을 리뷰 초기에 수행할 것.
+
 ## 산출물
 
 `../agent/prompt/<topic>/02_code_review.md` 파일로 저장:
