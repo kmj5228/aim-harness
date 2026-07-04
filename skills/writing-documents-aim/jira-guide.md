@@ -47,7 +47,26 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 | table cell | `\|cell\|` | `\|cell\|` |
 | image (첨부) | `![alt](url)` | `!filename.png\|thumbnail!` |
 | code block | ` ```code``` ` | `{code}code{code}` |
+| inline code (인라인) | `code` | `{{monospaced}}` (NOT `{code}` — 블록 전용) |
 | link | `[text](url)` | `[text\|url]` |
+
+### 인라인 코드 표기 & 한글 조사 경계 (자주 깨지는 지점)
+
+두 가지가 한글 Jira 문서에서 반복적으로 렌더를 깨뜨린다 (2026-07-04 OFV7-7068 실측. 상세 memory `reference_jira_wiki_inline_code_korean_josa`).
+
+**(1) 인라인 코드는 `{{monospaced}}`, `{code}`는 블록 전용**
+
+- 함수명·`파일:라인`·로그 문자열을 문장 중간에 넣을 때는 `{{aimctl_job_cascade_delete}}` 처럼 **이중 중괄호**를 쓴다 → 인라인 monospace(`<tt>`).
+- `{code}...{code}`는 **블록 매크로**다. 문장 중간에 쓰면 전폭 회색 코드패널이 되어 불릿마다 흐름이 끊긴다 (실측: 인라인 54개 → 코드패널 81개로 문서 파괴).
+
+**(2) 닫는 `}}`·굵게 `*` 뒤에 한글 조사를 바로 붙이지 않는다**
+
+- wiki 단어경계 규칙상 닫는 `}}`/`*` 바로 뒤에 조사(는/로/를/에서/이다 …)가 붙으면 구분자 인식이 실패해 **리터럴 `{{...}}`·`*...*`로 렌더**되고 인접 span까지 깨진다.
+- 해결: 코드 term 뒤에 **명사+공백**을 넣어 조사를 띄운다.
+  - `{{proc_info}}는` → `{{proc_info}} 구조체는`
+  - `{{tpclrcliwatcher}}로` → `{{tpclrcliwatcher}} 호출로`
+  - `*결정론적 프록시*다` → 굵게 제거 또는 닫는 `*` 뒤에 구두점/공백
+- 여는 쪽(`{{단어`, `*단어`)은 앞에 공백/구두점만 있으면 안전하다.
 
 ### 다이어그램
 
@@ -183,6 +202,10 @@ description PUT / 댓글 등록 직전 다음을 점검한다. 하나라도 위�
 - [ ] 표 헤더는 `||header||` (`|header|`는 헤더 행 아님)
 - [ ] 링크는 `[text|url]` (`[text](url)` 금지)
 - [ ] mention은 `[~accountid:<id>]` (Cloud v2). `[~user]`·plain `@name`은 알림 안 감
+- [ ] 인라인 코드는 `{{monospaced}}` — 문장 중간 `{code}` 금지 (블록 코드패널로 흐름 파괴)
+- [ ] 닫는 `}}`·굵게 `*` 뒤에 한글 조사(는/로/를/에서) 미부착 — 코드 term 뒤 명사+공백 삽입 (`{{proc_info}} 구조체는`)
+- [ ] (사전 스캔) `grep -oP '\}\}[가-힣]'` · `grep -oP '[가-힣]\*[가-힣]'` 결과 0
+- [ ] (PUT 후 검증) `?expand=renderedFields`로 `class="code"`(인라인이면 0)·리터럴 `{{`·`<tt>` 개수 확인 (재-PUT 아님)
 
 ### 내용
 
