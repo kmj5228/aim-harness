@@ -45,7 +45,7 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 | numbered list | `1. item` | `# item` |
 | table header | `\|header\|` | `\|\|header\|\|` |
 | table cell | `\|cell\|` | `\|cell\|` |
-| image (첨부) | `![alt](url)` | `!filename.png\|thumbnail!` |
+| image (첨부) | `![alt](url)` | `!filename.png\|width=1000!` (`\|thumbnail` 은 작게 — 다이어그램엔 금지) |
 | code block | ` ```code``` ` | `{code}code{code}` |
 | inline code (인라인) | `code` | `{{monospaced}}` (NOT `{code}` — 블록 전용) |
 | link | `[text](url)` | `[text\|url]` |
@@ -78,7 +78,9 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
   ```
 - 배경색: 검은색 (`-b black`)
 - 해상도: `-s 4` (4x scale, 3000px+ 출력) — 기본값은 저해상도이므로 반드시 지정
-- 변환 후 첨부 API로 업로드 → description에서 참조: `!filename.png|thumbnail!`
+- 변환 후 첨부 API로 업로드 → description에서 참조: `!filename.png|width=1000!`
+  - Jira 본문 컬럼 폭이 ~1024px 이므로 `width=1000` 이 거의 전폭이다. **`|thumbnail` 은 작게 들어가 다이어그램 라벨을 못 읽으므로 쓰지 않는다** (memory `feedback_jira_image_width`).
+  - 첨부(POST attachments)는 clean 파일명 그대로 올리고, description 참조에만 `|width=` 를 붙인다.
 - **정량 데이터(분포·시계열·비교)** 도 같은 방식으로 PNG 첨부한다. 차트는 mermaid가 아닌 matplotlib로 렌더한다(차트 종류·gnuplot-style 레시피는 `markdown-guide.md` "그림 우선" 참조).
 
 ### 기 작성 내용 규칙
@@ -212,7 +214,7 @@ description PUT / 댓글 등록 직전 다음을 점검한다. 하나라도 위�
 - [ ] description PUT 시 기 작성 Problem/Goal 보존됨 (임의 수정 시 사용자 confirm 필수)
 - [ ] **사설 산출물 미참조**: 개인/사설 repo 경로·내용(prompt 작업노트, handoff, issues 문서, 개인 repo명·메모리 파일명)이 description/댓글에 없음 — 공유 가능한 것(코드·MR·Jira/Confluence)만 참조
 - [ ] description 32,767자 한계 미초과 (초과 시 Confluence 이관 + Jira엔 링크만 잔류)
-- [ ] 다이어그램은 mermaid 원본이 아니라 이미지 변환본 (`-b black -s 4` 고해상도 PNG, `!filename.png|thumbnail!` 참조)
+- [ ] 다이어그램은 mermaid 원본이 아니라 이미지 변환본 (`-b black -s 4` 고해상도 PNG, `!filename.png|width=1000!` 참조 — `|thumbnail` 금지: 작게 들어가 라벨 판독 불가)
 - [ ] API 토큰 하드코딩 없음 (환경변수/`access.md` 참조 — memory `feedback_api_token_env_var`)
 
 ### 댓글 (description과 다른 규칙)
