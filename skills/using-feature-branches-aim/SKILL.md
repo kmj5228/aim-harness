@@ -130,7 +130,7 @@ rm .commit_msg.tmp
 
 **일반 commit** (feature branch 작업 중):
 ```
-<type> 한글 설명
+<type>: 한글 설명
 
     - 변경사항 1
     - 변경사항 2
@@ -150,7 +150,9 @@ IMS#XXXXXX:<type> summary
  #OFV7-XXXX
 ```
 
-- type: `<>` 괄호로 감싸며, 콜론 없음
+- type: `<>` 괄호로 감싸며(리터럴), **콜론 위치는 IMS/Jira 번호 유무로 갈린다**
+  - 번호 있음(`.gitmessage` 포맷): `IMS#XXXXXX:<type> 설명` — 콜론은 **번호와 type 사이**, type 뒤에는 없음
+  - 번호 없음(AGENTS.md commit 규칙): `<type>: 설명` — 콜론은 **type 뒤**
 - 영문 type: `feat`, `fix`, `test`, `docs`, `refactor`, `style`, `chore`
 - 설명은 한글
 - Jira 티켓: `#OFV7-XXXX` (브랜치명의 Jira 번호 참조)
@@ -159,7 +161,7 @@ IMS#XXXXXX:<type> summary
 # 예시 — 메시지 파일을 repo 내부(SSHFS-공유)에 Mac 측에서 작성한 뒤 dx 로 commit:
 #   (Mac `/tmp` 는 Docker 와 비공유, `dx bash -c` 안의 heredoc 은 한글 깨짐 — 둘 다 피한다)
 cat > .commit_msg.tmp << 'EOF'
-<fix> SMQN recovery 판정 로직 수정
+<fix>: SMQN recovery 판정 로직 수정
 
     - mqn recovery 테이블 검사 누락 수정
     - smqn만 확인하던 로직에 mqn 추가

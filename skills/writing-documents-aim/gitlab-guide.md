@@ -101,10 +101,18 @@ Squash commit의 `* module`은 Makefile의 `MODULE` 변수가 아니라 **설치
 
 상세: `src/<zone>/AGENTS.override.md` (TYPE별 governance).
 
-### MR Title
+### MR Title = Squash 헤더 = commit 형식 (하나의 형식)
 
-- 형식: `<type> Korean description` (콜론 없음)
-- 예: `<fix> ACS 호환 프로시저 ASSIGN 해석 skip 로직 수정`
+**MR title 은 Squash Commit Message 헤더와 동일한 형식으로 쓴다.** 둘 다 결국 git commit 제목이 되므로, `.gitmessage` + AGENTS.md 의 commit 형식 하나만 따른다. 콜론 위치는 IMS/Jira 번호 유무로 갈린다.
+
+| 상황 | 형식 (MR title·Squash 헤더 공통) | 예 |
+|------|------|-----|
+| IMS/Jira 연결 | `IMS#<번호>:<type> 설명` — 콜론은 **번호와 type 사이** | `IMS#348560:<fix> structure size 변경으로 인한 연관 모듈 패치` |
+| IMS/Jira 미연결 | `<type>: 설명` — 콜론은 **type 뒤** | `<chore>: 커버리지 리포트 생성 엔진 소스 제외` |
+
+- `<type>` 의 꺾쇠 `< >` 는 리터럴이다. type 명은 영어(`feat`/`fix`/`test`/`docs`/`refactor`/`style`/`chore`), 설명은 한글.
+- **콜론 없는 `<type> 설명` 은 형식 위반**이다 (실제 MR !647 에서 리뷰어가 지적).
+- docs-only governance MR 도 동일 — 면제 아님.
 
 ### 독자
 
@@ -133,7 +141,7 @@ curl -s --request POST \
 
 - `## Test ### 추가/### 기존`: 체크박스를 `[x]`로 두고 `N/A — 코드/테스트 영향 없음 (governance·문서·도구 변경)` 명시 + 코드 블록에 `N/A: product source 변경 없음. gtest 추가/실행 대상 없음.` 1줄. `dx make gtest` 실행 불요.
 - `<details>` 안 verbatim stdout: 면제. `N/A: 본 MR은 governance·문서·도구 변경뿐이라 dx make gtest 실행 대상이 아니다.` 1줄로 대체.
-- `## Squash Commit Message`: 설치 산출물이 없으면 `* module` / `* version` 라인 생략 가능. IMS/Jira 미연결이면 헤더를 `<type> Korean description` 약식으로 (`IMS#`·`#OFV7-` 생략).
+- `## Squash Commit Message`: 설치 산출물이 없으면 `* module` / `* version` 라인 생략 가능. IMS/Jira 미연결이면 `IMS#`·`#OFV7-` 를 생략하되, **헤더(및 MR title)는 `<type>: <한글 설명>` (콜론 포함)** 을 유지한다 — 콜론 없는 약식은 형식 위반이다 (상세: "MR Title = Squash 헤더 = commit 형식").
 - `manual-check` marker (finishing-branch에서 삽입): IMS/Jira 둘 다 없으면 키 없이 `<!-- aim-harness:manual-check status=done checked=YYYY-MM-DD reason=governance-docs-only -->`. product source 미변경이라 매뉴얼 판단은 자명히 "불필요" → `status=done` 고정 (상세 형식은 `manual-guide.md` "Marker 형식").
 - MR Check List: `coding convention 확인` / `테스트 추가` 등 코드 전제 항목은 `[x] — N/A(코드 변경 없음)` 부기. 5개 모두 체크해 리뷰 가능 상태 유지. 체크박스 표기 예: `- [x] 테스트가 추가 되었는가? — N/A(코드 변경 없음)` (한 줄에 부기).
 - `## 내용` / `## 수정 사항`: generic 규칙대로 작성 (변경 파일 경로·이유·결과 요약).
@@ -222,7 +230,7 @@ MR description 작성/갱신 PUT **직전** 아래 항목을 확인한다. 위�
 - [ ] `BIN_DIR=` 등 경로 헤더 라인 존재 (stdout 맨 윗부분을 자르지 않음)
 - [ ] Squash commit `* module`이 산출물 이름(`lib<MODULE>` / `<MODULE>`)인가? (상기 Module 이름 결정 규칙 참조)
 - [ ] Squash commit 복수 모듈인 경우 `* module` / `* version` 블록이 분리되어 있는가? (한 줄 쉼표 나열 금지)
-- [ ] MR title 형식이 `<type> Korean description` (콜론 없음)인가?
+- [ ] **MR title 과 Squash commit 헤더가 같은 commit 형식**인가? — IMS/Jira 연결 시 `IMS#<번호>:<type> 설명`, 미연결 시 `<type>: 설명`. 콜론 없는 `<type> 설명` 을 쓰지 않았는가? (docs-only MR 도 동일 — 면제 아님)
 - [ ] MR Check List 5개 모두 체크됐는가? (리뷰 가능 조건)
 
 **위반 항목이 있으면**:

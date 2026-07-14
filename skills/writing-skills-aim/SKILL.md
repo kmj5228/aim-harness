@@ -246,7 +246,7 @@ dx bash -c "gdb ..."   # NOT: gdb ...
 ### Git Rules
 - Feature branches only, NEVER commit to `rb_73`
 - Branch naming: `<keyword>_<IMS>_<Jira>`
-- Commit message: `<type> <Korean description>`
+- Commit message: `<type>: <Korean description>` (IMS 번호 있으면 `IMS#<번호>:<type> <설명>`)
 - `git add .` / `git add -A` prohibited
 
 ### Testing Rules

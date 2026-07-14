@@ -47,7 +47,7 @@ Guide completion of development work: verify → clean up → push → create MR
    dx git log --oneline rb_73..HEAD
    ```
    
-   If needed, squash/reword commits. Commit message format: `<type> <Korean description>`
+   If needed, squash/reword commits. Commit message format: `<type>: <Korean description>` (IMS/Jira 번호가 있으면 `IMS#<번호>:<type> <설명>`)
 
 4. **Verify copyright headers** on new files (push hook will check)
 
@@ -84,7 +84,7 @@ curl -s --request POST \
   --data '{
     "source_branch": "<feature-branch>",
     "target_branch": "rb_73",
-    "title": "<type> Korean description",
+    "title": "<type>: Korean description",
     "description": "<MR description per default.md template>"
   }' \
   "http://192.168.51.106/api/v4/projects/211/merge_requests"
@@ -100,7 +100,7 @@ Token: see `../agent/info/access.md`
 3. curl POST/PUT 실행 (description body 전송)
 4. 위반 발견 시 재작성 후 재PUT 또는 DONE_WITH_CONCERNS에 `[Check Fail] <항목>: <상황>` 기재
 
-섹션 구조, verbatim stdout 요구, Module 결정 규칙, MR title 콜론 없음 등 세부 규칙은 gitlab-guide.md에서만 유지 (SSoT).
+섹션 구조, verbatim stdout 요구, Module 결정 규칙, MR title·Squash 헤더 형식(= commit 형식. IMS 연결 `IMS#<번호>:<type> 설명` / 미연결 `<type>: 설명`) 등 세부 규칙은 gitlab-guide.md에서만 유지 (SSoT).
 
 **MR 생성 직후 — 매뉴얼 필요성 자동 판단 (필수)**:
 
