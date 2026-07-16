@@ -173,9 +173,27 @@ Turn 3: fileUpload() + confirm 우회
 - **5개 섹션**: Reason for change, Change content, Defining Change History, Verification Items, Impact Analysis
 - **HTML**: X-Free Editor v5 호환 (h1~h6 금지, th 금지, CSS class 금지, inline style만)
 - **Best practice**: `../agent/prompt/DONE/msgrcv/msgrcv_sum#2.html`, `../agent/prompt/DONE/msgrcv/msgrcv_verification#5.html`
-- **등록**: `popupPatchVerification()` → iframe DOM 수정 → `doRndSave()` + confirm 우회
+- **등록**: `popupPatchVerification('<issueId>')` → iframe DOM 수정 → `doRndSave()` + confirm 우회
 
 상세는 completing-patch-aim SKILL.md 전체를 참조할 것.
+
+### 검증서 팝업 자동화 (Chrome MCP)
+
+패치 검증서 팝업은 `popupPatchVerification('<issueId>')`이 `window.open`으로 여는데, **features 인자가 있으면 별도 창으로 떠 MCP 탭 그룹이 포착하지 못한다**(`tabs_context_mcp`에 안 잡힘). `window.open`을 후킹해 features를 제거하면 같은 창의 새 탭으로 열려 MCP가 제어할 수 있다 (검증: IMS#348560).
+
+```javascript
+// 메인 이슈 탭에서 실행 → 팝업이 MCP 탭으로 열림
+if (!window.__origOpen) window.__origOpen = window.open;
+window.open = function(u, n, f){ return window.__origOpen.call(window, u, n || 'patchverif'); };
+popupPatchVerification('<issueId>');   // 이후 tabs_context_mcp로 새 탭 확인
+```
+
+**두 X-Free 에디터 구조** (Rnd / Verification):
+- 편집 프레임: `xfeDesignFrame_<id>` (Rnd = "Reason for change" 포함, Verification = "Defining Change History" 포함). id suffix는 동적.
+- 데이터 홀더 textarea: `rndDesc`(Rnd), `veriRndDesc1`(Verification). **body 안쪽 innerHTML만** 저장(head/style 없음).
+- 주입 시 designFrame `body.innerHTML`과 데이터 홀더 **둘 다** set. 한글 등 큰 HTML은 base64로 넘겨 `TextDecoder('utf-8')`로 복원(직접 문자열은 이스케이프·차단 이슈).
+- **긴 예제/카드 이미지**: body의 `word-break: break-all`이 상속되어 monospace 정렬이 꺾인다. `<pre style="font-family:monospace; white-space:pre; word-break:normal;">`로 감싸고, **저장 후 재조회로 `<pre>` 생존 확인**.
+- 저장은 `doRndSave()`(패치 검증서) — 액션 등록의 `fileUpload()`와 다름. **동사 분리·턴 분리 규칙(위 액션 섹션)을 동일 적용**: "작성/입력"은 주입까지만, "저장"에서만 `doRndSave()` 호출.
 
 ## IMS 접근
 
