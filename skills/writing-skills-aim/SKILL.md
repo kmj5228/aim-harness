@@ -242,6 +242,7 @@ dx bash -c "gdb ..."   # NOT: gdb ...
 - `../agent/` = `/Users/mjkang/company/dev_sshfs/agent/`
 - All artifacts go to `../agent/prompt/<topic>/`
 - Artifact prefixes: `review_`, `design_`, `plan_`, `exec_`, `debug_`, `verify_`, `finish_`, `analysis_`
+- topic 디렉터리 생성 시 `README.md` 동시 생성(재개 지점 + Context Map). 스킬이 산출물을 만든다면 그 파일을 topic README Context Map에 반영하도록 지시할 것. 규약: `using-aim-harness/topic-readme.md`
 
 ### Git Rules
 - Feature branches only, NEVER commit to `rb_73`

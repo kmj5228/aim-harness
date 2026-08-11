@@ -232,6 +232,7 @@ All work follows these rules (details in AGENTS.md/CLAUDE.md):
 - **Test**: `dx make gtest`, coverage 80% (`measure_diff_cov.sh`)
 - **Build**: `dx make`
 - **Artifacts**: `../agent/prompt/<topic>/` with prefixes (`review_`, `design_`, `plan_`, `exec_`, `debug_`, `verify_`, `finish_`, `analysis_`)
+- **Topic README (필수)**: topic 디렉터리를 **만드는 그 시점에** `<topic>/README.md`를 함께 만든다(에이전트가 직접 — 사용자에게 묻거나 미루지 않는다). 재개 지점(다음 할 일·블로커) + 이 폴더 산출물 Context Map을 담고, 작업 경계마다 갱신한다. 세션은 예고 없이 끊기므로 종료 시점에 몰아 쓰지 않는다. 템플릿·상세: `using-aim-harness/topic-readme.md`
 - **External**: GitLab MR (project 211, Mac curl), IMS (Chrome), Jira (Mac curl), NotebookLM
 
 ## User Instructions

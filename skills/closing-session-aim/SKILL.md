@@ -87,6 +87,22 @@ narrative 금지. 짧고 사실만.
 
 > ⚠️ **사고 사례 (2026-05-14 ld_write_354377_6919 세션)**: 본 Step 3가 "TODO 작업 산출물이 `DONE/`으로 이동됐는지" 한 줄로만 명시되어 (3-A)/(3-B) 두 layer를 묶어 표현. 작업자가 (3-B) TODO/DONE만 인지하고 (3-A) 작업 디렉토리 DONE을 떠올리지 못해 새 TODO를 잘못 등록하는 재 retro 발생. 사용자 지적으로 (3-A) 누락 발견. 본 보강은 그 사고 후속.
 
+#### 3-F. topic README · 루트 Context Map 정합성
+
+*판단은 3-A와 함께, 반영은 3-C/3-E commit보다 **앞서** 수행한다.*
+
+topic README는 원래 **작업 경계마다** 갱신되어야 한다(`using-aim-harness` → `topic-readme.md`). 본 단계는 생성 책임이 아니라 **누락분 최종 반영**이다.
+
+> **본 단계는 confirm 대상이 아니다.** 다른 Step과 달리 문서 작성·갱신은 destructive하지 않고, 재개 지점은 이 세션을 수행한 에이전트만 아는 정보다. **에이전트가 직접 쓴다** — 사용자에게 묻거나 넘기지 않는다. 대상은 **본 세션 topic**에 한정한다(타 세션 topic은 인덱스에 `⚠`로 노출될 뿐, 임의 생성 금지 — 3-E 격리 원칙).
+
+1. `prompt/<topic>/README.md` 존재 여부. 없으면 **생성한다**(템플릿: `using-aim-harness/topic-readme.md`)
+2. **재개 지점**이 본 세션 종료 시점과 일치하는지. "다음 할 일"이 이미 끝난 항목이면 갱신
+3. 본 세션이 만든 산출물이 **Context Map**에 있는지
+4. Status·Updated 갱신. DONE 이관 대상이면 Status를 `완료`로 바꾸고 결과(MR·커밋) 명시
+5. **루트 `prompt/README.md` Context Map 재생성** — 직접 편집하지 않는다. `agent/script/prompt_index.sh`를 실행해 그 출력을 Context Map 표에 붙여넣는다. `prompt_index.sh --check`가 exit 1이면 README 없는 topic이 남은 것 → 본 세션 topic이면 생성, 타 세션 topic이면 noti만
+
+> ⚠️ **실측 (2026-08-11)**: 본 규약 도입 전 진행 중 topic 28개 중 **8개(29%)에 진입 파일 자체가 없었고**, 루트 Context Map은 drift 4건(누락 3·유령 1)이었다. 파일 9개가 쌓인 코드 리뷰 topic(`psam_lifecard_7137` 등)조차 진입 파일이 없어 재개 시 전수 열람이 필요한 상태였다.
+
 ### Step 4 — 브랜치/워크트리 정리 점검
 - merge된 feature branch 로컬 잔존: `git branch --merged rb_73 | grep -v 'rb_73\|^\*'`
 - 사용 끝난 워크트리: `git worktree list` (원본 외 검토)
@@ -131,7 +147,7 @@ narrative 금지. 짧고 사실만.
 |------|------|--------|
 | 1 | 세션 message scan | 사실 보고만 |
 | 2 | 사용자 요청 vs 처리 결과 비교 | noti + confirm |
-| 3 | (3-A) `ls prompt/` 진행 중 topic + (3-B) `ls prompt/TODO/` 처리 항목 + (3-C) `git status --short` (모든 관련 repo) + (3-D) 임시 파일 + (3-E) 다른 세션 격리 점검 (`git diff --cached --name-status`로 staged 명단 확인) | noti + confirm |
+| 3 | (3-A) `ls prompt/` 진행 중 topic + (3-B) `ls prompt/TODO/` 처리 항목 + (3-C) `git status --short` (모든 관련 repo) + (3-D) 임시 파일 + (3-E) 다른 세션 격리 점검 (`git diff --cached --name-status`로 staged 명단 확인) + (3-F) topic README 재개 지점·Context Map + 루트 `prompt/README.md` 인덱스 | noti + confirm |
 | 4 | `git branch --merged` / `git worktree list` | noti + confirm |
 | 5 | gh/curl (GitLab MR API) | 상태 + 신규 댓글 명시 |
 | 6 | memory dir review | noti + confirm |
@@ -143,9 +159,11 @@ narrative 금지. 짧고 사실만.
 - **자동 destructive 작업 실행** — 사용자 confirm 없이 브랜치 삭제·commit·push 금지. 항상 noti 후 진행
 - **Skill Gap 보고 누락** — 자가 회고 영역. 보고 자체가 시스템 학습 시작점
 - **memory와 governance 중복 저장** — SSoT 분기 위험. memory는 governance에 없는 *운영 선호*/*사고 사례*만
+- **topic README를 3-F에서 처음 작성** — 3-F는 누락분 최종 반영 게이트지 유일한 작성 시점이 아니다. 세션이 3-F 이전에 끊기면 재개 정보가 통째로 사라진다
 
 ## Red Flags
 
 - "별다른 거 없어서 종료" → 그래도 7 step 모두 1줄씩 점검 결과 명시
 - "사용자가 명시 지시 안 했으니 skip" → step 5/6/7은 사용자 명시 지시 없이 자발 점검 영역
 - "한 곳 commit만 했으니 OK" → step 3은 본 세션이 건드린 *모든 repo* 검사 (aim/agent/aim-harness 등)
+- "topic README는 다음 세션에 쓰면 됨" → 다음 세션은 컨텍스트가 없는 다른 인스턴스다. 재개 정보를 아는 건 지금뿐
