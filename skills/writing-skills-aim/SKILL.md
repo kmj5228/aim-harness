@@ -238,8 +238,8 @@ dx bash -c "gdb ..."   # NOT: gdb ...
 ```
 
 ### Path Rules
-- `../agent/` = aim project root relative path
-- `../agent/` = `/Users/mjkang/company/dev_sshfs/agent/`
+- `../agent/` = aim project root relative path (aim repo 의 형제 `agent` 디렉터리)
+- **절대 경로를 스킬에 하드코딩하지 않는다** — workspace 루트가 머신마다 다르다(Mac `~/company/dev_sshfs/`, pc `~/ofsrc/`). 머신별 실제 경로는 각 머신 `~/.claude/CLAUDE.md` 소관이다
 - All artifacts go to `../agent/prompt/<topic>/`
 - Artifact prefixes: `review_`, `design_`, `plan_`, `exec_`, `debug_`, `verify_`, `finish_`, `analysis_`
 - topic 디렉터리 생성 시 `README.md` 동시 생성(재개 지점 + Context Map). 스킬이 산출물을 만든다면 그 파일을 topic README Context Map에 반영하도록 지시할 것. 규약: `using-aim-harness/topic-readme.md`

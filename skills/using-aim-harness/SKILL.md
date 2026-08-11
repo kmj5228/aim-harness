@@ -193,7 +193,7 @@ Proposal: <구체적 수정 제안 — 어느 섹션에 무엇을 추가/수정>
 ```
 [Skill Gap] manual-guide
 Finding: Step 2에 기재된 Jira 토큰 경로가 실제와 불일치
-Evidence: /Users/mjkang/company/scripts/access.md 부재. 실제 경로는 /Users/mjkang/company/dev_sshfs/agent/info/access.md (= ../agent/info/access.md)
+Evidence: 스킬에 적힌 `~/company/scripts/access.md` 부재. 실제 경로는 `../agent/info/access.md` (aim 루트 기준)
 Proposal: Step 1, Step 2의 access.md 경로 2건을 ../agent/info/access.md로 수정. jira-guide.md와 일관성 확보
 ```
 

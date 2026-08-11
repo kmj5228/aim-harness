@@ -4,7 +4,8 @@
 
 ## Overview
 
-- **대상 저장소**: `/Users/mjkang/company/MANUAL/openFrame_aim`
+- **대상 저장소**: AIM 매뉴얼 repo `openFrame_aim`. **경로가 머신마다 다르므로**, 본 문서의 셸 명령은 `$MANUAL_REPO` 로 지칭한다.
+  명령 실행 전 해당 머신 값으로 설정한다 — pc `MANUAL_REPO=~/MANUAL/openFrame_aim` / Mac `MANUAL_REPO=~/company/MANUAL/openFrame_aim`
 - **브랜치**: `7.3_main` (직접 commit + push, feature branch/MR 없음)
 - **포맷**: Antora/AsciiDoc, 한글, `~한다` 체
 - **트리거**:
@@ -150,7 +151,7 @@ PF/MF/ACS 등 환경 라벨이 매뉴얼에 함께 등장할 때, *각 환경별
 **사전 체크 (필수)**: 판단 전에 **MANUAL repo에서 기존 작성 여부부터 확인**한다.
 
 ```bash
-cd /Users/mjkang/company/MANUAL/openFrame_aim
+cd "$MANUAL_REPO"
 git log --all --grep=<IMS번호> --oneline
 git log --all --grep=<OFV7-num> --oneline
 ```
@@ -244,7 +245,7 @@ dx git show <commit>
 #### 5a. CLI 툴 / 바이너리 검증
 
 ```bash
-cd /Users/mjkang/company/dev_sshfs/aim
+# aim repo 루트에서 실행
 dx make                    # 또는 dx make <target>
 dx bash -c "<실제 명령>"   # 실제 실행으로 출력 캡처
 ```
@@ -311,7 +312,7 @@ dx bash -c "grep -rn 'SET status=\|claim_enqueue\|UPDATE.*status' /root/ofsrc/ai
 ### Step 6: MANUAL repo 대상 파일 탐색 + 스타일 조사
 
 ```bash
-cd /Users/mjkang/company/MANUAL/openFrame_aim
+cd "$MANUAL_REPO"
 find docs -iname '*<keyword>*'
 find docs/modules/<guide> -name 'sect-*.adoc' | head
 ```
@@ -451,7 +452,7 @@ xref:configuration-guide:aim/sect-aim.adoc#sect_aim_adl_inc_path[INC_PATH]
 ## Git 정책
 
 ```bash
-cd /Users/mjkang/company/MANUAL/openFrame_aim
+cd "$MANUAL_REPO"
 git checkout 7.3_main
 git pull
 
@@ -482,7 +483,7 @@ IMS#<num1>, IMS#<num2>, <설명>    # 여러 IMS 묶기도 함
 `7.3_main`은 공유 브랜치라 다른 작업자가 먼저 push했을 수 있다. push 실패 시 `git push --force` 금지 — **rebase**로 해결한다.
 
 ```bash
-cd /Users/mjkang/company/MANUAL/openFrame_aim
+cd "$MANUAL_REPO"
 
 # 1. Fetch (PAT 주입 방식 — keychain 접근이 sandbox에서 차단될 수 있음)
 git -c credential.helper='!f() { echo "username=oauth2"; echo "password=<PAT>"; }; f' \

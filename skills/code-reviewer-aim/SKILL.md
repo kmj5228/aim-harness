@@ -10,9 +10,9 @@ IMS/Jira/GitLab 정보 수집부터 코드/테스트/커버리지 리뷰, 종합
 ## 경로 규칙
 
 본 스킬의 모든 경로에서 `../agent/`는 **aim 프로젝트 루트 기준 상대 경로**이다.
-- 프로젝트 루트: `/Users/mjkang/company/dev_sshfs/aim/`
-- `../agent/` → `/Users/mjkang/company/dev_sshfs/agent/`
-- 예: `../agent/prompt/<topic>/02_code_review.md` → `/Users/mjkang/company/dev_sshfs/agent/prompt/<topic>/02_code_review.md`
+- 프로젝트 루트: aim repo 루트 (`git rev-parse --show-toplevel`). 절대 경로는 머신마다 다르므로 하드코딩하지 않는다
+- `../agent/` → aim repo 의 형제 `agent` 디렉터리
+- 예: `../agent/prompt/<topic>/02_code_review.md`
 
 파일 Read/Write 시 반드시 aim 루트를 working directory로 사용한다.
 
@@ -150,8 +150,8 @@ dx bash -c "cd /root/ofsrc/aim && ./script/worktree_add.sh review_<MR번호> rev
 - 본 worktree는 throwaway 용도로, Phase G/I 종료 시 정리한다.
 
 이후 **본 스킬이 사용하는 작업 경로(WORKSPACE_AIM)** 가 결정된다:
-- main 사용 시: `/Users/mjkang/company/dev_sshfs/aim/`
-- worktree 사용 시: `/Users/mjkang/company/dev_sshfs/aim_worktrees/review_<MR번호>/aim/`
+- main 사용 시: aim repo 루트 (`git rev-parse --show-toplevel`)
+- worktree 사용 시: `<ofsrc>/aim_worktrees/review_<MR번호>/aim/` (`worktree_add.sh` 산출 위치, `<ofsrc>` = aim repo 의 부모)
 
 오케스트레이터는 Phase B~F의 모든 spawn prompt에 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). 커버리지 분석가를 포함한 5명 모두 같은 `WORKSPACE_AIM`에서 동작한다 (aim repo MR !597 머지로 워크트리 측정이 main과 동등하게 가능).
 

@@ -180,7 +180,7 @@ curl -s -w "\nHTTP_STATUS:%{http_code}\n" \
 - 리턴 JSON의 `id` / `self` 필드로 생성된 댓글 URL 확인
 - 실패 시 body 파일을 그대로 남겨두고 재시도
 
-**인증 정보**: `/Users/mjkang/company/dev_sshfs/agent/info/access.md` (API Token은 하드코딩 금지 — 환경변수 또는 access.md 참조 인라인).
+**인증 정보**: `../agent/info/access.md` (aim 루트 기준. API Token은 하드코딩 금지 — 환경변수 또는 access.md 참조 인라인).
 
 ## 댓글 작성
 

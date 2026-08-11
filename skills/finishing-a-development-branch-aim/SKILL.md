@@ -108,7 +108,7 @@ MR 생성 후 `writing-documents-aim/manual-guide.md`의 Step 1 (필요성 판�
 
 1. `Read` manual-guide.md Step 1 섹션
 2. 현재 MR의 변경 범위(`dx git diff rb_73..HEAD --stat` + commit 메시지 + MR 제목/본문)로 판단 기준 적용
-3. **사전 체크**: `cd /Users/mjkang/company/MANUAL/openFrame_aim && git log --all --grep=<IMS번호>` + `--grep=<OFV7-num>` 양쪽으로 기존 반영 여부 확인 (manual-guide Step 1 Pre-check)
+3. **사전 체크**: 매뉴얼 repo(`openFrame_aim` — 경로는 머신별, manual-guide Overview 참조)에서 `git log --all --grep=<IMS번호>` + `--grep=<OFV7-num>` 양쪽으로 기존 반영 여부 확인 (manual-guide Step 1 Pre-check)
 4. 판단 결과 4가지 중 하나 도출 + 사용자 선택 분기:
 
 | 판단 | 후속 액션 | Marker 값 |
