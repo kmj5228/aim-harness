@@ -18,7 +18,7 @@ IMS/Jira/GitLab 정보 수집부터 코드/테스트/커버리지 리뷰, 종합
 
 ## 에이전트 구성 (스킬 동봉 prompt 5개)
 
-base role name과 prompt 파일 매핑. 실제 spawn 시 이름은 `aim-<role>-<topic>` (아래 "네이밍 규칙" 참조).
+base role name과 prompt 파일 매핑. **스폰 시 이름을 주지 않는다** — 재호출은 스폰이 발급한 `agentId`로 한다(아래 "에이전트 식별 규칙" 참조).
 
 | base role | prompt 파일 | 역할 | Phase |
 |-----------|------------|------|-------|
@@ -28,7 +28,7 @@ base role name과 prompt 파일 매핑. 실제 spawn 시 이름은 `aim-<role>-<
 | `aim-coverage-analyst` | `./coverage-analyst-prompt.md` | gcov 커버리지 측정 | D |
 | `aim-review-synthesizer` | `./review-synthesizer-prompt.md` | 종합/문서화/GitLab 코멘트 초안 | E |
 
-에이전트 스폰 시 해당 prompt 파일을 Read하여 내용을 Agent 도구의 prompt에 포함하고, 팀원 매핑 블록(아래)을 함께 append한다.
+에이전트 스폰 시 해당 prompt 파일을 Read하여 내용을 Agent 도구의 prompt에 포함한다. 스폰 결과의 `agentId`는 즉시 plan 파일 에이전트 표에 기록한다.
 
 ## 입력 파싱
 
@@ -43,43 +43,37 @@ base role name과 prompt 파일 매핑. 실제 spawn 시 이름은 `aim-<role>-<
 
 topic에서 IMS 번호를 자동 추출: `<keyword>_<IMS번호>_<Jira번호>` 패턴에서 두 번째 숫자 그룹.
 
-## 네이밍 규칙 (동시 세션 격리, 필수)
+## 에이전트 식별 규칙 (agentId 기반, 필수)
 
-**왜 필요한가**: 여러 세션에서 동시에 코드 리뷰 스킬을 수행하면 동일 `team_name`을 공유해 `~/.claude/teams/<team>/inboxes/<member>.json` 디렉토리/inbox가 충돌한다. cross-session SendMessage 라우팅·컨텍스트 오염이 발생할 수 있다. **반드시 topic 접미사로 격리**한다.
+> **이름으로 부르지 않는다.** 스폰이 발급한 `agentId`로만 재호출한다.
 
-**topic-slug 변환 (필수)**:
-- `<topic-slug>` = topic의 모든 `_`를 `-`로 치환한 값
-- 예: topic `display_prc_outer_join_353568_6396` → slug `display-prc-outer-join-353568-6396`
-- 이유: Claude teams 인프라가 `team_name`의 underscore를 처리할 때, `~/.claude/teams/<team>/`(config dir)는 `_`→`-` 정규화하지만 `~/.claude/teams/<team>/inboxes/`(메시지 라우팅 시 생성)는 underscore를 보존한다. 결과적으로 동일 논리 team_name이 두 물리 디렉토리(`...-test_topic.../config.json`과 `...-test-topic.../inboxes/`)로 분기되어 cleanup·existence-check가 깨진다. **slug에서 underscore를 사전에 제거**해 단일 디렉토리만 사용한다.
-- 산출물 디렉토리(`../agent/prompt/<topic>/`)는 일반 파일시스템 경로라 underscore 그대로 유지 — slug 변환은 **Claude teams 식별자(`team_name`, 멤버 `name`)에만 적용**한다.
+**왜 이름을 쓰면 안 되는가**: `SendMessage`의 `to`는 **전역 네임스페이스**를 탐색한다 — 먼저 in-process subagent 이름을 찾고, 없으면 **다른 세션(peer session) 목록에서 검색**한다. 그런데 현재 `Agent` 도구에는 **`name`/`team_name` 파라미터가 없어** 스폰한 subagent에 이름을 붙일 수 없다. 따라서 이름으로 SendMessage하면 **in-process 매칭이 100% 실패하고 곧장 peer session 검색으로 넘어가, 우연히 이름이 겹치는 다른 세션에 메시지가 배달된다.** 세션에 topic명을 붙이는 습관이 있으면 확률이 더 올라간다(`ListAgents`로 실제 peer session 목록을 볼 수 있다).
+
+**agentId는 세션-로컬 고유값**이라 이 문제가 원리적으로 없다. 다른 세션은 내 subagent를 `ListAgents`에서 볼 수도, 호출할 수도 없다.
 
 **규칙**:
-- `team_name` = `aim-code-review-<topic-slug>`
-- 멤버 `name` = `aim-<role>-<topic-slug>`
-  - role 매핑: `info-collector`, `code-reviewer`, `test-reviewer`, `coverage-analyst`, `review-synthesizer`
-  - 예 (`topic = display_prc_outer_join_353568_6396` → slug `display-prc-outer-join-353568-6396`):
-    - 팀: `aim-code-review-display-prc-outer-join-353568-6396`
-    - 멤버: `aim-code-reviewer-display-prc-outer-join-353568-6396`, `aim-test-reviewer-display-prc-outer-join-353568-6396`, ...
+1. `Agent` 스폰 결과에 포함된 `agentId`(형식 `a...`)를 **즉시 plan 파일의 에이전트 표에 기록**한다.
+2. Phase D·E·F·H의 모든 재호출은 `SendMessage(to: "<agentId>", ...)`로 한다. **이름·역할명을 `to`에 넣지 않는다.**
+3. `Agent` 도구의 `description`은 사람이 읽는 라벨일 뿐 라우팅에 쓰이지 않는다. 짧게 역할을 적는다(예: `MR657 gtest 링크 검증`).
+4. 같은 역할의 팀원이 이미 있으면 **`Agent` 재스폰 금지** — 기록해 둔 agentId로 `SendMessage` 재활용한다(재스폰 시 Phase D 컨텍스트가 사라진다).
 
-**spawn 시 팀원 매핑 주입 (필수)**: 각 Agent spawn prompt 끝에 아래 블록을 항상 append한다. 이는 prompt 파일 안의 peer 호명(예: "테스트 리뷰어")이 실제 SendMessage 타겟 이름으로 해석될 수 있게 한다.
+**plan 파일에 유지할 표** (Phase A에서 만들고 스폰할 때마다 갱신):
 
-```
-## 팀원 매핑 (오케스트레이터 주입)
+```markdown
+## 에이전트 (agentId — SendMessage 타겟)
 
-너의 팀: aim-code-review-<topic-slug>
-너의 이름: aim-<role>-<topic-slug>
-
-팀원:
-- 정보 수집 (info-collector): aim-info-collector-<topic-slug>
-- 코드 리뷰 (code-reviewer): aim-code-reviewer-<topic-slug>
-- 테스트 리뷰 (test-reviewer): aim-test-reviewer-<topic-slug>
-- 커버리지 분석 (coverage-analyst): aim-coverage-analyst-<topic-slug>
-- 종합 (review-synthesizer): aim-review-synthesizer-<topic-slug>
-
-다른 팀원에게 SendMessage 시 위 suffixed 이름으로 호출한다. prompt 본문에 등장하는 역할명(예: "테스트 리뷰어")은 위 매핑으로 해석한다.
+| 역할 | agentId | 스폰 Phase | 산출물 |
+|------|---------|-----------|--------|
+| info-collector     | `a...` | B | `01_info_collection.md` |
+| code-reviewer      | `a...` | D | `02_code_review.md` |
+| test-reviewer      | `a...` | D | `03_test_review.md` |
+| coverage-analyst   | `a...` | D | `04_coverage.md` |
+| review-synthesizer | `a...` | E | `05_review_summary.md` |
 ```
 
-**SendMessage / Agent 재호출**: Phase F·G·H에서 기존 팀원에게 다시 지시할 때도 suffixed 이름으로 호출한다. 같은 이름의 팀원이 이미 존재하면 `Agent` 재스폰 금지(중복 인스턴스 생성), `SendMessage`로 재활용한다.
+**에이전트 간 통신**: subagent는 서로의 agentId를 모르므로 **직접 통신을 전제하지 않는다.** 역할 간 정보 전달이 필요하면 (a) 오케스트레이터가 산출물 파일을 읽어 다음 스폰 prompt에 넣거나, (b) 각 prompt에 필요한 사실을 미리 주입한다. prompt 파일에 등장하는 peer 호명(예: "테스트 리뷰어에게 전달")은 **오케스트레이터 경유**로 해석한다.
+
+> **왜 topic-slug 규칙이 사라졌나**: 구 규칙은 `~/.claude/teams/<team>/inboxes/` 디렉토리 충돌을 막기 위한 것이었다. 현재 `Agent` 도구는 그 인프라를 쓰지 않고 in-process subagent를 만들며, 격리는 agentId가 구조적으로 보장한다. 이름 규칙을 정교화하는 방향은 오히려 **peer session 오배송 경로를 여는** 역효과다.
 
 ## 워크플로우
 
@@ -123,6 +117,7 @@ AskUserQuestion(questions: [
 1. `../agent/prompt/<topic>/` 디렉토리 생성
 2. 입력 정리하여 `../agent/prompt/<topic>/00_input.md` 저장
 3. 워크스페이스 결정 (아래 "워크스페이스 결정" 참조)
+4. plan 파일에 **에이전트 표**(빈 상태) 생성 — 위 "에이전트 식별 규칙" 참조. 이후 스폰할 때마다 `agentId`를 채운다. **이 표가 없으면 Phase H에서 팀원을 재활용할 수 없다**(재스폰하면 Phase D 컨텍스트가 사라진다)
 
 #### 워크스페이스 결정 (오케스트레이터 직접)
 
@@ -179,14 +174,12 @@ cross-module 의존이 식별되면 Phase D에서 coverage-analyst에 `base_mr_s
 
 ```
 Agent(
-  name: "aim-info-collector-<topic-slug>",
   subagent_type: "general-purpose",
-  team_name: "aim-code-review-<topic-slug>",
-  prompt: "<info-collector-prompt.md의 내용> + <00_input.md의 내용> + <팀원 매핑 블록>"
+  prompt: "<info-collector-prompt.md의 내용> + <00_input.md의 내용>"
 )
 ```
 
-`<팀원 매핑 블록>`은 위 "네이밍 규칙" 섹션 참조. 모든 spawn에 append 필수.
+스폰 결과의 `agentId`를 plan 파일 에이전트 표에 기록한다(Phase H 재활용에 필요).
 
 에이전트 완료를 기다린 후 산출물을 확인한다.
 
@@ -216,26 +209,28 @@ Agent(
 **반드시 Agent 도구로 3개 리뷰어를 동시에 스폰한다. 오케스트레이터가 직접 리뷰하지 않는다.**
 
 ```
-Agent(name: "aim-code-reviewer-<topic-slug>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic-slug>", ...)
-Agent(name: "aim-test-reviewer-<topic-slug>",    subagent_type: "general-purpose", team_name: "aim-code-review-<topic-slug>", ...)
-Agent(name: "aim-coverage-analyst-<topic-slug>", subagent_type: "general-purpose", team_name: "aim-code-review-<topic-slug>", ...)
+Agent(description: "<topic> 코드 리뷰",     subagent_type: "general-purpose", prompt: ...)
+Agent(description: "<topic> 테스트 리뷰",   subagent_type: "general-purpose", prompt: ...)
+Agent(description: "<topic> 커버리지 측정", subagent_type: "general-purpose", prompt: ...)
+
+→ 반환된 agentId 3개를 plan 파일 에이전트 표에 기록한다.
 ```
 
-각 에이전트의 prompt에 `01_info_collection.md`의 내용, 해당 에이전트 prompt 파일 내용, 그리고 **팀원 매핑 블록**(위 "네이밍 규칙" 참조)을 포함한다.
+각 에이전트의 prompt에 `01_info_collection.md`의 내용과 해당 에이전트 prompt 파일 내용을 포함한다.
 
 **작업 경로 주입(필수)**: 각 spawn prompt에 Phase A에서 결정된 `WORKSPACE_AIM` 경로를 명시한다 (예: "작업 경로: <WORKSPACE_AIM>"). coverage-analyst를 포함한 모든 에이전트가 같은 워크스페이스에서 동작한다. (aim repo MR !597의 `measure_diff_cov.sh` PWD 인지 + `env.sh` LD prepend로 워크트리 측정이 main과 동등.)
 
 **cross-module 의존 주입(해당 시)**: Phase A에서 base MR 의존이 식별됐으면 coverage-analyst prompt에 `base_mr_sha`와 base 변경 파일 목록도 명시한다. coverage-analyst가 측정 전 base 파일을 swap하고 측정 후 즉시 복원한다(절차는 coverage-analyst-prompt.md "cross-module 의존 측정" 참조).
 
-에이전트 간 통신 (필요 시 `SendMessage`, 타겟은 spawn 시 주입된 suffixed 이름):
+역할 간 정보 전달 (subagent는 서로의 agentId를 모르므로 **오케스트레이터 경유**):
 - 코드 리뷰어 → 테스트 리뷰어: 복잡 함수 목록, 보안 관련 사항
 - 테스트 리뷰어 → 커버리지 분석가: 테스트 실행 경로/필터
 
 | 역할 | 산출물 |
 |------|--------|
-| 코드 리뷰어 (`aim-code-reviewer-<topic-slug>`) | `../agent/prompt/<topic>/02_code_review.md` |
-| 테스트 리뷰어 (`aim-test-reviewer-<topic-slug>`) | `../agent/prompt/<topic>/03_test_review.md` |
-| 커버리지 분석가 (`aim-coverage-analyst-<topic-slug>`) | `../agent/prompt/<topic>/04_coverage.md` |
+| 코드 리뷰어 | `../agent/prompt/<topic>/02_code_review.md` |
+| 테스트 리뷰어 | `../agent/prompt/<topic>/03_test_review.md` |
+| 커버리지 분석가 | `../agent/prompt/<topic>/04_coverage.md` |
 
 **3개 에이전트 모두 완료될 때까지 대기한다.**
 
@@ -269,12 +264,10 @@ Agent(name: "aim-coverage-analyst-<topic-slug>", subagent_type: "general-purpose
 3. `../agent/prompt/<topic>/03_test_review.md`
 4. `../agent/prompt/<topic>/04_coverage.md`
 
-읽은 내용을 **전부** prompt에 포함하여 synthesizer를 스폰한다 (팀원 매핑 블록도 함께 append):
+읽은 내용을 **전부** prompt에 포함하여 synthesizer를 스폰한다:
 ```
 Agent(
-  name: "aim-review-synthesizer-<topic-slug>",
   subagent_type: "general-purpose",
-  team_name: "aim-code-review-<topic-slug>",
   prompt: """
     <review-synthesizer-prompt.md 내용>
 
@@ -542,7 +535,7 @@ dx bash -c "cd /root/ofsrc/aim && for f in <changed files>; do diff <(clang-form
 
 #### Step 2: 에이전트 병렬 스폰 (검증 모드)
 
-Phase D와 동일한 3명의 팀원을 **검증 모드**로 재활용한다. 이미 팀에 존재하는 팀원이므로 `Agent` 재스폰 금지 — 반드시 `SendMessage`로 호출(타겟은 Phase D에서 사용한 suffixed 이름).
+Phase D와 동일한 3명을 **검증 모드**로 재활용한다. `Agent` 재스폰 금지(Phase D 컨텍스트가 사라진다) — plan 파일 에이전트 표의 **agentId**로 `SendMessage` 한다.
 
 각 메시지에 다음을 포함한다:
 - **검증 모드** 명시: "Phase D에서 작성한 리뷰의 반영 여부를 검증하라"
@@ -552,21 +545,21 @@ Phase D와 동일한 3명의 팀원을 **검증 모드**로 재활용한다. 이
 - 05_review_summary.md: 통합 finding 상태
 
 ```
-SendMessage(to: "aim-code-reviewer-<topic-slug>",    message: "검증 모드 ... 이전 02 + diff + reply")
-SendMessage(to: "aim-test-reviewer-<topic-slug>",    message: "검증 모드 ... 이전 03 + diff + reply")
-SendMessage(to: "aim-coverage-analyst-<topic-slug>", message: "검증 모드 ... make gtest + 재측정")
+SendMessage(to: "<code-reviewer agentId>",    message: "검증 모드 ... 이전 02 + diff + reply")
+SendMessage(to: "<test-reviewer agentId>",    message: "검증 모드 ... 이전 03 + diff + reply")
+SendMessage(to: "<coverage-analyst agentId>", message: "검증 모드 ... make gtest + 재측정")
 ```
 
 각 팀원의 검증 산출물:
-| 역할 (suffixed name) | 산출물 | 내용 |
+| 역할 | 산출물 | 내용 |
 |---------------------|--------|------|
-| 코드 리뷰어 (`aim-code-reviewer-<topic-slug>`) | `02_code_review.md` 업데이트 | 🔴/🟡 항목별: ✅반영 / ⚠️부분반영 / ❌미반영 / 🆕추가발견 |
-| 테스트 리뷰어 (`aim-test-reviewer-<topic-slug>`) | `03_test_review.md` 업데이트 | 테스트 수정 검증, Mock 구조 확인, 추가 발견 |
-| 커버리지 분석가 (`aim-coverage-analyst-<topic-slug>`) | `04_coverage.md` 업데이트 | 커버리지 재측정 결과, 정책 충족 여부 |
+| 코드 리뷰어 | `02_code_review.md` 업데이트 | 🔴/🟡 항목별: ✅반영 / ⚠️부분반영 / ❌미반영 / 🆕추가발견 |
+| 테스트 리뷰어 | `03_test_review.md` 업데이트 | 테스트 수정 검증, Mock 구조 확인, 추가 발견 |
+| 커버리지 분석가 | `04_coverage.md` 업데이트 | 커버리지 재측정 결과, 정책 충족 여부 |
 
 #### Step 3: 종합 (review-synthesizer 재활용)
 
-`SendMessage(to: "aim-review-synthesizer-<topic-slug>", ...)`로 종합을 지시한다 (재스폰 금지).
+`SendMessage(to: "<review-synthesizer agentId>", ...)`로 종합을 지시한다 (재스폰 금지).
 3개 검증 결과를 종합하여 `05_review_summary.md`를 업데이트한다.
 - finding 상태 업데이트 (✅ 해결 / ⚠️ 부분 해결 / 🆕 추가 발견)
 - 커버리지 재측정 결과 반영
