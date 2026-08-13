@@ -82,9 +82,38 @@ IMS#352569:<feat> ACS 호환 프로시저 DCPRES 매크로 PF키 AID 정의 기�
 ```
 ❌ 잘못된 예: `* module: libaimais, aimdcms`
 
-### Module 이름 결정 규칙
+### Module 결정 규칙 — 대상(무엇을 넣나)
 
-Squash commit의 `* module`은 Makefile의 `MODULE` 변수가 아니라 **설치되는 산출물 이름**을 사용한다.
+`* module` 목록은 "내가 고친 파일이 속한 모듈"이 아니라 **이 패치로 나가는 산출물 전부**다. 소스를 건드리지 않은 모듈도 바이너리가 바뀌면 포함한다.
+
+- **공개 헤더(`include/*.h`)를 고치면 그 헤더를 include 하는 모든 모듈이 대상**이 될 수 있다. 헤더가 심볼·구조를 바꾸면 재빌드 산출물이 달라지기 때문이다.
+- 판정은 **추론이 아니라 바이너리 체크섬**으로 한다. "실행 동작이 안 바뀐다"와 "바이너리가 안 바뀐다"는 다른 명제다 — 전자가 참이어도 후자는 거짓일 수 있다.
+
+```bash
+# 수정 전/후 각각 클린빌드하여 체크섬 비교 (같은 워크트리·같은 경로에서)
+dx bash -c 'cd <aim> && git checkout origin/rb_73 -- include/<changed>.h && make clean && make -j16'
+#   → 산출물 md5 기록 (BEFORE)
+#   → 동일 소스로 한 번 더 빌드해 md5 가 같은지 확인 (재현성 — 이게 같아야 차이를 변경 탓으로 귀속 가능)
+dx bash -c 'cd <aim> && git checkout HEAD -- include/<changed>.h && make clean && make -j16'
+#   → 산출물 md5 기록 (AFTER). BEFORE 와 다르면 그 모듈은 bump·module 목록 대상.
+```
+
+> 실측 사례: `include/aimsmr.h` 의 `typedef` 누락만 정정했는데(실행 동작 불변) 미사용 전역 심볼이 사라지며 소비 모듈 3개(`libaimsmr`·`aimidcm`·`aimsmradm`) 바이너리가 모두 변경됐다. 처음엔 1개만 기재해 리뷰에서 지적받았다.
+
+**함정 2가지**
+- `-fno-common` 이 켜진 워크트리에서는 수정 전(BEFORE) 빌드가 아예 실패할 수 있다(tentative-def 다중정의). 비교하려면 `make/cflags.local` 을 `-fcommon` 으로 임시 조정 후 **원복**한다.
+- **`lib` 타입은 patch 번호가 파일명에 들어간다**(`libaimsmr.so.64.7_3_0_7`). bump 후 이전 파일명으로 확인하면 "반영 안 됨"으로 오판한다. `svr`/`tool`/`util` 은 파일명 고정이라 내부 문자열만 바뀐다.
+
+### Version 기재 규칙 — 언제 값을 넣나
+
+`* version` 은 **bump 후 값**(이 패치로 배포될 값)이다. 작성 시점의 현재값이 아니다.
+
+- version bump 는 governance 상 **approve 후 merge 직전**에 하므로, Squash 메시지를 MR 생성 시 쓰면 **값이 비거나(`7.3.0()`) 옛 값이 남는 시차**가 생긴다.
+- 따라서 **bump 커밋을 넣은 직후 Squash 메시지의 `* version` 을 갱신**한다. 선행 MR 이 같은 모듈을 먼저 올렸으면 그 번호를 이어받는다(예: `aimdcms` 65→66 머지 후 다음 MR 은 66→67).
+
+### Module 이름 형식 규칙
+
+`* module`의 표기는 Makefile의 `MODULE` 변수가 아니라 **설치되는 산출물 이름**을 사용한다.
 
 | Makefile TYPE | 산출물 이름 규칙 | 예시 |
 |---|---|---|
@@ -107,8 +136,9 @@ Squash commit의 `* module`은 Makefile의 `MODULE` 변수가 아니라 **설치
 
 | 상황 | 형식 (MR title·Squash 헤더 공통) | 예 |
 |------|------|-----|
-| IMS/Jira 연결 | `IMS#<번호>:<type> 설명` — 콜론은 **번호와 type 사이** | `IMS#348560:<fix> structure size 변경으로 인한 연관 모듈 패치` |
-| IMS/Jira 미연결 | `<type>: 설명` — 콜론은 **type 뒤** | `<chore>: 커버리지 리포트 생성 엔진 소스 제외` |
+| IMS 연결 | `IMS#<번호>:<type> 설명` — 콜론은 **번호와 type 사이** | `IMS#348560:<fix> structure size 변경으로 인한 연관 모듈 패치` |
+| **IMS 없이 Jira만** | `OFV7-<번호>:<type> 설명` — 콜론은 **번호와 type 사이** | `OFV7-7297:<refactor> aimdcms usermain 메시지 처리 본문 추출` |
+| 둘 다 미연결 | `<type>: 설명` — 콜론은 **type 뒤** | `<chore>: 커버리지 리포트 생성 엔진 소스 제외` |
 
 - `<type>` 의 꺾쇠 `< >` 는 리터럴이다. type 명은 영어(`feat`/`fix`/`test`/`docs`/`refactor`/`style`/`chore`), 설명은 한글.
 - **콜론 없는 `<type> 설명` 은 형식 위반**이다 (실제 MR !647 에서 리뷰어가 지적).
@@ -228,8 +258,11 @@ MR description 작성/갱신 PUT **직전** 아래 항목을 확인한다. 위�
 - [ ] `== Module Summary ==`의 `N/A` 행을 삭제하지 않았는가?
 - [ ] `== Unmatched module aliases ==` 섹션이 stdout에 출력됐는데 빠지지 않았는가?
 - [ ] `BIN_DIR=` 등 경로 헤더 라인 존재 (stdout 맨 윗부분을 자르지 않음)
-- [ ] Squash commit `* module`이 산출물 이름(`lib<MODULE>` / `<MODULE>`)인가? (상기 Module 이름 결정 규칙 참조)
+- [ ] Squash commit `* module`이 산출물 이름(`lib<MODULE>` / `<MODULE>`)인가? (상기 Module 이름 형식 규칙 참조)
 - [ ] Squash commit 복수 모듈인 경우 `* module` / `* version` 블록이 분리되어 있는가? (한 줄 쉼표 나열 금지)
+- [ ] **`* module` 목록이 완전한가** — 바이너리가 바뀌는 산출물을 **전부** 담았는가? 공개 헤더를 고쳤다면 소비 모듈까지 체크섬으로 확인했는가? (상기 Module 결정 규칙 참조)
+- [ ] **`* version` 이 bump 후 값인가** — `7.3.0()` 공란이나 bump 전 값이 남아 있지 않은가? bump 커밋을 넣었다면 Squash 메시지도 갱신했는가?
+- [ ] MR description 본문에 **작성 시점 이후 바뀐 사실**(bump 생략 판단, 계획, 버전 등)이 낡은 채 남아 있지 않은가? — 여러 섹션에 같은 사실이 나오면 교차 확인
 - [ ] **MR title 과 Squash commit 헤더가 같은 commit 형식**인가? — IMS/Jira 연결 시 `IMS#<번호>:<type> 설명`, 미연결 시 `<type>: 설명`. 콜론 없는 `<type> 설명` 을 쓰지 않았는가? (docs-only MR 도 동일 — 면제 아님)
 - [ ] MR Check List 5개 모두 체크됐는가? (리뷰 가능 조건)
 

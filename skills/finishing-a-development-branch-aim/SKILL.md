@@ -169,6 +169,14 @@ curl -s --request PUT \
   "http://192.168.51.106/api/v4/projects/211/merge_requests/<MR_IID>"
 ```
 
+**version bump 커밋을 push한 직후 — Squash 메시지 갱신 (필수)**
+
+bump는 governance상 approve 후 merge 직전에 하므로, MR 생성 시 쓴 Squash 메시지의 `* version`은 **비어 있거나(`7.3.0()`) 옛 값**이다. bump를 push했으면 **같은 턴에** description의 Squash 메시지를 PUT으로 갱신한다.
+
+- `* version`을 **bump 후 값**으로 (선행 MR이 같은 모듈을 먼저 올렸으면 그 번호를 이어받는다)
+- `* module` 목록이 **실제 bump한 모듈 전부**와 일치하는지 대조 — 공개 헤더만 고쳐도 소비 모듈이 대상일 수 있다(판정은 바이너리 체크섬. 상세는 `writing-documents-aim/gitlab-guide.md` "Module 결정 규칙")
+- description 본문에 **bump 생략 판단·계획 등 낡은 서술**이 남아 있으면 함께 정정 (여러 섹션에 같은 사실이 있으면 교차 확인)
+
 **Update 시 매뉴얼 재판단**: MR 변경 범위가 달라졌을 수 있으므로 기존 `<!-- aim-harness:manual-check ... -->` marker 확인 후 필요시 재판단한다.
 - 기존 marker가 `done`인데 변경 범위에 사용자 노출 요소가 추가되면 `pending-merge` 또는 즉시 작성으로 갱신
 - 기존 marker가 `pending-merge`이고 변경이 매뉴얼 결정에 영향 없으면 그대로 유지
