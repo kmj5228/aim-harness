@@ -94,7 +94,7 @@ Jira API v2는 markdown이 아니라 **wiki markup**을 사용한다. markdown �
 
 - **독자**: 개발자
 - **추상화**: 핵심 코드 삽입까지 허용 (함수명, 코드 블록 OK)
-- **톤**: description은 간결체/명사형 허용, 댓글은 격식체
+- **톤**: description은 기록이므로 간결체/명사형, 댓글은 대화이므로 격식체 (기준: `SKILL.md` Step 2 톤)
 - **설계/개발 깊이**: 큰 그림(접근 방식, 영향 모듈, 변경 방향) 필수 작성. 흐름도는 이미지 첨부로 포함. 필요 시 세부 내용까지 기술
 - **공유 범위 — 사설 산출물 참조 금지**: Jira는 **공유 문서**다. 개인/사설 repo(개인 GitHub 워크스페이스 등)의 산출물 — prompt 작업노트, 핸드오프(handoff_/exec_), issues_to_fix, 개인 메모리 파일명 등 — 의 **경로·내용을 description/댓글에 넣지 않는다**. Reference 등에 사설 경로(예: `prompt/<topic>/...`, 개인 repo명)를 적지 말 것. **공유 가능한 것만** 참조한다: 제품 코드 경로·함수명, GitLab MR, 다른 Jira/Confluence 이슈. (근거: 개인 작업노트는 팀 트래커의 독자에게 무의미하고 사설 정보가 유출됨.)
 - **분량 초과 시**: Jira description은 32,767자 하드 한계 — 아래 "Description 분량 한계 — Confluence 이관" 참조
