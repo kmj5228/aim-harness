@@ -312,6 +312,18 @@ npx -y @mermaid-js/mermaid-cli@10 -i diagram.mmd -o diagram.png -b white -s 4
 
 분포·시계열·비교·box plot 등 **정량 데이터**는 mermaid가 아닌 **matplotlib**로 렌더한 PNG를 같은 첨부 파이프라인으로 올린다(첨부 API → `<ac:image>` 참조). 차트 종류 매핑과 gnuplot-style 레시피는 `markdown-guide.md` "그림 우선 (다이어그램 + 데이터 차트)" 절을 SSoT로 따른다.
 
+### 정밀 SVG figure (mermaid로 품질이 안 나올 때)
+
+레이아웃을 좌표 단위로 통제해야 하는 도해(담당자별 캘린더, 단계 다이어그램 등)는 mermaid 대신 **파이썬으로 SVG를 생성하고 chrome headless로 PNG 렌더**한다.
+
+> **구현 helper**
+> - [`scripts/svg_render.py`](scripts/svg_render.py) — SVG(HTML wrap) → chrome headless PNG + 정확한 크롭. **chrome headless는 뷰포트 높이 == 문서 높이일 때 하단 ~106px을 잘라먹는다** — 넉넉한 뷰포트로 찍고 크롭하는 것이 이 스크립트의 존재 이유다.
+> - [`scripts/gen_figs_example.py`](scripts/gen_figs_example.py) — 실제 사용 예제(Jira 운영 방침 figure 3종). 색 팔레트·카드/화살표 헬퍼를 여기서 복사해 쓴다.
+
+- 폰트는 `Noto Sans CJK KR`, 렌더는 `--force-device-scale-factor=2`
+- **렌더한 PNG를 반드시 눈으로 확인한다** — 좌표 계산만으로는 겹침·클리핑·라벨 잘림을 못 잡는다
+- 일정·데이터가 바뀌면 생성 스크립트의 데이터 배열만 고쳐 재생성할 수 있도록, 생성 스크립트를 산출물과 함께 저장소에 남긴다
+
 ## wiki → storage 이관 노하우 (Jira → Confluence)
 
 Jira wiki markup을 `contentbody/convert/storage`(`representation: wiki`)로 변환할 때 변환기가 `{...}`를 매크로로, `[...]`를 링크로 해석해 C 코드·로그·식별자가 깨진다. 다음을 사전 보호한다.
