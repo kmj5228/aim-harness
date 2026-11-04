@@ -91,10 +91,11 @@ IMS#352569:<feat> ACS 호환 프로시저 DCPRES 매크로 PF키 AID 정의 기�
 
 ```bash
 # 수정 전/후 각각 클린빌드하여 체크섬 비교 (같은 워크트리·같은 경로에서)
-dx bash -c 'cd <aim> && git checkout origin/rb_73 -- include/<changed>.h && make clean && make -j16'
+# N 은 빌드 직전에 정한다(USER_GUIDE §5.5)
+dx bash -c 'cd <aim> && git checkout origin/rb_73 -- include/<changed>.h && make clean && make -jN'
 #   → 산출물 md5 기록 (BEFORE)
 #   → 동일 소스로 한 번 더 빌드해 md5 가 같은지 확인 (재현성 — 이게 같아야 차이를 변경 탓으로 귀속 가능)
-dx bash -c 'cd <aim> && git checkout HEAD -- include/<changed>.h && make clean && make -j16'
+dx bash -c 'cd <aim> && git checkout HEAD -- include/<changed>.h && make clean && make -jN'
 #   → 산출물 md5 기록 (AFTER). BEFORE 와 다르면 그 모듈은 bump·module 목록 대상.
 ```
 
