@@ -76,6 +76,8 @@ dx bash -c "rg 'function_or_error_pattern' /root/ofsrc/aim/src/"
 
 Trace the execution path from symptom to root cause.
 
+소스에서 「없다」 를 쓰려면 `command grep -a` 로 다시 세고 그 경로가 있는지 본다.
+
 ## Verdict Classification
 
 | Verdict | Criteria | Action |
